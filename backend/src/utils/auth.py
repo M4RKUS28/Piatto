@@ -74,7 +74,7 @@ async def get_readonly_user_id(
     return payload.get("user_id")
 
 
-async def get_optional_user_id(
+async def get_user_id_optional(
     access_token: Optional[str] = Depends(get_access_token_from_cookie),
 ) -> Optional[str]:
     """Return the user_id from the access token if present, otherwise None.
