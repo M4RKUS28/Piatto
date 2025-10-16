@@ -2,7 +2,8 @@
 from typing import Optional
 from datetime import datetime, timezone, timedelta
 
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from sqlalchemy.sql import text
 
 from ..models.db_user import User
@@ -10,22 +11,25 @@ from ...core.enums import UserRole, ThemePreference
 
 
 
-def get_user_by_id(db: Session, user_id: str) -> Optional[User]:
+async def get_user_by_id(db: AsyncSession, user_id: str) -> Optional[User]:
     """Retrieve a user by their ID."""
-    return db.query(User).filter(User.id == user_id).first()
+    result = await db.execute(select(User).filter(User.id == user_id))
+    return result.scalar_one_or_none()
 
 
-def get_user_by_username(db: Session, username: str) -> Optional[User]:
+async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User]:
     """Retrieve a user by their username."""
-    return db.query(User).filter(User.username == username).first()
+    result = await db.execute(select(User).filter(User.username == username))
+    return result.scalar_one_or_none()
 
 
-def get_user_by_email(db: Session, email: str) -> Optional[User]:
+async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
     """Retrieve a user by their email."""
-    return db.query(User).filter(User.email == email).first()
+    result = await db.execute(select(User).filter(User.email == email))
+    return result.scalar_one_or_none()
 
 
-def create_user(db: Session,
+async def create_user(db: AsyncSession,
                 user_id: str,
                 username: str,
                 email: str, hashed_password: str,
@@ -54,13 +58,13 @@ def create_user(db: Session,
     if profile_image_base64:
         user.profile_image_base64 = profile_image_base64
     db.add(user)
-    db.commit()
-    db.refresh(user)
+    await db.commit()
+    await db.refresh(user)
     return user
 
-def update_user_last_login(db: Session, user_id: str) -> Optional[User]:
+async def update_user_last_login(db: AsyncSession, user_id: str) -> Optional[User]:
     """Update the last_login time for a user."""
-    user = get_user_by_id(db, user_id)
+    user = await get_user_by_id(db, user_id)
     if user:
         # If last_login is not set, this is the first login - start streak at 1
         if not user.last_login:
@@ -81,44 +85,46 @@ def update_user_last_login(db: Session, user_id: str) -> Optional[User]:
                 user.login_streak = 1
 
         user.last_login = datetime.now(timezone.utc)
-        db.commit()
-        db.refresh(user)
+        await db.commit()
+        await db.refresh(user)
     return user
 
-def update_user_profile_image(db: Session, user: User, profile_image_base64: str):
+async def update_user_profile_image(db: AsyncSession, user: User, profile_image_base64: str):
     """Update the profile image of an existing user."""
     user.profile_image_base64 = profile_image_base64 # type: ignore
-    db.commit()
-    db.refresh(user)
+    await db.commit()
+    await db.refresh(user)
     return user
 
-def get_users(db: Session, skip: int = 0, limit: int = 200):
+async def get_users(db: AsyncSession, skip: int = 0, limit: int = 200):
     """Retrieve users with pagination."""
-    return db.query(User).offset(skip).limit(limit).all()
+    result = await db.execute(select(User).offset(skip).limit(limit))
+    return result.scalars().all()
 
-def update_user(db: Session, db_user: User, update_data: dict):
+async def update_user(db: AsyncSession, db_user: User, update_data: dict):
     """Update an existing user's information."""
     for key, value in update_data.items():
         if isinstance(value, ThemePreference):
             value = value.value
         setattr(db_user, key, value)
-    db.commit()
-    db.refresh(db_user)
+    await db.commit()
+    await db.refresh(db_user)
     return db_user
 
-def change_user_password(db: Session, db_user: User, hashed_password: str):
+async def change_user_password(db: AsyncSession, db_user: User, hashed_password: str):
     """Change an existing user's password."""
     setattr(db_user, "hashed_password", hashed_password)
-    db.commit()
-    db.refresh(db_user)
+    await db.commit()
+    await db.refresh(db_user)
     return db_user
 
 
-def get_active_user_by_id(db: Session, user_id: str) -> Optional[User]:
+async def get_active_user_by_id(db: AsyncSession, user_id: str) -> Optional[User]:
     """Retrieve an active user by their ID."""
-    return db.query(User).filter(User.id == user_id, User.is_active ==  True).first()
+    result = await db.execute(select(User).filter(User.id == user_id, User.is_active))
+    return result.scalar_one_or_none()
 
-def delete_user(db: Session, db_user: User):
+async def delete_user(db: AsyncSession, db_user: User):
     """
     Delete a user from the database, including all associated data:
     - Notes
@@ -132,10 +138,11 @@ def delete_user(db: Session, db_user: User):
     user_id = db_user.id
 
     # 1. Delete notes associated with user
-    db.execute(text("DELETE FROM notes WHERE user_id = :user_id"), {"user_id": user_id})
+    await db.execute(text("DELETE FROM notes WHERE user_id = :user_id"), {"user_id": user_id})
 
     # 2. Get all courses by this user
-    courses = db.execute(text("SELECT id FROM courses WHERE user_id = :user_id"), {"user_id": user_id}).fetchall()
+    courses_result = await db.execute(text("SELECT id FROM courses WHERE user_id = :user_id"), {"user_id": user_id})
+    courses = courses_result.fetchall()
     course_ids = [course[0] for course in courses]
     
     if course_ids:
@@ -150,37 +157,36 @@ def delete_user(db: Session, db_user: User):
             params = {f"course_id_{i}": course_id for i, course_id in enumerate(course_ids)}
 
         # 3. Delete images associated with the user's courses first
-        db.execute(text(f"DELETE FROM images WHERE course_id IN {course_ids_placeholder}"), params)
+        await db.execute(text(f"DELETE FROM images WHERE course_id IN {course_ids_placeholder}"), params)
         
         # 4. Delete all practice questions from the user's courses
-        db.execute(text(f"DELETE FROM practice_questions WHERE chapter_id IN "
+        await db.execute(text(f"DELETE FROM practice_questions WHERE chapter_id IN "
                       f"(SELECT id FROM chapters WHERE course_id IN {course_ids_placeholder})"), params)
         
         # 5. Delete documents associated with the user's courses
-        db.execute(text(f"DELETE FROM documents WHERE course_id IN {course_ids_placeholder}"), params)
+        await db.execute(text(f"DELETE FROM documents WHERE course_id IN {course_ids_placeholder}"), params)
         
         # 6. Delete notes associated with chapters of user's courses
-        db.execute(text(f"DELETE FROM notes WHERE chapter_id IN (SELECT id FROM chapters WHERE course_id IN {course_ids_placeholder})"), params)
+        await db.execute(text(f"DELETE FROM notes WHERE chapter_id IN (SELECT id FROM chapters WHERE course_id IN {course_ids_placeholder})"), params)
 
         # 7. Delete chapters related to courses
-        db.execute(text(f"DELETE FROM chapters WHERE course_id IN {course_ids_placeholder}"), params)
+        await db.execute(text(f"DELETE FROM chapters WHERE course_id IN {course_ids_placeholder}"), params)
         
-        # 7. Finally, delete the courses themselves
-        db.execute(text(f"DELETE FROM courses WHERE id IN {course_ids_placeholder}"), params)
+        # 8. Finally, delete the courses themselves
+        await db.execute(text(f"DELETE FROM courses WHERE id IN {course_ids_placeholder}"), params)
     
-    # 7. Delete documents directly associated with the user (i.e., not linked to any course)
+    # 9. Delete documents directly associated with the user (i.e., not linked to any course)
     # This handles documents that might have user_id but no course_id.
-    db.execute(text("DELETE FROM documents WHERE user_id = :user_id AND course_id IS NULL"), {"user_id": user_id})
+    await db.execute(text("DELETE FROM documents WHERE user_id = :user_id AND course_id IS NULL"), {"user_id": user_id})
     
-    # 8. Delete images directly associated with the user
+    # 10. Delete images directly associated with the user
     # Assuming images are primarily linked via user_id or handled if linked to courses.
     # If images also have strong FK to courses, their deletion might need similar logic.
-    db.execute(text("DELETE FROM images WHERE user_id = :user_id"), {"user_id": user_id})
+    await db.execute(text("DELETE FROM images WHERE user_id = :user_id"), {"user_id": user_id})
     
-    # 7. Finally, delete the user
-    # 7. Finally, delete the user
-    db.delete(db_user)
-    db.commit()
+    # 11. Finally, delete the user
+    await db.delete(db_user)
+    await db.commit()
     
     return db_user
 

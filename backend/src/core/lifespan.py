@@ -4,6 +4,8 @@ from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 
+from ..db.database import get_engine, Base
+
 
 scheduler = AsyncIOScheduler()
 logger = logging.getLogger(__name__)
@@ -23,6 +25,12 @@ async def lifespan(_app: FastAPI):
     logger.info("Starting application...")
     
     try:
+        # Initialize database engine and create tables
+        engine = await get_engine()
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("✅ Database tables created/verified")
+        
         logger.info("Scheduler started.")   
 
         yield
