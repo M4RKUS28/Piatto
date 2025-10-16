@@ -39,12 +39,13 @@ export default function MainLayout({ children }) {
       >
         {/* Logo / Toggle */}
         <div className="p-4 border-b border-[#F5F5F5]">
-          <button
-            onClick={toggleSidebar}
-            className="w-full flex items-center gap-3 group relative"
-            title="Toggle sidebar"
-          >
-            <div className="w-8 h-8 bg-white rounded-xl shadow-sm flex items-center justify-center flex-shrink-0 group-hover:shadow-md transition-all relative">
+          <div className="w-full flex items-center gap-3">
+            <button
+              onClick={toggleSidebar}
+              className="w-8 h-8 bg-white rounded-xl shadow-sm flex items-center justify-center flex-shrink-0 group relative hover:shadow-md transition-all"
+              title={sidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
+              aria-label={sidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
+            >
               {sidebarExpanded ? (
                 <img src="/logo_no_P.svg" alt="Piatto" className="w-6 h-6" />
               ) : (
@@ -53,16 +54,30 @@ export default function MainLayout({ children }) {
                   <PanelLeft className="w-5 h-5 text-[#035035] absolute inset-0 m-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                 </>
               )}
-            </div>
+            </button>
             {sidebarExpanded && (
               <>
-                <span className="text-xl font-bold text-[#035035] flex-1" style={{ fontFamily: 'Georgia, serif' }}>
+                <Link
+                  to="/"
+                  onClick={() => {
+                    setProfileMenuOpen(false);
+                  }}
+                  className="text-xl font-bold text-[#035035] flex-1 transition-colors hover:text-[#023724]"
+                  style={{ fontFamily: 'Georgia, serif' }}
+                >
                   Piatto
-                </span>
-                <PanelLeft className="w-5 h-5 text-[#035035] opacity-60 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                </Link>
+                <button
+                  onClick={toggleSidebar}
+                  className="text-[#035035] opacity-60 hover:opacity-100 transition-opacity flex-shrink-0"
+                  title="Collapse sidebar"
+                  aria-label="Collapse sidebar"
+                >
+                  <PanelLeft className="w-5 h-5" />
+                </button>
               </>
             )}
-          </button>
+          </div>
         </div>
 
         {/* Navigation Items */}
