@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { PiX, PiCaretRight, PiCaretLeft } from 'react-icons/pi';
+import { PiX, PiCaretRight } from 'react-icons/pi';
 import Recipe from './Recipe';
 import Instructions from './Instructions';
 
@@ -45,17 +45,26 @@ const RecipeView = () => {
   };
 
   return (
-    <div ref={containerRef} className="h-screen w-screen flex overflow-hidden bg-[#F5F5F5]">
+    <div ref={containerRef} className="h-screen w-full max-w-full flex overflow-hidden bg-[#F5F5F5]">
       {/* Recipe Panel */}
       <div
-        className="relative flex-shrink-0 transition-all duration-300 ease-out"
+        className="relative flex-shrink-0 transition-all duration-300 ease-out min-w-[64px]"
         style={{
-          width: recipeMinimized ? '48px' : `${leftWidth}%`,
+          width: recipeMinimized ? '64px' : `${leftWidth}%`,
         }}
       >
         {recipeMinimized ? (
-          <div className="h-full bg-[#035035] flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-[#046847] transition-colors" onClick={handleToggleRecipe}>
-            <div className="writing-mode-vertical text-white font-bold text-lg tracking-wider transform rotate-180">RECIPE</div>
+          <div
+            className="h-full bg-[#035035] flex flex-col items-center justify-center gap-3 px-2 cursor-pointer hover:bg-[#046847] transition-colors"
+            onClick={handleToggleRecipe}
+            aria-label="Expand recipe panel"
+          >
+            <span
+              className="text-white font-bold text-sm tracking-[0.35em]"
+              style={{ writingMode: 'vertical-rl', textOrientation: 'upright' }}
+            >
+              RECIPE
+            </span>
             <PiCaretRight className="text-white text-2xl" />
           </div>
         ) : (
@@ -72,13 +81,16 @@ const RecipeView = () => {
       {!recipeMinimized && (
         <div
           className="w-4 bg-[#A8C9B8] hover:bg-[#035035] cursor-col-resize flex-shrink-0 relative group transition-colors"
-          onMouseDown={() => setIsDragging(true)}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
         >
         </div>
       )}
 
       {/* Instructions Panel (now permanent) */}
-      <div className="relative flex-1">
+      <div className="relative flex-1 min-w-0">
         <div className="h-full">
           <Instructions />
         </div>

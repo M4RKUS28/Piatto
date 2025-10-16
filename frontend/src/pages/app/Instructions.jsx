@@ -30,7 +30,7 @@ const Instructions = () => {
   ];
 
   return (
-    <div className="h-full overflow-y-auto">
+    <div className="h-full overflow-y-auto no-scrollbar">
       <div className="p-6 md:p-8">
         <h2 className="font-poppins font-bold text-3xl text-[#035035] mb-2">
           Instructions

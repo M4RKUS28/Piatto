@@ -127,7 +127,7 @@ const Recipe = () => {
   );
 
   return (
-    <div className="h-full overflow-y-auto">
+    <div className="h-full overflow-y-auto no-scrollbar">
       <div className="p-6 md:p-8">
         {/* Header */}
         <h1 className="font-poppins font-bold text-4xl md:text-5xl text-[#035035]">
