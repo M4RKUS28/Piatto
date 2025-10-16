@@ -2,7 +2,8 @@ from typing import List
 from ...services.agent_service import AgentService
 from fastapi import APIRouter, HTTPException, Body, Depends
 from ..schemas.recipe import (
-    GenerateRecipeRequest, ChangeRecipeAIRequest, ChangeRecipeManualRequest, ChangeStateRequest, AskQuestionRequest, Recipe, RecipePreview
+    GenerateRecipeRequest, ChangeRecipeAIRequest, ChangeRecipeManualRequest, ChangeStateRequest,
+    AskQuestionRequest, Recipe, RecipePreview, PromptHistory, CookingSession
 )
 from ...utils.auth import get_current_user_id
 agent_service = AgentService()
@@ -113,7 +114,7 @@ def get_options(gen_context_id: int):
     """
     pass
 
-@router.get("/{recipe_id}/get", response_model=Recipe)
+@router.get("/{recipe_id}/get_recipe", response_model=Recipe)
 def get_recipe(recipe_id: int):
     """
     Retrieve a recipe based on the provided recipe ID.
@@ -126,28 +127,28 @@ def get_recipe(recipe_id: int):
     """
     pass
 
-@router.get("/{cooking_session_id}/get_state", response_model=int)
-def get_state(cooking_session_id: int):
+@router.get("/{cooking_session_id}/get_session", response_model=CookingSession)
+def get_session(cooking_session_id: int):
     """
-    Retrieve the state of a cooking session based on the provided session ID.
+    Retrieve a cooking session based on the provided session ID.
 
     Args:
         cooking_session_id (int): The ID of the cooking session.
 
     Returns:
-        int: The state of the cooking session.
+        CookingSession: The corresponding cooking session.
     """
     pass
 
-@router.get("/{prompt_history_id}/get_prompt_history", response_model=int)
-def get_prompt_history(prompt_history_id: int):
+@router.get("{cooking_session_id}/get_prompt_history", response_model=PromptHistory)
+def get_prompt_history(cooking_session_id: int):
     """
-    Retrieve the prompt history based on the provided prompt history ID.
+    Retrieve the prompt history based on the provided cooking session ID.
 
     Args:
-        prompt_history_id (int): The ID of the prompt history.
+        cooking_session_id (int): The ID of the cooking session that includes the current state.
 
     Returns:
-        int: The prompt history.
+        PromptHistory: The prompt history.
     """
     pass
