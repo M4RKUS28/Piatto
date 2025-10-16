@@ -41,6 +41,7 @@ from google.genai import types
 
 from ..db.models.db_file import Document, Image
 from ..db.crud import usage_crud
+from ..agents.utils import create_text_query, create_docs_query
 
 
 
@@ -49,10 +50,14 @@ logger = getLogger(__name__)
 
 class AgentService:
     def __init__(self):
-        
-        agent = TesterAgent()
+        self.session_service = InMemorySessionService()
+        self.app_name = "Nexora"
 
-    def create_recipes(self):
+        self.agent = TesterAgent(self.app_name, self.session_service)
+
+    def create_recipes(self, user_id: str):
+        content = create_text_query("Hallo, wie geht es dir")
+        self.agent.run(user_id, state={}, content=content)
         pass
 
     def create_guide(self):

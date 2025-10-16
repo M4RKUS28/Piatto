@@ -20,6 +20,7 @@ class PlannerAgent(StructuredAgent):
         self.model = dynamic_settings.get("PLANNER_AGENT_MODEL")
         self.full_instructions = load_instruction_from_file("planner_agent/instructions.txt")
         # Create the planner agent
+        self.model = "gemini-2.5-flash"
         planner_agent = LlmAgent(
             name="planner_agent",
             model=self.model,
