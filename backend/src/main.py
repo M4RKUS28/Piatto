@@ -1,19 +1,13 @@
 """
 Main application entry point for the FastAPI backend.
 """
-from typing import Optional
-
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from .api.schemas import user as user_schema
 from .config.settings import SESSION_SECRET_KEY
 from .core.lifespan import lifespan
-from .utils import auth
-from .db.models import db_user
-from .db.crud import users_crud
-from .db import database
+
 
 from .api.routers import auth as auth_router
 from .api.routers import chat, files
@@ -47,17 +41,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# Define /users/me BEFORE including users.router to ensure correct route matching
-@app.get("/users/me", response_model=Optional[user_schema.User], tags=["users"])
-async def read_users_me(current_user: Optional[db_user.User] = Depends(auth.get_user_id_optional)):
-    """Get the current logged-in user's details."""
-    if current_user is None:
-        return None
-    async with database.get_async_db_context() as db:
-        user = await users_crud.get_user_by_id(db, current_user)
-    return user
-
 # Include your existing routers under this api_router
 app.include_router(users.router)
 app.include_router(files.router)
@@ -68,4 +51,4 @@ app.include_router(chat.router)
 @app.get("/")
 async def root():
     """Status endpoint for the API."""
-    return {"message": "Welcome to the User Management API. API endpoints are under /api"}
+    return {"message": "Welcome to Piatto API. Visit /api/docs for API documentation."}

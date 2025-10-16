@@ -4,7 +4,7 @@ Authentication Router
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import FastAPI, Response, Cookie
 
 
@@ -30,7 +30,7 @@ api_router = APIRouter(
                   status_code=status.HTTP_201_CREATED)
 async def register_user(response: Response,
                         user_data: user_schema.UserCreate,
-                        db: Session = Depends(get_db)):
+                        db: AsyncSession = Depends(get_db)):
     """
     Endpoint to register a new user.
     Returns the status of the registration.
@@ -49,7 +49,7 @@ async def register_user(response: Response,
                  response_model=auth_schema.APIResponseStatus)
 async def login_user(response: Response,
                      form_data: OAuth2PasswordRequestForm = Depends(),
-                     db: Session = Depends(get_db)):
+                     db: AsyncSession = Depends(get_db)):
     """
     Endpoint to login and obtain an access token.
     Use /users/me to get user details.
@@ -57,39 +57,19 @@ async def login_user(response: Response,
     return await auth_service.login_user(form_data, db, response)
 
 
-@api_router.post("/admin/login-as/{user_id}",
-                 response_model=auth_schema.APIResponseStatus)
-async def login_as(
-    user_id: str,
-    response: Response,
-    db: Session = Depends(get_db),
-    current_user: user_schema.User = Depends(auth_utils.get_current_admin_user)
-):
-    """
-    Endpoint for admin to login as another user. (Admin only)
-    This will log out the current admin and log in as the specified user.
-    
-    Args:
-        user_id: The ID of the user to log in as
-    """
-    return await auth_service.admin_login_as(current_user.id, user_id, db, response)
-
-
 @api_router.post("/logout",
                  response_model=auth_schema.APIResponseStatus)
-async def logout_user(response: Response,
-                      db: Session = Depends(get_db),
-                      user: user_schema.User = Depends(auth_utils.get_current_active_write_user)):
+async def logout_user(response: Response):
     """
     Endpoint to logout user.
     This endpoint invalidates the user's session and access token.
     """
-    return await auth_service.logout_user(user, db, response)
+    return await auth_service.logout_user(response)
 
 @api_router.post("/refresh",
                  response_model=auth_schema.APIResponseStatus)
 async def refresh_token(response: Response,
-                        db: Session = Depends(get_db),
+                        db: AsyncSession = Depends(get_db),
                         refresh_token_str: Optional[str] = Depends(get_refresh_token_from_cookie)):
     """
     Endpoint to refresh the user's access token.

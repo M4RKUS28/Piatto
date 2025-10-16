@@ -135,59 +135,11 @@ async def delete_user(db: AsyncSession, db_user: User):
     
     This ensures no foreign key constraints are violated.
     """
-    user_id = db_user.id
-
-    # 1. Delete notes associated with user
-    await db.execute(text("DELETE FROM notes WHERE user_id = :user_id"), {"user_id": user_id})
-
-    # 2. Get all courses by this user
-    courses_result = await db.execute(text("SELECT id FROM courses WHERE user_id = :user_id"), {"user_id": user_id})
-    courses = courses_result.fetchall()
-    course_ids = [course[0] for course in courses]
-    
-    if course_ids:
-        # Convert list to tuple for SQL IN operator
-        # Ensure course_ids_tuple is correctly formatted for the IN clause
-        if len(course_ids) == 1:
-            course_ids_placeholder = "(:course_id_0)"
-            params = {"course_id_0": course_ids[0]}
-        else:
-            course_ids_placeholder = ", ".join([f":course_id_{i}" for i in range(len(course_ids))])
-            course_ids_placeholder = f"({course_ids_placeholder})"
-            params = {f"course_id_{i}": course_id for i, course_id in enumerate(course_ids)}
-
-        # 3. Delete images associated with the user's courses first
-        await db.execute(text(f"DELETE FROM images WHERE course_id IN {course_ids_placeholder}"), params)
-        
-        # 4. Delete all practice questions from the user's courses
-        await db.execute(text(f"DELETE FROM practice_questions WHERE chapter_id IN "
-                      f"(SELECT id FROM chapters WHERE course_id IN {course_ids_placeholder})"), params)
-        
-        # 5. Delete documents associated with the user's courses
-        await db.execute(text(f"DELETE FROM documents WHERE course_id IN {course_ids_placeholder}"), params)
-        
-        # 6. Delete notes associated with chapters of user's courses
-        await db.execute(text(f"DELETE FROM notes WHERE chapter_id IN (SELECT id FROM chapters WHERE course_id IN {course_ids_placeholder})"), params)
-
-        # 7. Delete chapters related to courses
-        await db.execute(text(f"DELETE FROM chapters WHERE course_id IN {course_ids_placeholder}"), params)
-        
-        # 8. Finally, delete the courses themselves
-        await db.execute(text(f"DELETE FROM courses WHERE id IN {course_ids_placeholder}"), params)
-    
-    # 9. Delete documents directly associated with the user (i.e., not linked to any course)
-    # This handles documents that might have user_id but no course_id.
-    await db.execute(text("DELETE FROM documents WHERE user_id = :user_id AND course_id IS NULL"), {"user_id": user_id})
-    
-    # 10. Delete images directly associated with the user
-    # Assuming images are primarily linked via user_id or handled if linked to courses.
-    # If images also have strong FK to courses, their deletion might need similar logic.
-    await db.execute(text("DELETE FROM images WHERE user_id = :user_id"), {"user_id": user_id})
+    # 1. Delete all notes associated with the user
     
     # 11. Finally, delete the user
     await db.delete(db_user)
     await db.commit()
-    
     return db_user
 
 

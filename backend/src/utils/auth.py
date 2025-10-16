@@ -74,6 +74,16 @@ async def get_readonly_user_id(
     return payload.get("user_id")
 
 
+async def get_read_write_user_token_data(
+    access_token: Optional[str] = Depends(get_access_token_from_cookie),
+) -> Dict[str, Any]:
+    """Return the token data from the access token with read and write permissions."""
+    # Check if the access token is provided and valid and contains user_id
+    payload = security.verify_token(access_token)
+    # check access level
+    _ensure_access_level(payload, WRITE_ACCESS_LEVELS)
+    return payload
+
 async def get_user_id_optional(
     access_token: Optional[str] = Depends(get_access_token_from_cookie),
 ) -> Optional[str]:
@@ -111,6 +121,22 @@ async def get_admin_user_id(
         )
     
     return payload.get("user_id")
+
+async def get_admin_token_data(
+    access_token: Optional[str] = Depends(get_access_token_from_cookie),
+) -> Dict[str, Any]:
+    """Return the token data if the user is an admin."""
+    # Check if the access token is provided and valid and contains user_id, role
+    payload = security.verify_token(access_token)
+    _ensure_access_level(payload, WRITE_ACCESS_LEVELS)
+
+    if payload.get("role") != enums.UserRole.ADMIN.value:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The user doesn't have enough privileges"
+        )
+    
+    return payload
 
 
 async def get_read_write_user_id(

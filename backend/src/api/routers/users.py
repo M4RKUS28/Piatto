@@ -1,17 +1,21 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-
-from ...db.database import get_db
-from ...db.models import db_user as user_model
-from ...services import user_service, auth_service
-from ...utils import auth
-from ...utils.auth import get_current_user_optional, get_current_active_read_user, get_current_active_write_user # Import new dependencies
-from ..schemas import user as user_schemas  # For Pydantic models
-from ..schemas import auth as auth_schemas  # For Pydantic models
 from fastapi import FastAPI, Response, Cookie
 
+from sqlalchemy.ext.asyncio import AsyncSession
+from ...db.database import get_db, get_async_db_context
+
+from ...db.models import db_user as user_model
+from ...api.schemas import user as user_schemas
+
+from ...services import user_service
+from ...db.crud import users_crud
+from ...utils import auth
+
+from ...utils.auth import (get_user_id_optional,
+                            get_read_write_user_token_data,
+                            get_admin_token_data)
 
 
 router = APIRouter(
@@ -21,90 +25,87 @@ router = APIRouter(
 )
 
 @router.get("/me",
-            response_model=Optional[user_schemas.User],
+            response_model=Optional[user_model.User],
             summary="Get current logged-in user's profile")
 async def read_current_user(
-    current_user: Optional[user_model.User] = Depends(get_current_user_optional)
+    current_user_id: Optional[user_model.User] = Depends(get_user_id_optional)
 ):
     """
     Retrieve the profile of the currently authenticated user.
     Returns user data if a valid session (cookie) is present, otherwise returns null.
     """
-    return current_user
+    if current_user_id is None:
+        return None
+
+    async with get_async_db_context() as db:
+        user: user_model.User = await users_crud.get_user_by_id(db, current_user_id)
+        if user is None or not user.is_active:
+            return None
+    return user
 
 @router.get("/",
-            response_model=List[user_schemas.User],
-            dependencies=[Depends(auth.get_current_admin_user)])
+            response_model=List[user_model.User],
+            dependencies=[Depends(auth.get_admin_user_id)])
 async def read_users(
     skip: int = 0,
     limit: int = 100,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    _ = Depends(auth.get_admin_user_id)
 ):
     """
     Retrieve all users. Only accessible by admin users.
     """
-    return user_service.get_users(db, skip=skip, limit=limit)
+    return await user_service.get_users(db, skip=skip, limit=limit)
 
-@router.get("/{user_id:str}", response_model=user_schemas.User)
-async def read_user(
-    user_id: str,
-    db: Session = Depends(get_db),
-    current_user: user_model.User = Depends(get_current_active_read_user)
-):
-    """
-    Retrieve a specific user by ID.
-    Admin users can retrieve any user. Regular users can only retrieve their own profile.
-    """
-    return user_service.get_user_by_id(db, user_id, current_user)
 
 @router.put("/{user_id:str}", response_model=user_schemas.User)
 async def update_user(
     user_id: str,
     user_update: user_schemas.UserUpdate,
-    db: Session = Depends(get_db),
-    current_user: user_model.User = Depends(get_current_active_write_user)
+    db: AsyncSession = Depends(get_db),
+    token_data: Dict[str, Any] = Depends(get_read_write_user_token_data)
 ):
     """
     Update a user's profile. Admins can update any user,
     regular users can only update their own profile.
     """
-    return user_service.update_user(db, user_id, user_update, current_user)
+    return user_service.update_user(db, user_id, user_update, token_data)
 
 @router.put("/{user_id}/change_password", response_model=user_schemas.User)
 async def change_password(
     user_id: str,
     password_data: user_schemas.UserPasswordUpdate,
-    db: Session = Depends(get_db),
-    current_user: user_model.User = Depends(get_current_active_write_user)
+    db: AsyncSession = Depends(get_db),
+    current_user_token_data: Dict[str, Any] = Depends(get_read_write_user_token_data)
 ):
     """
     Change a user's password.
     Admins can change any user's password, regular users can only change their own password.
     """
-    return user_service.change_password(db, user_id, password_data, current_user)
+    return user_service.change_password(db, user_id, password_data, current_user_token_data)
 
-@router.delete("/{user_id:str}", response_model=user_schemas.User, dependencies=[Depends(auth.get_current_admin_user)])
+
+@router.delete("/me", response_model=user_schemas.User, dependencies=[Depends(get_read_write_user_token_data)])
+async def delete_me(
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+    current_user_token_data: user_model.User = Depends(get_read_write_user_token_data)
+):
+    """
+    Delete a user. Only accessible by the user itself.
+    """
+    return await user_service.delete_user(db, current_user_token_data.get("user_id"), current_user_token_data=current_user_token_data, response=response)
+
+
+@router.delete("/{user_id:str}", response_model=user_schemas.User, dependencies=[Depends(auth.get_admin_user_id)])
 async def delete_user(
     user_id: str,
-    db: Session = Depends(get_db),
-    current_user: user_model.User = Depends(auth.get_current_admin_user)
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+    current_user_token_data: Dict[str, Any] = Depends(get_admin_token_data),
 ):
     """
     Delete a user. Only accessible by admin users.
     Admins cannot delete themselves.
     """
-    return user_service.delete_user(db, user_id, current_user)
-
-@router.delete("/me", response_model=user_schemas.User, dependencies=[Depends(get_current_active_write_user)])
-async def delete_user(
-    response: Response,
-    db: Session = Depends(get_db),
-    current_user: user_model.User = Depends(get_current_active_write_user)
-):
-    """
-    Delete a user. Only accessible by the user itself.
-    """
-    auth_service.logout_user(current_user, db, response)
-    return user_service.delete_user(db, current_user.id, current_user)
-
-
+    return await user_service.delete_user(db, user_id, current_user_token_data=current_user_token_data, response=response)
