@@ -24,36 +24,6 @@ router = APIRouter(
 )
 
 
-@router.post("/reboot", response_model=Dict[str, Any])
-async def reboot(_: user_model.User = Depends(auth.get_current_admin_user)) -> Dict[str, Any]:
-    """
-    Trigger backend restart.
-    
-    If SSH_RESTART_ENABLED is configured, this will execute a Docker Compose restart
-    via SSH. Otherwise, it sends SIGTERM to trigger a local container restart.
-    
-    The SSH command is executed in the background with nohup to ensure it continues
-    even after the backend stops.
-    """
-    try:
-        result = await restart_service.trigger_restart()
-        logger.warning("Admin triggered restart via /admin/reboot endpoint: %s", result.get("method"))
-        return result
-    except RuntimeError as e:
-        logger.error("Failed to trigger restart: %s", str(e))
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        ) from e
-
-
-@router.get("/reboot/config", response_model=Dict[str, Any])
-async def get_reboot_config(
-    _: user_model.User = Depends(auth.get_current_admin_user)
-) -> Dict[str, Any]:
-    """Get current restart configuration (for debugging/monitoring)."""
-    return restart_service.get_restart_config()
-
 
 @router.get(
     "/dynamic-settings",
