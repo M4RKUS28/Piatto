@@ -55,10 +55,60 @@ class AgentService:
 
         self.agent = TesterAgent(self.app_name, self.session_service)
 
-    def create_recipes(self, user_id: str):
+    # Rezepte Erstellen
+    def generate_recipe(self, user_id: str, prompt: str, context: str): # Irgendwie Kontext
         content = create_text_query("Hallo, wie geht es dir")
-        self.agent.run(user_id, state={}, content=content)
+        returnContent = self.agent.run(user_id, state={}, content=content)
         pass
 
-    def create_guide(self):
+    def change_recipe(self, user_id: str, recipe_id: str, change_prompt: str):
         pass
+
+    def save_recipe(self, user_id: str, recipe_id: str):
+        pass
+
+    def start_recipe(self, user_id: str, recipe_id: str):
+        pass
+
+    def view_recipe(self, user_id: str, recipe_id: str):
+        pass
+
+    def back_to_options(self, user_id: str):
+        pass
+
+    '''
+    Fragen: Vorschläge: Immer nur die letzten drei oder eine Art Chat? Session_ID?
+    
+    Requests: 
+        POST: generate_recipe(potentiell mit Kontext), change_recipe, save_recipe, start_recipe
+        GET: view_recipe, back_to_options,
+    Grober Ablauf:
+        POST Request mit Rezeptprompt
+        Prompt an Agent -> Drei vorgeschlagene Rezepte, z.B.
+            🥔 1. Spanische Tortilla mit Zwiebeln
+                ➡️ Ein warmes Stück spanischer Sonne – saftig, herzhaft und wunderbar simpel.
+            🇩🇪 2. Bratkartoffeln mit Speck und Spiegelei
+                ➡️ Rustikal, knusprig und nach einem langen Tag genau das, was Seele und Bauch brauchen.
+            🇫🇷 3. Kartoffelgratin Dauphinois
+                ➡️ Cremig, buttrig und wie ein kleiner Ausflug in eine französische Landküche.
+        Optionen:
+            1: GET request view Recipe x
+                1: GET Request zurück (zeig alle drei)
+                2: POST Request save recipe
+                3: POST Request start recipe
+                4: POST Request change recipe (Anpassungsprompt)
+            2: POST request mit neuem Rezeptprompt (mit Kontext)
+    '''
+
+    # Rezepte kochen:
+
+    '''
+    Requests:
+        POST: start_timer
+        GET:
+    Grober Aufbau/Ablauf:
+        View mit Zutaten und Schritt-für-Schritt-Anleitung (Zutaten lassen sich einklappen)
+        Schritte nacheinander (Jetziger deutlich, andere ausgegraut (speichern von State))
+        Timer für Schritte laufen nebenbei
+
+    '''
