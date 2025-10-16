@@ -126,3 +126,27 @@ QUICK_LINK_ANALYTICS = os.getenv("QUICK_LINK_ANALYTICS", "https://analytics.nexo
 QUICK_LINK_API_DOCS_PROD = os.getenv("QUICK_LINK_API_DOCS_PROD", "https://www.nexora-ai.de/api/docs")
 QUICK_LINK_API_DOCS_DEV = os.getenv("QUICK_LINK_API_DOCS_DEV", "https://dev.nexora-ai.de/api/docs")
 QUICK_LINK_API_DOCS_LOCAL = os.getenv("QUICK_LINK_API_DOCS_LOCAL", "http://localhost:8000/api/docs")
+
+
+
+
+
+
+
+
+
+
+
+
+# -------------------------
+
+DB_HOST = os.getenv("DB_HOST")  # 10.73.16.3
+DB_PORT = os.getenv("DB_PORT", "3306")
+DB_USER = os.getenv("DB_USER")  # z. B. root oder custom user
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_NAME = os.getenv("DB_NAME")
+
+DATABASE_URL = f"mysql+aiomysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
+
+

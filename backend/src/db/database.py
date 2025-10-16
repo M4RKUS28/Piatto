@@ -1,28 +1,35 @@
-"""
-Database connection and session management with retry logic.
-"""
-from contextlib import contextmanager
-from typing import Iterator
-import time
+import asyncio
 import logging
+from typing import AsyncGenerator
+from contextlib import asynccontextmanager
 
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import text
 
 from ..config import settings
 
-
 logger = logging.getLogger(__name__)
 
+# Build MySQL Async URL
+DATABASE_URL = (
+    f"mysql+aiomysql://{settings.DB_USER}:{settings.DB_PASSWORD}"
+    f"@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
+)
 
-# Create engine with retry logic: try to connect up to 5 times, waiting 3 seconds between attempts
-def _create_engine_with_retry(url: str, max_retries: int = 5, wait_seconds: int = 3):
+# Engine placeholder
+engine = None
+
+async def _create_engine_with_retry(
+    url: str,
+    max_retries: int = 5,
+    wait_seconds: int = 3,
+):
     last_exc = None
     for attempt in range(1, max_retries + 1):
         try:
-            _engine = create_engine(
+            _engine = create_async_engine(
                 url,
                 pool_recycle=settings.DB_POOL_RECYCLE,
                 pool_pre_ping=settings.DB_POOL_PRE_PING,
@@ -30,56 +37,67 @@ def _create_engine_with_retry(url: str, max_retries: int = 5, wait_seconds: int 
                 max_overflow=settings.DB_MAX_OVERFLOW,
                 connect_args={"connect_timeout": settings.DB_CONNECT_TIMEOUT},
             )
-            # Try a lightweight connect to ensure DB is reachable
-            conn = _engine.connect()
-            conn.close()
-            logger.info("Database connection established on attempt %d", attempt)
+
+            async with _engine.connect() as conn:
+                await conn.execute(text("SELECT 1"))
+
+            logger.info("✅ DB connected successfully on attempt %s", attempt)
             return _engine
+
         except SQLAlchemyError as e:
             last_exc = e
-            logger.warning("Database connection attempt %d/%d failed: %s", attempt, max_retries, str(e))
+            logger.warning(
+                "⚠️ DB connection attempt %s/%s failed: %s", attempt, max_retries, str(e)
+            )
             if attempt < max_retries:
-                logger.info("Retrying in %d seconds...", wait_seconds)
-                time.sleep(wait_seconds)
+                logger.info("🔁 Retrying in %s seconds...", wait_seconds)
+                await asyncio.sleep(wait_seconds)
 
-    # All retries failed
-    logger.error("Could not connect to the database after %d attempts", max_retries)
+    logger.error("❌ Could not connect to database after retries")
     raise last_exc
 
+async def get_engine():
+    """Get or create the async database engine."""
+    global engine
+    if engine is None:
+        engine = await _create_engine_with_retry(DATABASE_URL)
+    return engine
 
-engine = _create_engine_with_retry(settings.SQLALCHEMY_DATABASE_URL)
+# Session factory
+async_session_factory = sessionmaker(
+    class_=AsyncSession,
+    expire_on_commit=False,
+    autoflush=False,
+    autocommit=False,
+    bind=None,
+)
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-Base = declarative_base()
-
-def get_db():
-    """Dependency to get a database session."""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-@contextmanager
-def get_db_context():
-    """Context manager to get a database session."""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-@contextmanager
-def get_db_context_with_rollback() -> Iterator[Session]:
-    """Context manager to get a database session with rollback on exception."""
-    session = SessionLocal()
+# FastAPI dependency
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    """FastAPI dependency that provides a database session."""
+    db_engine = await get_engine()
+    async_session_factory.configure(bind=db_engine)
+    session: AsyncSession = async_session_factory()
     try:
         yield session
-        session.commit()
+    finally:
+        await session.close()
+
+# Declarative Base
+Base = declarative_base()
+
+# Async context manager
+@asynccontextmanager
+async def get_async_db_context():
+    """Async context manager for database session."""
+    db_engine = await get_engine()
+    async_session_factory.configure(bind=db_engine)
+    session: AsyncSession = async_session_factory()
+    try:
+        yield session
+        await session.commit()
     except Exception:
-        session.rollback()
+        await session.rollback()
         raise
     finally:
-        session.close()
-
+        await session.close()

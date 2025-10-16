@@ -4,11 +4,6 @@ from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 
-from ..core.routines import (
-    refresh_dynamic_settings_cache_routine,
-    update_stuck_courses,
-)
-from ..services.settings_service import dynamic_settings
 
 scheduler = AsyncIOScheduler()
 logger = logging.getLogger(__name__)
@@ -28,11 +23,6 @@ async def lifespan(_app: FastAPI):
     logger.info("Starting application...")
     
     try:
-        dynamic_settings.ensure_loaded()
-
-        scheduler.add_job(refresh_dynamic_settings_cache_routine, 'interval', minutes=1)
-        scheduler.add_job(update_stuck_courses, 'interval', hours=1)
-        scheduler.start()
         logger.info("Scheduler started.")   
 
         yield
