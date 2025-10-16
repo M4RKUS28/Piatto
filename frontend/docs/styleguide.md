@@ -1,0 +1,382 @@
+# Piattio Brand Style Guide
+
+## Brand Overview
+Piattio combines playful, cartoon-like aesthetics with elevated sophistication. The brand balances whimsy with refinement, creating an approachable yet premium experience.
+
+---
+
+## Color Palette
+
+### Primary Colors
+
+**Forest Green** (Brand Primary)
+- HEX: `#035035`
+- RGB: `3, 80, 53`
+- Usage: Primary brand color, headers, key CTAs, logo
+
+**Coral Sunset** (Brand Secondary)
+- HEX: `#FF9B7B`
+- RGB: `255, 155, 123`
+- Usage: Accents, highlights, interactive elements, secondary CTAs
+
+### Supporting Colors
+
+**Cream**
+- HEX: `#FFF8F0`
+- RGB: `255, 248, 240`
+- Usage: Backgrounds, cards, soft containers
+
+**Sage Green**
+- HEX: `#A8C9B8`
+- RGB: `168, 201, 184`
+- Usage: Subtle backgrounds, borders, secondary elements
+
+**Warm White**
+- HEX: `#FFFFFF`
+- RGB: `255, 255, 255`
+- Usage: Primary background, content areas
+
+**Charcoal**
+- HEX: `#2D2D2D`
+- RGB: `45, 45, 45`
+- Usage: Body text, dark elements
+
+**Soft Gray**
+- HEX: `#F5F5F5`
+- RGB: `245, 245, 245`
+- Usage: Subtle dividers, disabled states
+
+---
+
+## Typography
+
+### Font Recommendations
+
+**Display/Headings**
+- Primary: Poppins (Bold, SemiBold)
+- Alternative: Quicksand, Fredoka
+- Characteristics: Rounded, friendly, clear
+
+**Body Text**
+- Primary: Inter (Regular, Medium)
+- Alternative: Open Sans, Nunito
+- Characteristics: Clean, readable, modern
+
+**Accent/Special**
+- Script Font (like logo): Pacifico, Dancing Script
+- Usage: Special headings, highlights, decorative elements (use sparingly)
+
+### Type Scale
+```
+Hero/H1: 48px - 64px (Bold)
+H2: 36px - 48px (SemiBold)
+H3: 28px - 32px (SemiBold)
+H4: 24px (Medium)
+H5: 20px (Medium)
+Body Large: 18px (Regular)
+Body: 16px (Regular)
+Body Small: 14px (Regular)
+Caption: 12px (Regular)
+```
+
+### Typography Guidelines
+- Line height: 1.5-1.6 for body text
+- Letter spacing: Slightly increased for headings (+0.02em)
+- Use sentence case for most headings (not ALL CAPS)
+- Limit line length to 65-75 characters for optimal readability
+
+---
+
+## Visual Style
+
+### Illustration Style
+
+**Characteristics:**
+- Cartoon-like, simplified forms
+- Rounded edges and soft corners
+- Clipart aesthetic with hand-drawn quality
+- Playful but not childish
+- Clean linework (2-3px weight)
+
+**Elements to Include:**
+- Decorative swirls and flourishes (inspired by logo)
+- Circular motifs and dots
+- Food-related illustrations (if applicable)
+- Nature elements (leaves, flowers)
+- Geometric patterns with organic feel
+
+**Style References:**
+- Flat design with subtle depth
+- Limited use of gradients (soft, subtle when used)
+- Textured overlays for added warmth
+- Playful character illustrations
+
+### Iconography
+
+**Style:**
+- Rounded, friendly icons
+- 2px stroke weight
+- Minimal detail
+- Consistent corner radius (2-3px)
+- Can be filled or outlined depending on context
+
+**Icon Set Recommendations:**
+- Phosphor Icons (Rounded variant)
+- Feather Icons (with modifications)
+- Custom icons matching brand aesthetic
+
+---
+
+## Animation Principles
+
+### Motion Philosophy
+Animations should feel **bouncy, delightful, and responsive** while maintaining elegance.
+
+### Animation Types
+
+**Micro-interactions**
+- Button hovers: Gentle scale (1.05x) + color shift
+- Card hovers: Lift effect with soft shadow
+- Icon animations: Playful bounce or wiggle
+- Duration: 200-300ms
+- Easing: `cubic-bezier(0.34, 1.56, 0.64, 1)` (bounce)
+
+**Transitions**
+- Page transitions: Fade + slight slide (20-30px)
+- Modal entrances: Scale from 0.95 → 1.0 with fade
+- Duration: 300-400ms
+- Easing: `ease-out`
+
+**Scroll Animations**
+- Stagger reveals for content
+- Parallax effects for decorative elements
+- Fade + slide up for cards
+- Duration: 400-600ms
+
+**Loading States**
+- Playful loaders (bouncing circles, animated illustrations)
+- Skeleton screens with shimmer effect
+- Progress indicators with personality
+
+### Animation Guidelines
+- Never sacrifice usability for delight
+- Respect prefers-reduced-motion settings
+- Keep animations under 600ms for interactions
+- Use animation to guide attention and provide feedback
+- Add personality without overwhelming
+
+---
+
+## Component Patterns
+
+### Buttons
+
+**Primary Button**
+```
+Background: Forest Green (#035035)
+Text: White
+Hover: Lighter green + scale (1.05x)
+Border radius: 24px (fully rounded)
+Padding: 12px 32px
+Font: SemiBold, 16px
+Shadow: 0 2px 8px rgba(3, 80, 53, 0.2)
+```
+
+**Secondary Button**
+```
+Background: Coral Sunset (#FF9B7B)
+Text: White
+Hover: Deeper coral + scale
+Border radius: 24px
+Padding: 12px 32px
+```
+
+**Tertiary Button**
+```
+Background: Transparent
+Text: Forest Green
+Border: 2px solid Forest Green
+Hover: Background Forest Green, Text White
+```
+
+### Cards
+
+**Characteristics:**
+- Border radius: 16-24px
+- Soft shadows: `0 4px 12px rgba(0, 0, 0, 0.08)`
+- Hover lift: Transform Y -4px + stronger shadow
+- White or Cream background
+- Optional decorative corner element (swirl or dot pattern)
+
+### Forms
+
+**Input Fields:**
+- Border radius: 12px
+- Border: 2px solid Soft Gray
+- Focus: Border changes to Forest Green
+- Padding: 12px 16px
+- Placeholder: Soft Gray text
+
+**Form Style:**
+- Floating labels or top-aligned labels
+- Clear error states (Coral color)
+- Success states (Forest Green)
+- Helpful microcopy
+
+---
+
+## Decorative Elements
+
+### Patterns
+- Circular dot patterns (from logo inspiration)
+- Swirl motifs for section dividers
+- Organic shapes as backgrounds
+- Scalloped edges for cards/sections
+
+### Usage
+- Background decorations should be subtle (10-15% opacity)
+- Use sparingly to avoid clutter
+- Position decoratively but don't interfere with content
+- Animate on scroll for added delight
+
+---
+
+## Photography & Imagery
+
+### Photo Style
+- Bright, well-lit
+- Warm tones that complement color palette
+- Natural, candid moments
+- Soft focus backgrounds
+- Food photography: Overhead shots, styled but approachable
+
+### Image Treatment
+- Rounded corners (16px minimum)
+- Optional illustrated frame/border
+- Subtle overlays when text is present
+- Maintain high quality (no pixelation)
+
+---
+
+## Spacing & Layout
+
+### Spacing Scale (8px base)
+```
+xs: 4px
+sm: 8px
+md: 16px
+lg: 24px
+xl: 32px
+2xl: 48px
+3xl: 64px
+4xl: 96px
+```
+
+### Grid
+- 12-column grid
+- Maximum content width: 1200px
+- Comfortable padding: 24px mobile, 48px desktop
+- Generous whitespace between sections
+
+---
+
+## Accessibility
+
+### Requirements
+- WCAG 2.1 AA compliance minimum
+- Color contrast ratio: 4.5:1 for body text, 3:1 for large text
+- Keyboard navigation support
+- Focus indicators (2px Forest Green outline)
+- Alt text for all images
+- Semantic HTML
+- Screen reader compatible
+
+---
+
+## Brand Voice
+
+### Tone
+- Friendly but not overly casual
+- Knowledgeable but approachable
+- Playful but professional
+- Warm and inviting
+- Clear and helpful
+
+### Writing Guidelines
+- Use contractions (we're, it's)
+- Active voice preferred
+- Short sentences and paragraphs
+- Conversational but polished
+- Occasional playful language/puns (used sparingly)
+
+---
+
+## Do's and Don'ts
+
+### Do's ✓
+- Maintain generous whitespace
+- Use playful animations thoughtfully
+- Keep illustrations consistent in style
+- Layer depth subtly
+- Make interactions feel responsive
+- Use rounded corners throughout
+- Incorporate decorative elements sparingly
+
+### Don'ts ✗
+- Overuse animations (avoid chaos)
+- Mix conflicting illustration styles
+- Use harsh shadows or angles
+- Overcrowd the interface
+- Use more than 3 font families
+- Ignore accessibility
+- Make animations too slow (>600ms for interactions)
+
+---
+
+## Implementation Notes
+
+### CSS Custom Properties Example
+```css
+:root {
+  /* Colors */
+  --color-primary: #035035;
+  --color-secondary: #FF9B7B;
+  --color-cream: #FFF8F0;
+  --color-sage: #A8C9B8;
+  --color-white: #FFFFFF;
+  --color-charcoal: #2D2D2D;
+  --color-gray: #F5F5F5;
+  
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  
+  /* Animation */
+  --transition-fast: 200ms;
+  --transition-base: 300ms;
+  --transition-slow: 400ms;
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+```
+
+---
+
+## Version History
+- v1.0 - October 2025 - Initial style guide created
+
+---
+
+*This style guide is a living document and should be updated as the Piattio brand evolves.*
