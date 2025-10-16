@@ -20,6 +20,8 @@ app = FastAPI(
     lifespan=lifespan  # Use the lifespan context manager
 )
 
+
+
 app.add_middleware(
     SessionMiddleware,
     secret_key=SESSION_SECRET_KEY
