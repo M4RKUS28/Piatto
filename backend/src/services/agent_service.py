@@ -64,21 +64,10 @@ class AgentService:
     def change_recipe(self, user_id: str, recipe_id: str, change_prompt: str):
         pass
 
-    def save_recipe(self, user_id: str, recipe_id: str):
-        pass
-
     def start_recipe(self, user_id: str, recipe_id: str):
         pass
 
-    def view_recipe(self, user_id: str, recipe_id: str):
-        pass
-
-    def back_to_options(self, user_id: str):
-        pass
-
-    '''
-    Fragen: Vorschläge: Immer nur die letzten drei oder eine Art Chat? Session_ID?
-    
+    '''    
     Requests: 
         POST: generate_recipe(potentiell mit Kontext), change_recipe, save_recipe, start_recipe
         GET: view_recipe, back_to_options,
@@ -102,13 +91,16 @@ class AgentService:
 
     # Rezepte kochen:
 
+    def prompt(self, user_id: str, recipe_id: str, step_id: str, prompt: str):
+        pass
+
     '''
     Requests:
-        POST: start_timer
-        GET:
+        POST: change_state, prompt, finish_recipe, (start_recipe)
+        GET: get_recipe(mit State), get_state, get_prompt_history
     Grober Aufbau/Ablauf:
         View mit Zutaten und Schritt-für-Schritt-Anleitung (Zutaten lassen sich einklappen)
         Schritte nacheinander (Jetziger deutlich, andere ausgegraut (speichern von State))
-        Timer für Schritte laufen nebenbei
-
+        Pro Schritt ein Promptfenster (für Fragen, Alternativen, Tipps)
+        Timer für Schritte laufen nebenbei (Im Frontend)
     '''
