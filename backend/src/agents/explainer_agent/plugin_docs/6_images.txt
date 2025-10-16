@@ -1,0 +1,25 @@
+## Images / Google Image Search
+
+If you want to incorporate images into the content for illustration, please do NOT come up with URLs yourself.
+For images I provide a custom <GoogleImage> class where you can write queries / keywords that will then be search with google image search and embeded into the code.
+Please take into account that the images returned from google search can have a varying aspect ratio. Make sure your css covers for that.
+
+IMPORTANT: <GoogleImage> is not a react module, I statically replace it with <img>. This means you can not write a function that takes a query and then do <GoogleImage>{query}</GoogleImage> or something (this would result in a google search for the query '{query}')
+everything inside the <GoogleImage> tags will directly be searched by string matching.
+
+Some Guidelines:
+- Make sure to only search keywords where you are SURE to get good results
+- Very specialized queries like 'Taipei Night Market by day' are not double checked and will lead to bad search results. Only search for images where you are absolutely certain the first result will be a good usable image without watermarks or anything.
+- Example: replace 'Taiwan airplane window view with mountains' with 'airplane window view with mountains' or just 'window view with mountains' as it will lead to better results.
+- If you definitely require a certain aspect ratio or resolution please write that in the query e.g. 'Eiffel Tower horizontal' 
+
+Usage Example:
+
+() => {
+    return (
+      <GoogleImage>Donald Trump</GoogleImage>
+      <GoogleImage>Human Heart Illustrated</GoogleImage>
+      <GoogleImage>Eiffel Tower</GoogleImage>
+      <GoogleImage>Python Logo</GoogleImage>
+    );
+}

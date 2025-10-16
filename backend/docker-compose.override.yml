@@ -1,0 +1,38 @@
+services:
+  nexora:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/home/app/web/app
+      - ./dev-poet-461212-d9-35a36f7ab681.json:/home/app/web/dev-poet-461212-d9-35a36f7ab681.json:ro
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    environment:
+      - WORKERS=1
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${POSTGRES_DB:-nexora}
+      - DB_USER=${POSTGRES_USER:-nexora}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      # Mount the whole frontend directory so configs (vite, tailwind, etc.) are available in-container
+      - ../frontend:/usr/src/app:delegated
+      # Let the container own node_modules to avoid host/container binary mismatches
+      - frontend_node_modules:/usr/src/app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    tty: true
+    networks:
+      - backend
+
+volumes:
+  frontend_node_modules:
+

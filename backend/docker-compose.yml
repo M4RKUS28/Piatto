@@ -1,0 +1,121 @@
+services:
+  chromadb:
+    container_name: chromadb
+    image: chromadb/chroma:latest
+    environment:
+      - CHROMA_SERVER_HOST=0.0.0.0
+      - CHROMA_SERVER_HTTP_PORT=8000
+      - PERSIST_DIRECTORY=/chroma/chroma
+      - CHROMA_SERVER_ALLOW_RESET=true
+      - CHROMA_SERVER_CORS_ALLOW_ORIGINS=["*"]
+      - CHROMA_LOG_LEVEL=WARNING
+    volumes:
+      - chroma-data:/chroma/chroma
+    restart: always
+    networks:
+      - backend
+
+  minio:
+    container_name: minio
+    image: minio/minio:latest
+    restart: always
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "8001:9001" # MinIO console -> 80(01)
+    volumes:
+      - minio-data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - backend
+
+  nexora:
+    container_name: nexora
+    image: nexoraai/nexora-ai:latest
+    restart: always
+    environment:
+      - WORKERS=4
+      # Use service names for internal Docker network
+      - MINIO_ENDPOINT=minio:9000
+      - CHROMA_SERVER_HTTP_HOST=chromadb
+      - CHROMA_SERVER_HTTP_PORT=8000
+      - CHROMA_SSL=false
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${POSTGRES_DB:-nexora}
+      - DB_USER=${POSTGRES_USER:-nexora}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "8000:8000" # Nexora app -> 80(00)
+    env_file:
+      - ./.env
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    depends_on:
+      - minio
+      - chromadb
+      - postgres
+    networks:
+      - backend
+
+  postgres:
+    container_name: postgres
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-nexora}
+      POSTGRES_USER: ${POSTGRES_USER:-nexora}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # Use a subdirectory for PGDATA so initdb won't conflict with pre-existing files
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_LOG_MIN_MESSAGES: warning
+      POSTGRES_LOGGING_COLLECTOR: on
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nexora} -d ${POSTGRES_DB:-nexora} -h localhost -p 5432"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      # map the named volume to the PGDATA subdirectory
+      - pgdata:/var/lib/postgresql/data/pgdata
+    networks:
+      - backend
+
+  pgadmin:
+    container_name: pgadmin4
+    image: dpage/pgadmin4:latest
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-adminpass}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: 40
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+    depends_on:
+      - postgres
+    ports:
+      - "8090:80" # pgAdmin web UI -> 80(90)
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    networks:
+      - backend
+
+volumes:
+  chroma-data:
+  minio-data:
+  pgdata:
+  pgadmin-data:
+
+networks:
+  backend:
+    driver: bridge
