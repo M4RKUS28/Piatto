@@ -41,7 +41,7 @@ export default function LandingPage() {
             {/* Logo */}
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-white rounded-2xl shadow-md flex items-center justify-center">
-                <img src="logo_full_name.svg" alt="Piatto" className="w-10 h-10" />
+                <img src="logo_no_P.svg" alt="Piatto" className="w-10 h-10" />
               </div>
               <span className="text-2xl font-bold text-[#035035]" style={{ fontFamily: 'Georgia, serif' }}>Piatto</span>
             </div>
