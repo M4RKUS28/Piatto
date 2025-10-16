@@ -11,6 +11,14 @@ logging.basicConfig(level=logging.INFO)
 
 load_dotenv()
 
+# Password policy defaults
+PASSWORD_MIN_LENGTH = 12
+PASSWORD_REQUIRE_UPPERCASE = True
+PASSWORD_REQUIRE_LOWERCASE = True
+PASSWORD_REQUIRE_DIGIT = True
+PASSWORD_REQUIRE_SPECIAL_CHAR = True
+PASSWORD_SPECIAL_CHARACTERS_REGEX_PATTERN = r'[!@#$%^&*(),.?":{}|<>]'
+
 # JWT settings
 ALGORITHM = "HS256"
 SECRET_KEY = os.getenv("SECRET_KEY", "a_very_secret_key_please_change_me")

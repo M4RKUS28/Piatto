@@ -56,7 +56,7 @@ if [ "${VENV_CREATED}" = true ]; then
 fi
 
 # Get port from environment variable or use default
-PORT=${PORT:-8127}
+PORT=${PORT:-8080}
 
 echo "Starting server on port ${PORT}..."
 
