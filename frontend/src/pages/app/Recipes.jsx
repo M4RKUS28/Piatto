@@ -55,7 +55,8 @@ export default function Recipes() {
         {/* Recipe Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {recipes.map((recipe, index) => (
-            <div
+            <Link
+                to="/app/spaghetti"
               key={index}
               className="bg-white rounded-2xl border border-[#F5F5F5] overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer"
             >
@@ -86,7 +87,7 @@ export default function Recipes() {
                   </div>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
