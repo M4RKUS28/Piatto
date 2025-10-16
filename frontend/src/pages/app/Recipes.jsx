@@ -26,20 +26,12 @@ export default function Recipes() {
             <h1 className="text-4xl font-bold text-[#035035] mb-2">Your Recipes</h1>
             <p className="text-[#2D2D2D] opacity-60">Discover and save your favorite dishes</p>
           </div>
-          <div className="flex gap-3">
             <Link
               to="/app"
               className="px-5 py-3 rounded-full border border-[#035035] text-[#035035] font-semibold hover:bg-[#035035] hover:text-white transition-all"
             >
               Back to Dashboard
             </Link>
-            <Link
-              to="/app/settings"
-              className="px-5 py-3 rounded-full border border-[#FF9B7B] text-[#FF9B7B] font-semibold hover:bg-[#FF9B7B] hover:text-white transition-all"
-            >
-              Preferences
-            </Link>
-          </div>
         </div>
 
         {/* Search and Filter Bar */}
