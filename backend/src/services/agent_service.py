@@ -56,32 +56,24 @@ class AgentService:
         self.agent = TesterAgent(self.app_name, self.session_service)
 
     # Rezepte Erstellen
-    def generate_recipe(self, user_id: str, prompt: str, context: str): # Irgendwie Kontext
+    def generate_recipe(self, user_id: str, prompt: str, gen_context_id: str): # Irgendwie Kontext
         content = create_text_query("Hallo, wie geht es dir")
-        returnContent = self.agent.run(user_id, state={}, content=content)
+        agent_return = self.agent.run(user_id, state={}, content=content)
+        # Prompt/Kontext an Agent übergeben
+        # Rezepte in Datenbank speichern (als temporär)
+        # Rezepte zurückgeben
         pass
 
-    def change_recipe(self, user_id: str, recipe_id: str, change_prompt: str):
+    def change_recipe(self, user_id: str, change_prompt: str, recipe_id: str):
+        # Prompt/Kontext an Agent übergeben
+        # Rezept in Datenbank updaten (als temporär)
+        # Neues Rezept zurückgeben
         pass
 
-    def save_recipe(self, user_id: str, recipe_id: str):
-        pass
-
-    def start_recipe(self, user_id: str, recipe_id: str):
-        pass
-
-    def view_recipe(self, user_id: str, recipe_id: str):
-        pass
-
-    def back_to_options(self, user_id: str):
-        pass
-
-    '''
-    Fragen: Vorschläge: Immer nur die letzten drei oder eine Art Chat? Session_ID?
-    
+    '''    
     Requests: 
         POST: generate_recipe(potentiell mit Kontext), change_recipe, save_recipe, start_recipe
-        GET: view_recipe, back_to_options,
+        GET: view_recipe, view_options,
     Grober Ablauf:
         POST Request mit Rezeptprompt
         Prompt an Agent -> Drei vorgeschlagene Rezepte, z.B.
@@ -102,13 +94,20 @@ class AgentService:
 
     # Rezepte kochen:
 
+    def ask_question(self, user_id: str, cooking_session_id: str, prompt: str, prompt_history_id: str):
+        # Prompt/Kontext an Agent übergeben
+        # Prompt History in Datenbank speichern
+        # Potentiell Rezept updaten
+        # Antwort zurückgeben
+        pass
+
     '''
     Requests:
-        POST: start_timer
-        GET:
+        POST: change_state, ask_question, finish_recipe, (start_recipe)
+        GET: get_recipe(mit State), get_state, get_prompt_history
     Grober Aufbau/Ablauf:
         View mit Zutaten und Schritt-für-Schritt-Anleitung (Zutaten lassen sich einklappen)
         Schritte nacheinander (Jetziger deutlich, andere ausgegraut (speichern von State))
-        Timer für Schritte laufen nebenbei
-
+        Pro Schritt ein Promptfenster (für Fragen, Alternativen, Tipps)
+        Timer für Schritte laufen nebenbei (Im Frontend)
     '''
