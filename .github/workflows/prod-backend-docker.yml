@@ -1,59 +1,51 @@
-name: Build & Push Backend Docker Image PROD
+name: Build & Deploy Backend to Cloud Run (prod)
 
 on:
   push:
-    paths:
-      - "backend/**"
     branches:
       - prod
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-prod.yml"
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    environment: production
 
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Clean up disk space
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+
+      - name: Build Docker Image
         run: |
-          echo "Initial disk space:"
-          df -h
-          docker system prune -af --volumes
-          echo "Disk space after Docker prune:"
-          df -h
+          docker build \
+            -t us-central1-docker.pkg.dev/cloud-run-hackathon-475303/backend-repo/backend:latest \
+            -t us-central1-docker.pkg.dev/cloud-run-hackathon-475303/backend-repo/backend:prod-${{ github.sha }} \
+            ./backend
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ vars.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-      - name: Cache Docker layers
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-prod-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-prod-
-
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: ./backend
-          file: ./backend/Dockerfile
-          push: true
-          tags: |
-            nexoraai/nexora-ai:latest
-            nexoraai/nexora-ai:${{ github.sha }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-
-      - name: Move cache
+      - name: Push Docker Image
         run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          docker push us-central1-docker.pkg.dev/cloud-run-hackathon-475303/backend-repo/backend:latest
+          docker push us-central1-docker.pkg.dev/cloud-run-hackathon-475303/backend-repo/backend:prod-${{ github.sha }}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy fastapi-backend \
+            --image=us-central1-docker.pkg.dev/cloud-run-hackathon-475303/backend-repo/backend:prod-${{ github.sha }} \
+            --region=us-central1 \
+            --platform=managed \
+            --allow-unauthenticated \
+            --vpc-connector=svpc-uscentral1 \
+            --vpc-egress=private-ranges-only \
+            --set-env-vars=DB_HOST=10.73.16.3,DB_PORT=3306,DB_USER=backend,DB_NAME=piatto \
+            --set-secrets=DB_PASSWORD=DB_PASSWORD:latest \
+            --cpu=1 --memory=512Mi --min-instances=0 --max-instances=3
+

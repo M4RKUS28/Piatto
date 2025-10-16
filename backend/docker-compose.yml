@@ -9,21 +9,16 @@ services:
     
     volumes:
       - ./src:/home/app/web/app
-      - ./dev-poet-461212-d9-35a36f7ab681.json:/home/app/web/dev-poet-461212-d9-35a36f7ab681.json:ro
-    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
     environment:
       - WORKERS=1
-      - MINIO_ENDPOINT=minio:9000
-      - CHROMA_SERVER_HTTP_HOST=chromadb
-      - CHROMA_SERVER_HTTP_PORT=8000
-      - CHROMA_SSL=false
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=${POSTGRES_DB:-piatto}
-      - DB_USER=${POSTGRES_USER:-piatto}
-      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=${MYSQL_DATABASE:-piatto}
+      - DB_USER=${MYSQL_USER:-piatto}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
     ports:
-      - "8000:8000" # piatto app -> 80(00)
+      - "8000:8080" # piatto app -> 80(00)
     env_file:
       - ./.env
     labels:
@@ -33,54 +28,44 @@ services:
     networks:
       - backend
 
-  postgres:
-    container_name: postgres
-    image: postgres:16-alpine
+  mysql:
+    container_name: mysql
+    image: mysql:8.0
     restart: always
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-piatto}
-      POSTGRES_USER: ${POSTGRES_USER:-piatto}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      # Use a subdirectory for PGDATA so initdb won't conflict with pre-existing files
-      PGDATA: /var/lib/postgresql/data/pgdata
-      POSTGRES_LOG_MIN_MESSAGES: warning
-      POSTGRES_LOGGING_COLLECTOR: on
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "5m"
-        max-file: "2"
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-piatto}
+      MYSQL_USER: ${MYSQL_USER:-piatto}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      - pgdata:/var/lib/postgresql/data/pgdata
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    command: --default-authentication-plugin=mysql_native_password
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     networks:
       - backend
-
-  pgadmin:
-    container_name: pgadmin4
-    image: dpage/pgadmin4:latest
+  
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin/phpmyadmin
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-adminpass}
-      PGADMIN_CONFIG_SERVER_MODE: "False"
-      PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: 40
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "5m"
-        max-file: "2"
-    depends_on:
-      - postgres
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
-      - "8090:80" # pgAdmin web UI -> 80(90)
-    volumes:
-      - pgadmin-data:/var/lib/pgadmin
+      - "8080:80" # phpMyAdmin -> 8080
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    depends_on:
+      - mysql
     networks:
       - backend
 
 volumes:
-  pgdata:
-  pgadmin-data:
+  mysql_data:
 
 networks:
   backend:
