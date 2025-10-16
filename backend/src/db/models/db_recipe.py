@@ -4,9 +4,11 @@ from ..database import Base
 
 
 class Recipe(Base):
+    """Database model for a recipe."""
     __tablename__ = "recipes"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = Column(String(50), ForeignKey("users.id"), nullable=False)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=False)
     ingredients = Column(Text, nullable=False)  # Store as JSON string
@@ -16,6 +18,7 @@ class Recipe(Base):
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
 class GenContext(Base):
+    """Database model for a generation context."""
     __tablename__ = "gen_contexts"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -24,6 +27,7 @@ class GenContext(Base):
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
 class CookingSession(Base):
+    """Database model for a cooking session."""
     __tablename__ = "cooking_sessions"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -36,6 +40,7 @@ class CookingSession(Base):
     prompt_histories = relationship("PromptHistory", back_populates="cooking_session", cascade="all, delete-orphan")
 
 class PromptHistory(Base):
+    """Database model for prompt history during a cooking session."""
     __tablename__ = "prompt_histories"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)

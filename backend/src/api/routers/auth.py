@@ -8,16 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import FastAPI, Response, Cookie
 
 
-
 from ...db.database import get_db
 from ...services import auth_service
 from ...core.security import oauth
 from ...config import settings
 from ..schemas import auth as auth_schema
 from ..schemas import user as user_schema
-from ...utils import auth as auth_utils
 from ...core.security import get_refresh_token_from_cookie
-from ...services.settings_service import dynamic_settings
 
 api_router = APIRouter(
     prefix="/auth",
@@ -35,12 +32,6 @@ async def register_user(response: Response,
     Endpoint to register a new user.
     Returns the status of the registration.
     """
-    if dynamic_settings.get_bool("DISABLE_REGISTRATION"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User registration is currently disabled."
-        )
-
     return await auth_service.register_user(user_data, db, response)
 
 
@@ -92,7 +83,7 @@ async def login_google(request: Request):
 
 
 @api_router.get("/google/callback")
-async def google_callback(request: Request, db: Session = Depends(get_db)):
+async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
     """
     Handles the callback from Google OAuth after user authentication.
     """
@@ -115,7 +106,7 @@ async def login_github(request: Request):
 
 
 @api_router.get("/github/callback")
-async def github_callback(request: Request, db: Session = Depends(get_db)):
+async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
     """
     Handles the callback from Github OAuth after user authentication.
     """
@@ -137,7 +128,7 @@ async def login_discord(request: Request):
 
 
 @api_router.get("/discord/callback")
-async def discord_callback(request: Request, db: Session = Depends(get_db)):
+async def discord_callback(request: Request, db: AsyncSession = Depends(get_db)):
     """
     Handles the callback from Discord OAuth after user authentication.
     """

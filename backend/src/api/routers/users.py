@@ -69,7 +69,7 @@ async def update_user(
     Update a user's profile. Admins can update any user,
     regular users can only update their own profile.
     """
-    return user_service.update_user(db, user_id, user_update, token_data)
+    return await user_service.update_user(db, user_id, user_update, token_data)
 
 @router.put("/{user_id}/change_password", response_model=user_schemas.User)
 async def change_password(
@@ -82,7 +82,7 @@ async def change_password(
     Change a user's password.
     Admins can change any user's password, regular users can only change their own password.
     """
-    return user_service.change_password(db, user_id, password_data, current_user_token_data)
+    return await user_service.change_password(db, user_id, password_data, current_user_token_data)
 
 
 @router.delete("/me", response_model=user_schemas.User, dependencies=[Depends(get_read_write_user_token_data)])

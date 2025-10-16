@@ -5,7 +5,8 @@ from ..schemas.recipe import (
     GenerateRecipeRequest, ChangeRecipeAIRequest, ChangeRecipeManualRequest, ChangeStateRequest,
     AskQuestionRequest, Recipe, RecipePreview, PromptHistory, CookingSession
 )
-from ...utils.auth import get_current_user_id
+from ...utils.auth import get_read_write_user_id, get_readonly_user_id, get_user_id_optional, get_read_write_user_token_data
+
 agent_service = AgentService()
 
 router = APIRouter(
@@ -15,7 +16,7 @@ router = APIRouter(
 )
 
 @router.post("/generate", response_model=int)
-def generate_recipe(request: GenerateRecipeRequest, user_id: str = Depends(get_current_user_id)):
+async def generate_recipe(request: GenerateRecipeRequest, user_id: str = Depends(get_read_write_user_id)):
     """
     Generate a recipe based on the user ID, prompt, and optional generation context ID.
 
@@ -26,10 +27,10 @@ def generate_recipe(request: GenerateRecipeRequest, user_id: str = Depends(get_c
         int: A generation context ID (The one given as an argument if available).
     """
     gen_context_id = request.gen_context_id if request.gen_context_id is not None else 0
-    return agent_service.generate_recipe(user_id, request.prompt, gen_context_id)
+    return await agent_service.generate_recipe(user_id, request.prompt, gen_context_id)
 
 @router.put("/change_ai", response_model=Recipe)
-def change_recipe_ai(request: ChangeRecipeAIRequest, user_id: str = Depends(get_current_user_id)):
+async def change_recipe_ai(request: ChangeRecipeAIRequest, user_id: str = Depends(get_read_write_user_id)):
     """
     Modify a recipe using AI based on the user ID, change prompt, and recipe ID.
 
@@ -39,10 +40,10 @@ def change_recipe_ai(request: ChangeRecipeAIRequest, user_id: str = Depends(get_
     Returns:
         Recipe: The modified recipe.
     """
-    return agent_service.change_recipe(user_id, request.change_prompt, request.recipe_id)
+    return await agent_service.change_recipe(user_id, request.change_prompt, request.recipe_id)
 
 @router.put("/change_manual", response_model=Recipe)
-def change_recipe_manual(request: ChangeRecipeManualRequest):
+async def change_recipe_manual(request: ChangeRecipeManualRequest):
     """
     Modify a recipe manually based on the user ID, recipe ID and new recipe.
 
@@ -55,7 +56,7 @@ def change_recipe_manual(request: ChangeRecipeManualRequest):
     pass
 
 @router.post("/{recipe_id}/save")
-def save_recipe(recipe_id: int):
+async def save_recipe(recipe_id: int):
     """
     Save a recipe based on the provided recipe ID.
 
@@ -65,7 +66,7 @@ def save_recipe(recipe_id: int):
     pass
 
 @router.post("/{recipe_id}/start", response_model=int)
-def start_recipe(recipe_id: int):
+async def start_recipe(recipe_id: int):
     """
     Start a recipe session based on the user ID and recipe details.
 
@@ -78,7 +79,7 @@ def start_recipe(recipe_id: int):
     pass
 
 @router.put("/change_state")
-def change_state(request: ChangeStateRequest):
+asyncdef change_state(request: ChangeStateRequest):
     """
     Change the state of a recipe session based on the provided session ID and state details.
 
@@ -88,7 +89,7 @@ def change_state(request: ChangeStateRequest):
     pass
 
 @router.post("/ask_question", response_model=int)
-def ask_question(request: AskQuestionRequest, user_id: str = Depends(get_current_user_id)):
+async def ask_question(request: AskQuestionRequest, user_id: str = Depends(get_current_user_id)):
     """
     Ask a question during a cooking session based on the provided session ID, and prompt.
 
@@ -102,7 +103,7 @@ def ask_question(request: AskQuestionRequest, user_id: str = Depends(get_current
     return agent_service.ask_question(user_id, request.cooking_session_id, request.prompt, prompt_history_id)
 
 @router.get("/{gen_context_id}/get_options", response_model=List[RecipePreview])
-def get_options(gen_context_id: int):
+async def get_options(gen_context_id: int):
     """
     Get available recipe options based on the provided context ID.
 
@@ -115,7 +116,7 @@ def get_options(gen_context_id: int):
     pass
 
 @router.get("/{recipe_id}/get_recipe", response_model=Recipe)
-def get_recipe(recipe_id: int):
+async def get_recipe(recipe_id: int):
     """
     Retrieve a recipe based on the provided recipe ID.
 
@@ -128,7 +129,7 @@ def get_recipe(recipe_id: int):
     pass
 
 @router.get("/{cooking_session_id}/get_session", response_model=CookingSession)
-def get_session(cooking_session_id: int):
+async def get_session(cooking_session_id: int):
     """
     Retrieve a cooking session based on the provided session ID.
 
@@ -141,7 +142,7 @@ def get_session(cooking_session_id: int):
     pass
 
 @router.get("{cooking_session_id}/get_prompt_history", response_model=PromptHistory)
-def get_prompt_history(cooking_session_id: int):
+async def get_prompt_history(cooking_session_id: int):
     """
     Retrieve the prompt history based on the provided cooking session ID.
 
