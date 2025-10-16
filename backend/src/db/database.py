@@ -13,13 +13,13 @@ from ..config import settings
 
 logger = logging.getLogger(__name__)
 
-#DEFAULT_MYSQL_URL = (
-#    f"mysql+aiomysql://{settings.DB_USER}:{settings.DB_PASSWORD}"
-#    f"@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
-#)
+DEFAULT_MYSQL_URL = (
+    f"mysql+aiomysql://{settings.DB_USER}:{settings.DB_PASSWORD}"
+    f"@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
+)
 
-#DATABASE_URL = getattr(settings, "DATABASE_URL", "") or DEFAULT_MYSQL_URL
-DATABASE_URL="sqlite+aiosqlite:///./test.db"
+DATABASE_URL = getattr(settings, "DATABASE_URL", "") or DEFAULT_MYSQL_URL
+#DATABASE_URL="sqlite+aiosqlite:///./test.db"
 
 
 def _normalize_url(url: str | URL) -> URL:
