@@ -1,0 +1,251 @@
+import React, { useState } from 'react';
+import {
+  PiHeart, PiShareNetwork, PiPrinter, PiClock,
+  PiCookingPot, PiMinus, PiPlus, PiCow
+} from 'react-icons/pi';
+
+const recipeData = {
+  baseServings: 4,
+  ingredients: [
+    { amount: 1, unit: '', name: 'Onion, finely chopped' },
+    { amount: 2, unit: '', name: 'Garlic cloves, minced' },
+    { amount: 2, unit: 'tbsp', name: 'Olive oil' },
+    { amount: 500, unit: 'g', name: 'Ground beef' },
+    { amount: 400, unit: 'g', name: 'Canned tomatoes, crushed' },
+    { amount: 2, unit: 'tbsp', name: 'Tomato paste' },
+    { amount: 1, unit: 'cup', name: 'Beef broth' },
+    { amount: 1, unit: 'tsp', name: 'Dried oregano' },
+    { amount: 1, unit: 'tsp', name: 'Dried basil' },
+    { amount: 0, unit: '', name: 'Salt and pepper to taste' },
+    { amount: 400, unit: 'g', name: 'Spaghetti' },
+    { amount: 0, unit: '', name: 'Fresh basil for garnish' },
+    { amount: 0, unit: '', name: 'Parmesan cheese, grated' },
+  ],
+};
+
+const nutritionData = {
+  servingsPerRecipe: recipeData.baseServings,
+  calories: 648,
+  totalFat: { amount: 28, dv: 36 },
+  saturatedFat: { amount: 10, dv: 50 },
+  transFat: { amount: 1, dv: null },
+  cholesterol: { amount: 95, dv: 32 },
+  sodium: { amount: 1080, dv: 47 },
+  totalCarbohydrate: { amount: 65, dv: 24 },
+  dietaryFiber: { amount: 8, dv: 29 },
+  totalSugars: { amount: 12, dv: null },
+  protein: { amount: 35, dv: 70 },
+  vitaminD: { amount: 2, dv: 10 },
+  calcium: { amount: 150, dv: 12 },
+  iron: { amount: 4, dv: 22 },
+  potassium: { amount: 800, dv: 17 },
+};
+
+const Recipe = () => {
+  const [servings, setServings] = useState(recipeData.baseServings);
+  const [activeTab, setActiveTab] = useState('ingredients');
+
+  const adjustIngredient = (amount) => {
+    if (!amount) return '';
+    const newAmount = (amount / recipeData.baseServings) * servings;
+    if (newAmount > 0 && newAmount < 0.1) {
+      return newAmount.toPrecision(1);
+    }
+    return parseFloat(newAmount.toFixed(2));
+  };
+
+  const handleServingChange = (increment) => {
+    setServings(prev => Math.max(1, prev + increment));
+  };
+
+  const NutritionLabel = ({ servingCount }) => (
+    <div className="border-2 border-black p-4 font-sans max-w-sm mx-auto">
+      <h2 className="font-black text-4xl font-serif">Nutrition Facts</h2>
+      <div className="border-b border-gray-400 pb-1 mb-1">
+        <p>{servingCount} servings per recipe</p>
+        <p className="font-bold">Serving size is calculated from the recipe</p>
+      </div>
+      <div className="flex justify-between items-end border-b-8 border-black py-1">
+        <p className="font-bold">Amount per serving</p>
+        <p className="font-black text-5xl">{nutritionData.calories}</p>
+      </div>
+      <div className="text-right font-bold border-b border-gray-400 py-1">% Daily Value*</div>
+
+      <div className="flex justify-between border-b border-gray-400 py-1">
+        <p><span className="font-bold">Total Fat</span> {nutritionData.totalFat.amount}g</p>
+        <p className="font-bold">{nutritionData.totalFat.dv}%</p>
+      </div>
+      <div className="flex justify-between border-b border-gray-400 py-1 ml-4">
+        <p>Saturated Fat {nutritionData.saturatedFat.amount}g</p>
+        <p className="font-bold">{nutritionData.saturatedFat.dv}%</p>
+      </div>
+      <div className="border-b border-gray-400 py-1 ml-4">
+        <p><i>Trans</i> Fat {nutritionData.transFat.amount}g</p>
+      </div>
+      <div className="flex justify-between border-b border-gray-400 py-1">
+        <p><span className="font-bold">Cholesterol</span> {nutritionData.cholesterol.amount}mg</p>
+        <p className="font-bold">{nutritionData.cholesterol.dv}%</p>
+      </div>
+      <div className="flex justify-between border-b border-gray-400 py-1">
+        <p><span className="font-bold">Sodium</span> {nutritionData.sodium.amount}mg</p>
+        <p className="font-bold">{nutritionData.sodium.dv}%</p>
+      </div>
+      <div className="flex justify-between border-b-4 border-black py-1">
+        <p><span className="font-bold">Total Carbohydrate</span> {nutritionData.totalCarbohydrate.amount}g</p>
+        <p className="font-bold">{nutritionData.totalCarbohydrate.dv}%</p>
+      </div>
+      <div className="flex justify-between border-b border-gray-400 py-1 ml-4">
+        <p>Dietary Fiber {nutritionData.dietaryFiber.amount}g</p>
+        <p className="font-bold">{nutritionData.dietaryFiber.dv}%</p>
+      </div>
+      <div className="border-b border-gray-400 py-1 ml-4">
+        <p>Total Sugars {nutritionData.totalSugars.amount}g</p>
+      </div>
+      <div className="border-b-8 border-black py-1">
+        <p><span className="font-bold">Protein</span> {nutritionData.protein.amount}g</p>
+      </div>
+
+      <div className="flex justify-between border-b border-gray-400 py-1">
+        <p>Vitamin D {nutritionData.vitaminD.amount}mcg</p>
+        <span>{nutritionData.vitaminD.dv}%</span>
+      </div>
+      <div className="flex justify-between border-b border-gray-400 py-1">
+        <p>Calcium {nutritionData.calcium.amount}mg</p>
+        <span>{nutritionData.calcium.dv}%</span>
+      </div>
+      <div className="flex justify-between border-b border-gray-400 py-1">
+        <p>Iron {nutritionData.iron.amount}mg</p>
+        <span>{nutritionData.iron.dv}%</span>
+      </div>
+      <div className="flex justify-between border-b border-gray-400 py-1">
+        <p>Potassium {nutritionData.potassium.amount}mg</p>
+        <span>{nutritionData.potassium.dv}%</span>
+      </div>
+
+      <p className="text-sm mt-2">* The % Daily Value (DV) tells you how much a nutrient in a serving of food contributes to a daily diet. 2,000 calories a day is used for general nutrition advice.</p>
+    </div>
+  );
+
+  return (
+    <div className="h-full overflow-y-auto no-scrollbar">
+      <div className="p-6 md:p-8">
+        {/* Header */}
+        <h1 className="font-poppins font-bold text-4xl md:text-5xl text-[#035035]">
+          Spaghetti Bolognese
+        </h1>
+        <p className="mt-2 text-lg text-[#2D2D2D]/80">
+          A classic Italian ragu, simmered to perfection for a rich flavor.
+        </p>
+
+        {/* Image */}
+        <div className="relative mt-6 rounded-2xl overflow-hidden shadow-sm aspect-video">
+          <img
+            src="https://img.chefkoch-cdn.de/rezepte/393031127655461/bilder/1585337/crop-960x540/spaghetti-bolognese.jpg"
+            alt="Spaghetti Bolognese"
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3 mt-6">
+          <button className="flex items-center justify-center gap-2 px-6 py-3 bg-[#FF9B7B] text-white font-poppins font-semibold rounded-full shadow-lg shadow-[#FF9B7B]/30 hover:scale-105 transition-transform">
+            <PiHeart /> Save Recipe
+          </button>
+          <button className="p-4 border-2 border-[#A8C9B8] rounded-full text-[#035035] hover:bg-[#A8C9B8]/30 transition-colors">
+            <PiShareNetwork className="h-5 w-5" />
+          </button>
+          <button className="p-4 border-2 border-[#A8C9B8] rounded-full text-[#035035] hover:bg-[#A8C9B8]/30 transition-colors">
+            <PiPrinter className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Recipe Info */}
+        <div className="grid grid-cols-3 gap-4 text-center mt-8 py-4 border-y border-[#F5F5F5]">
+          <div className="flex flex-col items-center gap-2">
+            <PiClock className="h-7 w-7 text-[#035035]" />
+            <span className="text-sm">45 Min.</span>
+            <span className="text-xs text-gray-500">Total Time</span>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <PiCookingPot className="h-7 w-7 text-[#035035]" />
+            <span className="text-sm">Easy</span>
+            <span className="text-xs text-gray-500">Difficulty</span>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <PiCow className="h-7 w-7 text-[#035035]" />
+            <span className="text-sm">Contains Meat</span>
+            <span className="text-xs text-gray-500">Beef-based</span>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="mt-8">
+          <div className="flex border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab('ingredients')}
+              className={`-mb-px px-6 py-3 font-poppins font-semibold text-lg transition-colors duration-300 ${
+                activeTab === 'ingredients'
+                  ? 'text-[#035035] border-b-2 border-[#035035]'
+                  : 'text-gray-500 hover:text-[#035035]'
+              }`}
+            >
+              Ingredients
+            </button>
+            <button
+              onClick={() => setActiveTab('nutrition')}
+              className={`-mb-px px-6 py-3 font-poppins font-semibold text-lg transition-colors duration-300 ${
+                activeTab === 'nutrition'
+                  ? 'text-[#035035] border-b-2 border-[#035035]'
+                  : 'text-gray-500 hover:text-[#035035]'
+              }`}
+            >
+              Nutrition
+            </button>
+          </div>
+
+          <div className="mt-6">
+            {activeTab === 'ingredients' && (
+              <div>
+                <div className="flex justify-between items-center bg-[#F5F5F5] p-3 rounded-lg">
+                  <span className="font-medium">For {servings} serving{servings > 1 && 's'}</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleServingChange(-1)}
+                      className="p-2 bg-white rounded-full shadow-sm hover:bg-[#FFF8F0] transition-colors disabled:opacity-50"
+                      disabled={servings <= 1}
+                    >
+                      <PiMinus />
+                    </button>
+                    <span className="w-8 text-center font-bold">{servings}</span>
+                    <button
+                      onClick={() => handleServingChange(1)}
+                      className="p-2 bg-white rounded-full shadow-sm hover:bg-[#FFF8F0] transition-colors"
+                    >
+                      <PiPlus />
+                    </button>
+                  </div>
+                </div>
+                <ul className="mt-4 space-y-3">
+                  {recipeData.ingredients.map((ing, index) => (
+                    <li key={index} className="flex items-center gap-4 py-3 border-b border-[#F5F5F5]/60">
+                      <p className="font-medium text-right w-20">
+                        {adjustIngredient(ing.amount)} {ing.unit}
+                      </p>
+                      <p>{ing.name}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {activeTab === 'nutrition' && (
+              <NutritionLabel servingCount={servings} />
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Recipe;

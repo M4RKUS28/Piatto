@@ -56,7 +56,7 @@ class AgentService:
         self.agent = TesterAgent(self.app_name, self.session_service)
 
     # Rezepte Erstellen
-    def generate_recipe(self, user_id: str, prompt: str, gen_context_id: int): # Irgendwie Kontext
+    async def generate_recipe(self, user_id: str, prompt: str, gen_context_id: int): # Irgendwie Kontext
         content = create_text_query("Hallo, wie geht es dir")
         agent_return = self.agent.run(user_id, state={}, content=content)
         # Prompt/Kontext an Agent übergeben
@@ -64,7 +64,7 @@ class AgentService:
         # Rezepte zurückgeben
         pass
 
-    def change_recipe(self, user_id: str, change_prompt: str, recipe_id: int):
+    async def change_recipe(self, user_id: str, change_prompt: str, recipe_id: int):
         # Prompt/Kontext an Agent übergeben
         # Rezept in Datenbank updaten (als temporär)
         # Neues Rezept zurückgeben
@@ -94,7 +94,7 @@ class AgentService:
 
     # Rezepte kochen:
 
-    def ask_question(self, user_id: str, cooking_session_id: int, prompt: str, prompt_history_id: int):
+    async def ask_question(self, user_id: str, cooking_session_id: int, prompt: str, prompt_history_id: int):
         # Prompt/Kontext an Agent übergeben
         # Prompt History in Datenbank speichern
         # Potentiell Rezept updaten

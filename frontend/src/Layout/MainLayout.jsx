@@ -161,7 +161,7 @@ export default function MainLayout({ children }) {
         }`}
         style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
       >
-        <main className="flex-1 pb-8">{content}</main>
+        <main className="flex-1">{content}</main>
 
         {/* Footer */}
         <footer className="py-3 px-6 text-center">

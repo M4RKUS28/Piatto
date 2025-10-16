@@ -11,6 +11,14 @@ logging.basicConfig(level=logging.INFO)
 
 load_dotenv()
 
+# Password policy defaults
+PASSWORD_MIN_LENGTH = 12
+PASSWORD_REQUIRE_UPPERCASE = True
+PASSWORD_REQUIRE_LOWERCASE = True
+PASSWORD_REQUIRE_DIGIT = True
+PASSWORD_REQUIRE_SPECIAL_CHAR = True
+PASSWORD_SPECIAL_CHARACTERS_REGEX_PATTERN = r'[!@#$%^&*(),.?":{}|<>]'
+
 # JWT settings
 ALGORITHM = "HS256"
 SECRET_KEY = os.getenv("SECRET_KEY", "a_very_secret_key_please_change_me")
@@ -146,7 +154,9 @@ DB_USER = os.getenv("DB_USER")  # z. B. root oder custom user
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_NAME = os.getenv("DB_NAME")
 
-DATABASE_URL = f"mysql+aiomysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    DATABASE_URL = f"mysql+aiomysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 
 

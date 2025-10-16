@@ -6,6 +6,7 @@ from fastapi import HTTPException, Request, Response, status
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
+from .enums import UserRole
 from ..config import settings
 from ..config.settings import (ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM,
                                PRIVATE_KEY, PUBLIC_KEY,
@@ -61,10 +62,12 @@ def decode_token(token: str) -> Dict:
             detail="Invalid or expired token",
         ) from e
 
-
+# Check if the access token is provided and valid and contains user_id
 def verify_token(token: Optional[str]) -> Dict[str, Any]:
-    """Verify a JWT token and return the payload containing user information."""
-
+    """
+    Check if the access token is provided and valid and contains user_id
+    Raises HTTPException if the token is missing, invalid, or expired.
+    """
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -74,8 +77,9 @@ def verify_token(token: Optional[str]) -> Dict[str, Any]:
     payload = decode_token(token)
 
     user_id: Optional[str] = payload.get("user_id")
+    role: Optional[UserRole] = payload.get("role")
 
-    if user_id is None:
+    if user_id is None or role is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token payload missing required claims",

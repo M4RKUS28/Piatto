@@ -230,7 +230,7 @@ checkpoints/
 .env
 .env*
 !.env.example
-
+*key.json
 
 # Frontend
 frontend/*/node_modules

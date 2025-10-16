@@ -15,7 +15,7 @@ import requests
 from fastapi import HTTPException, Request, Response, status
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..api.schemas import auth as auth_schema
 from ..api.schemas import user as user_schema
@@ -25,23 +25,22 @@ from ..core.enums import AccessLevel
 from ..core.security import oauth
 from ..db.crud import users_crud
 from ..db.models.db_user import User as UserModel
-from ..db.crud import usage_crud
+
 from ..core.enums import UserRole
 
-from .settings_service import dynamic_settings
 
 logger = Logger(__name__)
 
-async def login_user(form_data: OAuth2PasswordRequestForm, db: Session, response: Response) -> auth_schema.APIResponseStatus:
+async def login_user(form_data: OAuth2PasswordRequestForm, db: AsyncSession, response: Response) -> auth_schema.APIResponseStatus:
     """Authenticates a user and returns an access token."""
     if not form_data.username or not form_data.password:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Username and password are required")
 
     # Check if the user exists and verify the password
-    user = users_crud.get_user_by_username(db, form_data.username)
+    user = await users_crud.get_user_by_username(db, form_data.username)
     if not user:
-        user = users_crud.get_user_by_email(db, form_data.username)
+        user = await users_crud.get_user_by_email(db, form_data.username)
 
     if not user or not security.verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
@@ -69,9 +68,7 @@ async def login_user(form_data: OAuth2PasswordRequestForm, db: Session, response
 
     # Save last login time
     previous_last_login = user.last_login
-    users_crud.update_user_last_login(db, user_id=str(user.id))
-    # Log the user login action
-    usage_crud.log_login(db, user_id=str(user.id))
+    await users_crud.update_user_last_login(db, user_id=str(user.id))
 
 
     # Set the access token in the response cookie
@@ -83,85 +80,17 @@ async def login_user(form_data: OAuth2PasswordRequestForm, db: Session, response
                                          msg="Successfully logged in",
                                          data={ "last_login": previous_last_login.isoformat()})
 
-async def admin_login_as(current_user_id: str, user_id: str, db: Session, response: Response) -> auth_schema.APIResponseStatus:
-    """
-    Logs in as a specified user (admin only).
-    
-    Args:
-        user_id: The ID of the user to log in as
-        db: Database session
-        response: FastAPI response object for setting cookies
-        
-    Returns:
-        APIResponseStatus with login status
-        
-    Raises:
-        HTTPException: If user not found or not active
-    """
-    # Get the target user
-    user = users_crud.get_user_by_id(db, user_id)
-    if not user:
-        logger.warning("Attempted to log in as non-existent user ID: %s", user_id)
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-        
-    # Check if the target user is active
-    if user.role == UserRole.ADMIN:
-        logger.warning("Attempted to log in as admin user: %s (ID: %s)", user.username, user.id)
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Cannot log in as another admin user"
-        )
-        
-    # Log the admin action
-    logger.info(
-        "Admin login-as action: Admin ID: %s is logging in as user: %s (ID: %s)",
-        current_user_id, user.username, user.id
-    )
 
-    # Generate access token with user details
-    data = {
-            "sub": user.username,
-            "user_id": user.id,
-            "role": user.role,
-            "email": user.email,
-            "access_level": AccessLevel.READ_ONLY.value,  # Mark the session as read-only, since admin is impersonating
-            "no_logging": True,  # Do not log actions performed in this session
-            "observed_by": current_user_id  # Track which admin is observing this user
-        }
-
-    access_token = security.create_access_token(data=data)
-    refresh_token_value = security.create_refresh_token(data=data)
-
-    # Set the access and refresh tokens in the response cookies
-    security.set_access_cookie(response, access_token)
-    security.set_refresh_cookie(response, refresh_token_value)
-    
-    # Update last login time
-    previous_last_login = user.last_login
-    # No update on last login!
-    usage_crud.log_admin_login_as(db, user_who=current_user_id, user_as=str(user.id))
-
-    return auth_schema.APIResponseStatus(
-        status="success",
-        msg="Successfully logged in as user",
-        data={"last_login": previous_last_login.isoformat() if previous_last_login else None}
-    )
-
-
-
-async def register_user(user_data: user_schema.UserCreate, db: Session, response: Response) -> auth_schema.APIResponseStatus:
+async def register_user(user_data: user_schema.UserCreate, db: AsyncSession, response: Response) -> auth_schema.APIResponseStatus:
     """Registers a new user and returns the created user data."""
     
     # Check if username from incoming data (user_data.username) already exists in the DB
-    db_user_by_username = users_crud.get_user_by_username(db, user_data.username)
+    db_user_by_username = await users_crud.get_user_by_username(db, user_data.username)
     if db_user_by_username:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already registered")
 
     # Check if email from incoming data (user_data.email) already exists in the DB
-    db_user_by_email = users_crud.get_user_by_email(db, user_data.email)
+    db_user_by_email = await users_crud.get_user_by_email(db, user_data.email)
     if db_user_by_email:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
 
@@ -169,12 +98,12 @@ async def register_user(user_data: user_schema.UserCreate, db: Session, response
     user_id = None
     while True:
         user_id = str(uuid.uuid4())
-        if not users_crud.get_user_by_id(db, user_id):
+        if not await users_crud.get_user_by_id(db, user_id):
             break
     
     # Create the user in the database
     # When a user is registered, created_at and last_login are set by default in the model
-    new_user = users_crud.create_user(
+    new_user = await users_crud.create_user(
         db = db,
         user_id = user_id,
         username = user_data.username,
@@ -209,7 +138,7 @@ async def register_user(user_data: user_schema.UserCreate, db: Session, response
 
 
 
-async def logout_user(user: user_schema.User, db: Session, response: Response) -> auth_schema.APIResponseStatus:
+async def logout_user(response: Response) -> auth_schema.APIResponseStatus:
     """Logs out a user by clearing the access and refresh tokens."""
     
     # Disable the user session in the database if needed
@@ -220,14 +149,10 @@ async def logout_user(user: user_schema.User, db: Session, response: Response) -
     # Clear the refresh token cookie
     security.clear_refresh_cookie(response)
 
-    # Log logout
-    
-    usage_crud.log_logout(db, user_id=str(user.id))
-
     return auth_schema.APIResponseStatus(status="success", msg="Successfully logged out")
     
-async def refresh_token(token: Optional[str], db: Session, response: Response) -> auth_schema.APIResponseStatus:
-    """Registers a new user and returns the created user data."""
+async def refresh_token(token: Optional[str], db: AsyncSession, response: Response) -> auth_schema.APIResponseStatus:
+    """Refreshes the access token for a user."""
 
     if not token:
         raise HTTPException(
@@ -240,7 +165,7 @@ async def refresh_token(token: Optional[str], db: Session, response: Response) -
     user_id = payload["user_id"]
 
     # Fetch the user from the database using the user ID
-    user = users_crud.get_active_user_by_id(db, user_id)
+    user = await users_crud.get_active_user_by_id(db, user_id)
 
     if user is None:
         raise HTTPException(
@@ -248,12 +173,10 @@ async def refresh_token(token: Optional[str], db: Session, response: Response) -
         detail="Could not validate refresh token",
     )
 
+
     data = security.decode_token(token)
     data["sub"] = user.username
     access_token = security.create_access_token(data=data)
-
-    # Log the user refresh action
-    usage_crud.log_refresh(db, user_id=str(user.id))
 
     # Set the access token in the response cookie
     security.set_access_cookie(response, access_token)
@@ -307,7 +230,7 @@ def _build_login_failed_redirect(reason: str) -> RedirectResponse:
     return RedirectResponse(url=url)
 
 
-async def handle_oauth_callback(request: Request, db: Session, website: str = "google"):
+async def handle_oauth_callback(request: Request, db: AsyncSession, website: str = "google"):
     """Handles the callback from OAuth after user authentication."""
 
     oauth_client = getattr(oauth, website, None)
@@ -377,14 +300,7 @@ async def handle_oauth_callback(request: Request, db: Session, website: str = "g
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                 detail=f"Could not fetch user email from {website}.")
 
-        db_user = db.query(UserModel).filter(UserModel.email == email).first()
-
-        if not db_user and dynamic_settings.get_bool("DISABLE_REGISTRATION"):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="User registration is currently disabled."
-            )
-
+        db_user = await users_crud.get_user_by_email(db, email)
         profile_image_base64_data = None
 
         if picture_url:
@@ -406,7 +322,7 @@ async def handle_oauth_callback(request: Request, db: Session, website: str = "g
             random_password = secrets.token_urlsafe(16)
             hashed_password = security.get_password_hash(random_password)
 
-            db_user = users_crud.create_user(
+            db_user = await users_crud.create_user(
                 db,
                 secrets.token_hex(16),
                 final_username,
@@ -420,7 +336,7 @@ async def handle_oauth_callback(request: Request, db: Session, website: str = "g
         else:
             logger.info("Using existing user %s from database for %s OAuth login.", db_user.username, website)
             if profile_image_base64_data and getattr(db_user, 'profile_image_base64', None) != profile_image_base64_data:
-                users_crud.update_user_profile_image(db, db_user, profile_image_base64_data)
+                await users_crud.update_user_profile_image(db, db_user, profile_image_base64_data)
 
         if not db_user or not db_user.is_active:  # type: ignore
             logger.warning("Inactive user OAuth login attempt: %s", email)
@@ -437,8 +353,7 @@ async def handle_oauth_callback(request: Request, db: Session, website: str = "g
         access_token = security.create_access_token(data=token_data)
         refresh_token_value = security.create_refresh_token(data=token_data)
 
-        users_crud.update_user_last_login(db, user_id=str(db_user.id))
-        usage_crud.log_login(db, user_id=str(db_user.id))
+        await users_crud.update_user_last_login(db, user_id=str(db_user.id))
 
         frontend_base_url = settings.FRONTEND_BASE_URL
         if not frontend_base_url:

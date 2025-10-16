@@ -3,8 +3,16 @@ from pydantic import BaseModel, EmailStr, Field, field_validator # Make sure fie
 from typing import Optional, List
 from datetime import datetime
 import re
+from ...config.settings import (
+    PASSWORD_MIN_LENGTH,
+    PASSWORD_REQUIRE_DIGIT,
+    PASSWORD_REQUIRE_LOWERCASE,
+    PASSWORD_REQUIRE_SPECIAL_CHAR,
+    PASSWORD_REQUIRE_UPPERCASE,
+    PASSWORD_SPECIAL_CHARACTERS_REGEX_PATTERN,
+)
 from ...core.enums import UserRole, ThemePreference # Import enums
-from ...services.settings_service import dynamic_settings
+
 
 
 
@@ -45,20 +53,20 @@ class UserCreate(UserBase):
         """Validate password complexity requirements."""
         # Pydantic's Field(min_length=...) would handle this,
         # but we include it here for a unified error message if preferred.
-        min_length = dynamic_settings.get_int("MIN_PASSWORD_LENGTH")
+        min_length = PASSWORD_MIN_LENGTH
 
         if len(v) < min_length:
             raise ValueError(f"Password must be at least {min_length} characters long.")
 
         errors: List[str] = []
-        if dynamic_settings.get_bool("PASSWORD_REQUIRE_UPPERCASE") and not re.search(r"[A-Z]", v):
+        if PASSWORD_REQUIRE_UPPERCASE and not re.search(r"[A-Z]", v):
             errors.append("must contain at least one uppercase letter")
-        if dynamic_settings.get_bool("PASSWORD_REQUIRE_LOWERCASE") and not re.search(r"[a-z]", v):
+        if PASSWORD_REQUIRE_LOWERCASE and not re.search(r"[a-z]", v):
             errors.append("must contain at least one lowercase letter")
-        if dynamic_settings.get_bool("PASSWORD_REQUIRE_DIGIT") and not re.search(r"\d", v):
+        if PASSWORD_REQUIRE_DIGIT and not re.search(r"\d", v):
             errors.append("must contain at least one digit")
-        pattern = str(dynamic_settings.get("PASSWORD_SPECIAL_CHARACTERS_REGEX_PATTERN"))
-        if dynamic_settings.get_bool("PASSWORD_REQUIRE_SPECIAL_CHAR") and not re.search(pattern, v):
+        pattern = PASSWORD_SPECIAL_CHARACTERS_REGEX_PATTERN
+        if PASSWORD_REQUIRE_SPECIAL_CHAR and not re.search(pattern, v):
             errors.append("must contain at least one special character (e.g., !@#$%)")
         
         if errors:
@@ -103,20 +111,20 @@ class UserUpdate(BaseModel):
             return v
         
         # If password is provided (not None), it must meet all complexity rules.
-        min_length = dynamic_settings.get_int("MIN_PASSWORD_LENGTH")
+        min_length = PASSWORD_MIN_LENGTH
 
         if len(v) < min_length:
             raise ValueError(f"New password must be at least {min_length} characters long.")
 
         errors: List[str] = []
-        if dynamic_settings.get_bool("PASSWORD_REQUIRE_UPPERCASE") and not re.search(r"[A-Z]", v):
+        if PASSWORD_REQUIRE_UPPERCASE and not re.search(r"[A-Z]", v):
             errors.append("must contain at least one uppercase letter")
-        if dynamic_settings.get_bool("PASSWORD_REQUIRE_LOWERCASE") and not re.search(r"[a-z]", v):
+        if PASSWORD_REQUIRE_LOWERCASE and not re.search(r"[a-z]", v):
             errors.append("must contain at least one lowercase letter")
-        if dynamic_settings.get_bool("PASSWORD_REQUIRE_DIGIT") and not re.search(r"\d", v):
+        if PASSWORD_REQUIRE_DIGIT and not re.search(r"\d", v):
             errors.append("must contain at least one digit")
-        pattern = str(dynamic_settings.get("PASSWORD_SPECIAL_CHARACTERS_REGEX_PATTERN"))
-        if dynamic_settings.get_bool("PASSWORD_REQUIRE_SPECIAL_CHAR") and not re.search(pattern, v):
+        pattern = PASSWORD_SPECIAL_CHARACTERS_REGEX_PATTERN
+        if PASSWORD_REQUIRE_SPECIAL_CHAR and not re.search(pattern, v):
             errors.append("must contain at least one special character (e.g., !@#$%)")
         
         if errors:
@@ -139,18 +147,18 @@ class UserPasswordUpdate(BaseModel):
     @classmethod
     def password_complexity_checks(cls, v: str) -> str:
         """Validate new password complexity requirements."""
-        min_length = dynamic_settings.get_int("MIN_PASSWORD_LENGTH")
+        min_length = PASSWORD_MIN_LENGTH
 
         if len(v) < min_length:
             raise ValueError(f"Password must be at least {min_length} characters long")
-        if dynamic_settings.get_bool("PASSWORD_REQUIRE_UPPERCASE") and not any(char.isupper() for char in v):
+        if PASSWORD_REQUIRE_UPPERCASE and not any(char.isupper() for char in v):
             raise ValueError('Password must contain at least one uppercase letter')
-        if dynamic_settings.get_bool("PASSWORD_REQUIRE_LOWERCASE") and not any(char.islower() for char in v):
+        if PASSWORD_REQUIRE_LOWERCASE and not any(char.islower() for char in v):
             raise ValueError('Password must contain at least one lowercase letter')
-        if dynamic_settings.get_bool("PASSWORD_REQUIRE_DIGIT") and not any(char.isdigit() for char in v):
+        if PASSWORD_REQUIRE_DIGIT and not any(char.isdigit() for char in v):
             raise ValueError('Password must contain at least one digit')
-        pattern = str(dynamic_settings.get("PASSWORD_SPECIAL_CHARACTERS_REGEX_PATTERN"))
-        if dynamic_settings.get_bool("PASSWORD_REQUIRE_SPECIAL_CHAR") and not re.search(pattern, v):
+        pattern = PASSWORD_SPECIAL_CHARACTERS_REGEX_PATTERN
+        if PASSWORD_REQUIRE_SPECIAL_CHAR and not re.search(pattern, v):
             raise ValueError('Password must contain at least one special character')
         return v
 
