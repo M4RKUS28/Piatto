@@ -4,8 +4,6 @@ from typing import Optional, List
 from datetime import datetime
 import re
 from ...core.enums import UserRole, ThemePreference # Import enums
-from ...services.settings_service import dynamic_settings
-
 
 
 class UserBase(BaseModel):

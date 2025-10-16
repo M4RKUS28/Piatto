@@ -25,10 +25,10 @@ router = APIRouter(
 )
 
 @router.get("/me",
-            response_model=Optional[user_model.User],
+            response_model=Optional[user_schemas.User],
             summary="Get current logged-in user's profile")
 async def read_current_user(
-    current_user_id: Optional[user_model.User] = Depends(get_user_id_optional)
+    current_user_id: Optional[str] = Depends(get_user_id_optional)
 ):
     """
     Retrieve the profile of the currently authenticated user.
@@ -37,14 +37,15 @@ async def read_current_user(
     if current_user_id is None:
         return None
 
+    user = None
     async with get_async_db_context() as db:
         user: user_model.User = await users_crud.get_user_by_id(db, current_user_id)
         if user is None or not user.is_active:
             return None
-    return user
+    return user_schemas.User.from_orm(user)
 
 @router.get("/",
-            response_model=List[user_model.User],
+            response_model=List[user_schemas.User],
             dependencies=[Depends(auth.get_admin_user_id)])
 async def read_users(
     skip: int = 0,
@@ -89,7 +90,7 @@ async def change_password(
 async def delete_me(
     response: Response,
     db: AsyncSession = Depends(get_db),
-    current_user_token_data: user_model.User = Depends(get_read_write_user_token_data)
+    current_user_token_data: Dict[str, Any] = Depends(get_read_write_user_token_data)
 ):
     """
     Delete a user. Only accessible by the user itself.

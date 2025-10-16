@@ -18,6 +18,10 @@ DATABASE_URL = (
     f"@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
 )
 
+# DEBUG
+DATABASE_URL="sqlite:///./test.db"
+
+
 # Engine placeholder
 engine = None
 
@@ -44,7 +48,7 @@ async def _create_engine_with_retry(
             logger.info("✅ DB connected successfully on attempt %s", attempt)
             return _engine
 
-        except SQLAlchemyError as e:
+        except Exception as e:
             last_exc = e
             logger.warning(
                 "⚠️ DB connection attempt %s/%s failed: %s", attempt, max_retries, str(e)

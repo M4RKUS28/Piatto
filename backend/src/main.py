@@ -10,7 +10,6 @@ from .core.lifespan import lifespan
 
 
 from .api.routers import auth as auth_router
-from .api.routers import chat, files
 from .api.routers import users
 
 
@@ -43,9 +42,11 @@ app.add_middleware(
 
 # Include your existing routers under this api_router
 app.include_router(users.router)
-app.include_router(files.router)
 app.include_router(auth_router.api_router)
-app.include_router(chat.router)
+
+
+
+
 
 # The root path "/" is now outside the /api prefix
 @app.get("/")
