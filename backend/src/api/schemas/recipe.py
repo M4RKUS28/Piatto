@@ -20,7 +20,6 @@ class Recipe(BaseModel):
     ingredients: List[Ingredient]
     instructions: List[Instruction]
     image_id: int
-    is_permanent: bool = False  # falls du sie erstmal temporär speicherst
 
     class Config:
         from_attributes = True  # wichtig, wenn du ORM-Objekte nutzt

@@ -48,7 +48,7 @@ async def change_recipe_ai(request: ChangeRecipeAIRequest, user_id: str = Depend
     """
     return await agent_service.change_recipe(user_id, request.change_prompt, request.recipe_id)
 
-@router.put("/change_manual", response_model=Recipe)
+@router.put("/change_manual", response_model=Recipe) # TODO
 async def change_recipe_manual(request: ChangeRecipeManualRequest,
                                db: AsyncSession = Depends(get_db)):
     """
@@ -61,25 +61,25 @@ async def change_recipe_manual(request: ChangeRecipeManualRequest,
         Recipe: The modified recipe.
     """
     # DB: Update the old recipe
-    ingredients=json.dumps([ingredient.dict() for ingredient in request.ingredients]) if request.ingredients is not None else None,
-    await recipe_crud.update_recipe(request.recipe_id,
-                                    title=request.title,
-                                    description=request.description,
-                                    ingredients=ingredients,
+    pass
 
 @router.post("/{recipe_id}/save")
-async def save_recipe(recipe_id: int):
+async def save_recipe(recipe_id: int,
+                      db: AsyncSession = Depends(get_db)):
     """
     Save a recipe based on the provided recipe ID.
 
     Args:
         int: The recipe ID.
     """
-    # DB: Mark the recipe as permanent
-    pass
+
+    await recipe_crud.update_recipe(db, recipe_id, is_permanent=True)
+    return
 
 @router.post("/{recipe_id}/start", response_model=int)
-async def start_recipe(recipe_id: int):
+async def start_recipe(recipe_id: int,
+                       user_id: str = Depends(get_read_write_user_id),
+                       db: AsyncSession = Depends(get_db)):
     """
     Start a recipe session based on the user ID and recipe details.
 
@@ -89,8 +89,8 @@ async def start_recipe(recipe_id: int):
     Returns:
         int: The ID of the started recipe session.
     """
-    # DB: Create a new cooking session
-    pass
+    cooking_session = await recipe_crud.create_cooking_session(db, user_id, recipe_id)
+    return cooking_session.id
 
 @router.put("/change_state")
 async def change_state(request: ChangeStateRequest,
