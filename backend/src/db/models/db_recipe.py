@@ -23,7 +23,8 @@ class GenContext(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(String(50), ForeignKey("users.id"), nullable=False)
-    context_data = Column(Text, nullable=False)  # Store context data as JSON string #TODO: define structure
+    context_promts = Column(Text, nullable=False)  # Store context promts as JSON string
+    context_suggestions = Column(Text, nullable=True)  # Store suggestions as JSON string
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
 class CookingSession(Base):
@@ -34,7 +35,6 @@ class CookingSession(Base):
     user_id = Column(String(50), ForeignKey("users.id"), nullable=False)
     recipe_id = Column(Integer, ForeignKey("recipes.id"), nullable=False)
     state = Column(Integer, default=0)  # 0: not started, 1,2... steps of the recipe
-    # prompt_histories = Column(Text, nullable=True)  # Store prompt history as JSON string
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
     prompt_histories = relationship("PromptHistory", back_populates="cooking_session", cascade="all, delete-orphan")

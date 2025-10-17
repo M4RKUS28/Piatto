@@ -53,6 +53,7 @@ async def change_recipe_manual(request: ChangeRecipeManualRequest):
     Returns:
         Recipe: The modified recipe.
     """
+    # DB: Replace the recipe with the new one
     pass
 
 @router.post("/{recipe_id}/save")
@@ -63,6 +64,7 @@ async def save_recipe(recipe_id: int):
     Args:
         int: The recipe ID.
     """
+    # DB: Mark the recipe as permanent
     pass
 
 @router.post("/{recipe_id}/start", response_model=int)
@@ -76,20 +78,22 @@ async def start_recipe(recipe_id: int):
     Returns:
         int: The ID of the started recipe session.
     """
+    # DB: Create a new cooking session
     pass
 
 @router.put("/change_state")
-asyncdef change_state(request: ChangeStateRequest):
+async def change_state(request: ChangeStateRequest):
     """
     Change the state of a recipe session based on the provided session ID and state details.
 
     Args:
         request (ChangeStateRequest): The request containing the session ID and state details.
     """
+    # DB: Update the cooking session state
     pass
 
 @router.post("/ask_question", response_model=int)
-async def ask_question(request: AskQuestionRequest, user_id: str = Depends(get_current_user_id)):
+async def ask_question(request: AskQuestionRequest, user_id: str = Depends(get_read_write_user_id)):
     """
     Ask a question during a cooking session based on the provided session ID, and prompt.
 
@@ -99,7 +103,8 @@ async def ask_question(request: AskQuestionRequest, user_id: str = Depends(get_c
     Returns:
         int: The ID of the prompt history entry.
     """
-    prompt_history_id = 1 # Insert prompt_history_id retrieval logic here
+    prompt_history_id = 1
+    # DB: Get the prompt history
     return agent_service.ask_question(user_id, request.cooking_session_id, request.prompt, prompt_history_id)
 
 @router.get("/{gen_context_id}/get_options", response_model=List[RecipePreview])
@@ -113,6 +118,7 @@ async def get_options(gen_context_id: int):
     Returns:
         List[RecipePreview]: A list of recipe previews.
     """
+    # DB: Get recipe previews
     pass
 
 @router.get("/{recipe_id}/get_recipe", response_model=Recipe)
@@ -126,6 +132,7 @@ async def get_recipe(recipe_id: int):
     Returns:
         Recipe: The retrieved recipe.
     """
+    # DB: Get Recipe
     pass
 
 @router.get("/{cooking_session_id}/get_session", response_model=CookingSession)
@@ -139,6 +146,7 @@ async def get_session(cooking_session_id: int):
     Returns:
         CookingSession: The corresponding cooking session.
     """
+    # DB: Get Cooking Session
     pass
 
 @router.get("{cooking_session_id}/get_prompt_history", response_model=PromptHistory)
@@ -152,4 +160,5 @@ async def get_prompt_history(cooking_session_id: int):
     Returns:
         PromptHistory: The prompt history.
     """
+    # DB: Get Prompt History
     pass

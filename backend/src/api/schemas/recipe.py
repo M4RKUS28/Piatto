@@ -40,7 +40,6 @@ class CookingSession(BaseModel):
     id: int
     recipe_id: int
     state: int  # 0: not started, 1,2... steps of the recipe
-    #   prompt_histories: List[int]  # List of PromptHistory IDs
 
     class Config:
         from_attributes = True
