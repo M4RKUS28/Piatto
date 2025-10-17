@@ -1,13 +1,11 @@
 import { Outlet } from 'react-router-dom'
 import Header from '../components/Header'
-import Footer from '../components/Footer'
 
-export default function LandingLayout({ children }) {
+export default function AuthLayout({ children }) {
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <Header />
+      <Header showAuthButtons={false} />
       <main className="flex-1">{children || <Outlet />}</main>
-      <Footer />
     </div>
   )
 }

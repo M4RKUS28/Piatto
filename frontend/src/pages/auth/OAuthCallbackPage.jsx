@@ -64,20 +64,13 @@ export default function OAuthCallbackPage() {
   }, [location, navigate, fetchAndSetCurrentUser]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFF8F0] via-white to-[#F5F5F5] flex items-center justify-center px-6 relative overflow-hidden">
+    <div className="bg-gradient-to-br from-[#FFF8F0] via-white to-[#F5F5F5] flex items-center justify-center px-6 py-12 relative overflow-hidden">
       {/* Decorative background elements */}
-      <div className="fixed top-20 right-20 w-64 h-64 rounded-full bg-[#A8C9B8] opacity-10 blur-3xl"></div>
-      <div className="fixed bottom-40 left-10 w-80 h-80 rounded-full bg-[#FF9B7B] opacity-10 blur-3xl"></div>
+      <div className="absolute top-20 right-20 w-64 h-64 rounded-full bg-[#A8C9B8] opacity-10 blur-3xl"></div>
+      <div className="absolute bottom-40 left-10 w-80 h-80 rounded-full bg-[#FF9B7B] opacity-10 blur-3xl"></div>
 
-      <div className="w-full max-w-md relative z-10">
+      <div className="w-full max-w-md relative z-10 mx-auto">
         <div className="bg-white rounded-3xl shadow-xl p-12 border border-[#F5F5F5] text-center">
-          {/* Logo */}
-          <Link to="/" className="inline-flex items-center gap-3 mb-8">
-            <div className="w-14 h-14 bg-white rounded-2xl shadow-lg flex items-center justify-center mx-auto">
-              <img src="/logo_no_P.svg" alt="Piatto" className="w-12 h-12" />
-            </div>
-          </Link>
-
           {status === 'processing' && (
             <>
               <div className="w-16 h-16 border-4 border-[#A8C9B8] border-t-[#035035] rounded-full animate-spin mx-auto mb-6"></div>

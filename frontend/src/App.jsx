@@ -1,6 +1,8 @@
 import { Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
+import LandingLayout from './Layout/LandingLayout.jsx'
+import AuthLayout from './Layout/AuthLayout.jsx'
 import LandingPage from './pages/LandingPage.jsx'
 import MainLayout from './Layout/MainLayout.jsx'
 import Dashboard from './pages/app/Dashboard.jsx'
@@ -22,23 +24,31 @@ function App() {
     <AuthProvider>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/auth/google/callback" element={<OAuthCallbackPage />} />
-        <Route path="/oauth/callback/login-failed" element={<OAuthLoginFailedPage />} />
-        <Route path="/login-failed" element={<LoginFailedPage />} />
-        <Route path="/register-failed" element={<RegisterFailedPage />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/contact" element={<ContactPage />} />
         
+        {/* Auth pages with minimal AuthLayout (no auth buttons, no footer) */}
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/auth/google/callback" element={<OAuthCallbackPage />} />
+          <Route path="/oauth/callback/login-failed" element={<OAuthLoginFailedPage />} />
+          <Route path="/login-failed" element={<LoginFailedPage />} />
+          <Route path="/register-failed" element={<RegisterFailedPage />} />
+        </Route>
+
+        {/* Public info pages with full LandingLayout */}
+        <Route element={<LandingLayout />}>
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
+        
+        {/* Protected app routes with MainLayout */}
         <Route path="/app" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
           <Route index element={<Dashboard />} />
           <Route path="recipes" element={<RecipeLibrary />} />
           <Route path="spaghetti" element={<RecipeView />} />
         </Route>
-        
-        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </AuthProvider>
   )

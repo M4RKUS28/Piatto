@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { Award, Users, Sparkles, Linkedin, Mail, Github } from 'lucide-react';
-import LandingLayout from '../Layout/LandingLayout';
 
 export default function AboutPage() {
   const teamMembers = [
@@ -31,11 +30,10 @@ export default function AboutPage() {
   ];
 
   return (
-    <LandingLayout>
-      <div className="min-h-screen bg-white py-16">
-        <div className="container mx-auto px-6">
-          {/* Header */}
-          <div className="text-center mb-16 max-w-3xl mx-auto">
+    <div className="min-h-screen bg-white py-16">
+      <div className="container mx-auto px-6">
+        {/* Header */}
+        <div className="text-center mb-16 max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2 bg-[#FFF8F0] px-4 py-2 rounded-full border border-[#A8C9B8] mb-4">
               <Users className="w-4 h-4 text-[#035035]" />
               <span className="text-sm font-medium text-[#035035]">Our Story</span>
@@ -223,6 +221,5 @@ export default function AboutPage() {
           </div>
         </div>
       </div>
-    </LandingLayout>
   );
 }

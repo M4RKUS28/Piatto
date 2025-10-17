@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, User, MessageSquare, Send, CheckCircle, AlertCircle } from 'lucide-react';
-import LandingLayout from '../Layout/LandingLayout';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -60,11 +59,10 @@ export default function ContactPage() {
   ];
 
   return (
-    <LandingLayout>
-      <div className="min-h-screen bg-white py-16">
-        <div className="container mx-auto px-6">
-          {/* Header */}
-          <div className="text-center mb-16 max-w-3xl mx-auto">
+    <div className="min-h-screen bg-white py-16">
+      <div className="container mx-auto px-6">
+        {/* Header */}
+        <div className="text-center mb-16 max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2 bg-[#FFF8F0] px-4 py-2 rounded-full border border-[#A8C9B8] mb-4">
               <Mail className="w-4 h-4 text-[#035035]" />
               <span className="text-sm font-medium text-[#035035]">Get in Touch</span>
@@ -285,6 +283,5 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
-    </LandingLayout>
   );
 }
