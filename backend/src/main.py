@@ -5,7 +5,7 @@ from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from .config.settings import SESSION_SECRET_KEY
+from .config.settings import SESSION_SECRET_KEY, FRONTEND_BASE_URL
 from .core.lifespan import lifespan
 
 from .api.routers import auth as auth_router
@@ -23,12 +23,16 @@ app.add_middleware(
     secret_key=SESSION_SECRET_KEY
 )
 
-# CORS Configuration (remains the same)
+# CORS Configuration - Allow both local development and production
 origins = [
     "http://localhost:3000",
+    "http://localhost:5173",  # Vite dev server
     "http://localhost:8000",
     "http://127.0.0.1:8127",
+    "https://www.piatto-cooks.com",
+    "https://piatto-cooks.com",
 ]
+
 
 app.add_middleware(
     CORSMiddleware,
