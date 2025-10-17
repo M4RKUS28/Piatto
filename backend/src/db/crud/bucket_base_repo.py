@@ -152,7 +152,8 @@ async def get_file_info(sess: BucketSession, key: str) -> Dict[str, Any]:
 
 async def make_file_public(sess: BucketSession, key: str) -> Dict[str, Any]:
     """
-    Setzt die Datei öffentlich und gibt Infos inkl. URL zurück.
+    Setzt die einzelne Datei öffentlich (Fine-grained ACL).
+    Der Bucket selbst bleibt privat, nur diese Datei wird für allUsers lesbar.
     """
     blob = sess.bucket.blob(key)
 
@@ -161,13 +162,17 @@ async def make_file_public(sess: BucketSession, key: str) -> Dict[str, Any]:
         raise HTTPException(status_code=404, detail="File not found")
 
     try:
+        # Setze ACL für diese Datei auf public-read
         await BucketEngine._retry(blob.make_public, timeout=sess.timeout)
+        logger.info("File made public: gs://%s/%s", sess.bucket.name, key)
     except Exception as e:
         logger.exception("make_public failed for gs://%s/%s: %s", sess.bucket.name, key, e)
         raise HTTPException(status_code=500, detail="Failed to make file public") from e
 
     # Metadata laden
     file_info = await get_file_info(sess, key)
+    
+    # Public URL generieren
     file_info["public_url"] = f"https://storage.googleapis.com/{sess.bucket.name}/{key}"
     file_info["status"] = "public"
     
