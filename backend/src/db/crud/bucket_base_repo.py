@@ -6,7 +6,7 @@ from typing import List, Optional
 from fastapi import HTTPException
 from google.cloud.storage import Blob
 
-from ..db.bucket_session import BucketSession, BucketEngine
+from ..bucket_session import BucketSession, BucketEngine
 
 logger = logging.getLogger(__name__)
 

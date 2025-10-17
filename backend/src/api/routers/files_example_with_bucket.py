@@ -4,7 +4,7 @@ import tempfile
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 
 from ...db.bucket_session import get_bucket_session, BucketSession
-from ...services.bucket_service import (
+from ...db.crud.bucket_base_repo import (
     upload_file, make_file_public, generate_signed_get_url,
     generate_signed_put_url, delete_file, file_exists, list_files,
 )
@@ -22,7 +22,6 @@ async def upload(user_id: str, file: UploadFile = File(...), sess: BucketSession
         tmp.write(body)
         tmp.flush()
         tmp_path = tmp.name
-
     try:
         key = await upload_file(sess, user_id, tmp_path, file.filename, file.content_type)
         return {"status": "ok", "key": key}
