@@ -48,8 +48,8 @@ async def get_recipe(recipe_id: int,
     )
     return result
 
-@router.put("/change_ai", response_model=Recipe) # TODO
-async def change_recipe_ai(request: ChangeRecipeAIRequest, user_id: str = Depends(get_read_write_user_id)):
+@router.put("/change_ai", response_model=Recipe)
+async def change_recipe_ai(request: ChangeRecipeAIRequest):
     """
     Modify a recipe using AI based on the user ID, change prompt, and recipe ID.
 
@@ -59,9 +59,9 @@ async def change_recipe_ai(request: ChangeRecipeAIRequest, user_id: str = Depend
     Returns:
         Recipe: The modified recipe.
     """
-    return await agent_service.change_recipe(user_id, request.change_prompt, request.recipe_id)
+    return await agent_service.change_recipe(request.change_prompt, request.recipe_id)
 
-@router.put("/change_manual", response_model=Recipe) # TODO
+@router.put("/change_manual", response_model=Recipe)
 async def change_recipe_manual(request: ChangeRecipeManualRequest,
                                db: AsyncSession = Depends(get_db)):
     """
@@ -73,8 +73,26 @@ async def change_recipe_manual(request: ChangeRecipeManualRequest,
     Returns:
         Recipe: The modified recipe.
     """
-    # DB: Update the old recipe
-    pass
+    recipe = await recipe_crud.update_recipe(
+        db,
+        recipe_id=request.recipe_id,
+        title=request.title,
+        description=request.description,
+        ingredients=json.dumps(request.ingredients),
+        instructions=json.dumps(request.instructions),
+        image_url=request.image_url,
+    )
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+    result = Recipe(
+        id=recipe.id,
+        title=recipe.title,
+        description=recipe.description,
+        ingredients=json.loads(recipe.ingredients),
+        instructions=json.loads(recipe.instructions),
+        image_url=recipe.image_url,
+    )
+    return result
 
 @router.post("/{recipe_id}/save")
 async def save_recipe(recipe_id: int,

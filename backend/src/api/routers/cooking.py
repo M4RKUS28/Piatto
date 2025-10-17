@@ -90,7 +90,7 @@ async def change_state(request: ChangeStateRequest,
     await cooking_crud.update_cooking_session_state(db, request.cooking_session_id, request.new_state)
     return
 
-@router.post("/ask_question", response_model=int) # TODO
+@router.post("/ask_question", response_model=PromptHistory)
 async def ask_question(request: AskQuestionRequest, user_id: str = Depends(get_read_write_user_id)):
     """
     Ask a question during a cooking session based on the provided session ID, and prompt.
@@ -99,11 +99,9 @@ async def ask_question(request: AskQuestionRequest, user_id: str = Depends(get_r
         request (AskQuestionRequest): The request containing cooking session ID, and prompt.
 
     Returns:
-        int: The ID of the prompt history entry.
+        PromptHistory: The new prompt history entry.
     """
-    prompt_history_id = 1
-    # DB: Get the prompt history id
-    return agent_service.ask_question(user_id, request.cooking_session_id, request.prompt, prompt_history_id)
+    return agent_service.ask_question(user_id, request.cooking_session_id, request.prompt)
 
 @router.delete("/{cooking_session_id}/finish")
 async def finish_session(cooking_session_id: int,

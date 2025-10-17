@@ -63,7 +63,6 @@ async def create_recipe(db: AsyncSession,
 
 async def update_recipe(db: AsyncSession,
                 recipe_id: int,
-                user_id: Optional[str] = None,
                 title: Optional[str] = None,
                 description: Optional[str] = None,
                 ingredients: Optional[str] = None,
@@ -75,9 +74,6 @@ async def update_recipe(db: AsyncSession,
     recipe = result.scalar_one_or_none()
     if not recipe:
         return None
-
-    if user_id is not None:
-        recipe.user_id = user_id
     if title is not None:
         recipe.title = title
     if description is not None:
