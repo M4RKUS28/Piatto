@@ -21,19 +21,32 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.post("/generate", response_model=int) # TODO
-async def generate_recipe(request: GenerateRecipeRequest, user_id: str = Depends(get_read_write_user_id)):
+
+@router.get("/{recipe_id}/get", response_model=Recipe)
+async def get_recipe(recipe_id: int,
+                     db : AsyncSession = Depends(get_db)):
     """
-    Generate a recipe based on the user ID, prompt, and optional generation context ID.
+    Retrieve a recipe based on the provided recipe ID.
 
     Args:
-        request (GenerateRecipeRequest): The request containing prompt, and optional generation context ID.
+        recipe_id (int): The ID of the recipe to retrieve.
 
     Returns:
-        int: A generation context ID (The one given as an argument if available).
+        Recipe: The retrieved recipe.
     """
-    gen_context_id = request.gen_context_id if request.gen_context_id is not None else 0
-    return await agent_service.generate_recipe(user_id, request.prompt, gen_context_id)
+
+    recipe = await recipe_crud.get_recipe_by_id(db, recipe_id)
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+    result = Recipe(
+        id=recipe.id,
+        title=recipe.title,
+        description=recipe.description,
+        ingredients=json.loads(recipe.ingredients),
+        instructions=json.loads(recipe.instructions),
+        image_url=recipe.image_url,
+    )
+    return result
 
 @router.put("/change_ai", response_model=Recipe) # TODO
 async def change_recipe_ai(request: ChangeRecipeAIRequest, user_id: str = Depends(get_read_write_user_id)):
@@ -76,139 +89,15 @@ async def save_recipe(recipe_id: int,
     await recipe_crud.update_recipe(db, recipe_id, is_permanent=True)
     return
 
-@router.post("/{recipe_id}/start", response_model=int)
-async def start_recipe(recipe_id: int,
-                       user_id: str = Depends(get_read_write_user_id),
-                       db: AsyncSession = Depends(get_db)):
+@router.delete("/{recipe_id}/delete")
+async def delete_recipe(recipe_id: int,
+                        db: AsyncSession = Depends(get_db)):
     """
-    Start a recipe session based on the user ID and recipe details.
+    Delete a recipe based on the provided recipe ID.
 
     Args:
-        int: The recipe ID.
-
-    Returns:
-        int: The ID of the started recipe session.
-    """
-    cooking_session = await recipe_crud.create_cooking_session(db, user_id, recipe_id)
-    return cooking_session.id
-
-@router.put("/change_state")
-async def change_state(request: ChangeStateRequest,
-                       db: AsyncSession = Depends(get_db)):
-    """
-    Change the state of a recipe session based on the provided session ID and state details.
-
-    Args:
-        request (ChangeStateRequest): The request containing the session ID and state details.
+        recipe_id (int): The ID of the recipe to delete.
     """
 
-    await recipe_crud.update_cooking_session_state(db, request.cooking_session_id, request.new_state)
+    await recipe_crud.delete_recipe(db, recipe_id)
     return
-
-@router.post("/ask_question", response_model=int) # TODO
-async def ask_question(request: AskQuestionRequest, user_id: str = Depends(get_read_write_user_id)):
-    """
-    Ask a question during a cooking session based on the provided session ID, and prompt.
-
-    Args:
-        request (AskQuestionRequest): The request containing cooking session ID, and prompt.
-
-    Returns:
-        int: The ID of the prompt history entry.
-    """
-    prompt_history_id = 1
-    # DB: Get the prompt history id
-    return agent_service.ask_question(user_id, request.cooking_session_id, request.prompt, prompt_history_id)
-
-@router.get("/{gen_context_id}/get_options", response_model=List[RecipePreview])
-async def get_options(gen_context_id: int,
-                      db: AsyncSession = Depends(get_db)):
-    """
-    Get available recipe options based on the provided context ID.
-
-    Args:
-        gen_context_id (int): The context ID of the generated recipes.
-
-    Returns:
-        List[RecipePreview]: A list of recipe previews.
-    """
-
-    recipes = await recipe_crud.get_recipes_by_gen_context_id(db, gen_context_id)
-    if not recipes:
-        raise HTTPException(status_code=404, detail="No recipes found for the given generation context ID")
-    result = []
-    for recipe in recipes:
-        result.append(RecipePreview(
-            id=recipe.id,
-            title=recipe.title,
-            description=recipe.description,
-            image_url=recipe.image_url,
-        ))
-    return result
-
-@router.get("/{recipe_id}/get_recipe", response_model=Recipe)
-async def get_recipe(recipe_id: int,
-                     db : AsyncSession = Depends(get_db)):
-    """
-    Retrieve a recipe based on the provided recipe ID.
-
-    Args:
-        recipe_id (int): The ID of the recipe to retrieve.
-
-    Returns:
-        Recipe: The retrieved recipe.
-    """
-
-    recipe = await recipe_crud.get_recipe_by_id(db, recipe_id)
-    if not recipe:
-        raise HTTPException(status_code=404, detail="Recipe not found")
-    result = Recipe(
-        id=recipe.id,
-        title=recipe.title,
-        description=recipe.description,
-        ingredients=json.loads(recipe.ingredients),
-        instructions=json.loads(recipe.instructions),
-        image_url=recipe.image_url,
-    )
-    return result
-
-@router.get("/{cooking_session_id}/get_session", response_model=CookingSession)
-async def get_session(cooking_session_id: int,
-                      db: AsyncSession = Depends(get_db)):
-    """
-    Retrieve a cooking session based on the provided session ID.
-
-    Args:
-        cooking_session_id (int): The ID of the cooking session.
-
-    Returns:
-        CookingSession: The corresponding cooking session.
-    """
-
-    session = await recipe_crud.get_cooking_session_by_id(db, cooking_session_id)
-    result = CookingSession(
-        id=session.id,
-        recipe_id=session.recipe_id,
-        state=session.state
-    )
-    return result
-
-@router.get("{cooking_session_id}/get_prompt_history", response_model=PromptHistory)
-async def get_prompt_history(cooking_session_id: int,
-                            db: AsyncSession = Depends(get_db)
-):
-    """
-    Retrieve the prompt history based on the provided cooking session ID.
-
-    Args:
-        cooking_session_id (int): The ID of the cooking session that includes the current state.
-
-    Returns:
-        PromptHistory: The prompt history.
-    """
-
-    history = await recipe_crud.get_prompt_history_by_cooking_session_id(db, cooking_session_id)
-    prompts = json.loads(history.prompts)
-    responses = json.loads(history.responses)
-    result = PromptHistory(prompts=prompts, responses=responses)
-    return result

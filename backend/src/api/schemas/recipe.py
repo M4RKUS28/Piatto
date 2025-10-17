@@ -19,7 +19,7 @@ class Recipe(BaseModel):
     description: str
     ingredients: List[Ingredient]
     instructions: List[Instruction]
-    image_id: int
+    image_url: int
 
     class Config:
         from_attributes = True  # wichtig, wenn du ORM-Objekte nutzt
