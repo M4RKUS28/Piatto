@@ -66,7 +66,11 @@ class ChangeRecipeAIRequest(BaseModel):
 class ChangeRecipeManualRequest(BaseModel):
     """Schema for manually changing a recipe."""
     recipe_id: int
-    recipe: Recipe
+    title: Optional[str] = None
+    description: Optional[str] = None
+    ingredients: Optional[List[Ingredient]] = None
+    instructions: Optional[List[Instruction]] = None
+    image_url: Optional[str] = None
 
 class ChangeStateRequest(BaseModel):
     """Schema for changing the cooking state."""

@@ -1,4 +1,7 @@
+import json
 from typing import List
+
+from ...db.database import get_db
 from ...services.agent_service import AgentService
 from fastapi import APIRouter, HTTPException, Body, Depends
 from ..schemas.recipe import (
@@ -6,6 +9,9 @@ from ..schemas.recipe import (
     AskQuestionRequest, Recipe, RecipePreview, PromptHistory, CookingSession
 )
 from ...utils.auth import get_read_write_user_id, get_readonly_user_id, get_user_id_optional, get_read_write_user_token_data
+from ...db.crud import recipe_crud
+from sqlalchemy.ext.asyncio import AsyncSession
+
 
 agent_service = AgentService()
 
@@ -53,7 +59,7 @@ async def change_recipe_manual(request: ChangeRecipeManualRequest):
     Returns:
         Recipe: The modified recipe.
     """
-    # DB: Replace the recipe with the new one
+    # DB: Update the old recipe
     pass
 
 @router.post("/{recipe_id}/save")
@@ -104,7 +110,7 @@ async def ask_question(request: AskQuestionRequest, user_id: str = Depends(get_r
         int: The ID of the prompt history entry.
     """
     prompt_history_id = 1
-    # DB: Get the prompt history
+    # DB: Get the prompt history id
     return agent_service.ask_question(user_id, request.cooking_session_id, request.prompt, prompt_history_id)
 
 @router.get("/{gen_context_id}/get_options", response_model=List[RecipePreview])
@@ -150,7 +156,9 @@ async def get_session(cooking_session_id: int):
     pass
 
 @router.get("{cooking_session_id}/get_prompt_history", response_model=PromptHistory)
-async def get_prompt_history(cooking_session_id: int):
+async def get_prompt_history(cooking_session_id: int,
+                                 db: AsyncSession = Depends(get_db)
+):
     """
     Retrieve the prompt history based on the provided cooking session ID.
 
@@ -161,4 +169,13 @@ async def get_prompt_history(cooking_session_id: int):
         PromptHistory: The prompt history.
     """
     # DB: Get Prompt History
-    pass
+
+    history = await recipe_crud.get_prompt_history_by_cooking_session_id(db, cooking_session_id)
+    try:
+        prompts = json.loads(history.prompts)   
+        responses = json.loads(history.responses)
+    except json.JSONDecodeError:
+        prompts = []
+        responses = []
+    result = PromptHistory(id=int(history.id), prompts=[], responses=[])  # TODO: parse JSON strings to lists
+    return result
