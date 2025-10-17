@@ -15,14 +15,6 @@ logger = logging.getLogger(__name__)
 
 engine = None  # Global engine instance
 
-# Build MySQL connection URL safely
-def build_mysql_url():
-    safe_password = quote_plus(settings.DB_PASSWORD)
-    return (
-        f"mysql+aiomysql://{settings.DB_USER}:{safe_password}"
-        f"@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
-    )
-
 # ✅ Local SQLite fallback
 async def _create_local_engine(url: str):
     if url.startswith("sqlite://") and not url.startswith("sqlite+aiosqlite://"):
@@ -36,7 +28,12 @@ async def _create_local_engine(url: str):
 
 # ✅ Retry-enabled MySQL Cloud connection
 async def _create_cloud_engine_with_retry(max_retries=5, wait_seconds=2):
-    mysql_url = build_mysql_url()
+    # Build MySQL connection URL safely
+    safe_password = quote_plus(settings.DB_PASSWORD)
+    mysql_url= (
+        f"mysql+aiomysql://{settings.DB_USER}:{safe_password}"
+        f"@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
+    )
     logger.info(f"Connecting to Cloud SQL: {mysql_url}")
 
     last_exc = None
