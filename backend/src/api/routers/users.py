@@ -28,7 +28,8 @@ router = APIRouter(
 
 from starlette.requests import Request
 
-@app.get("/api/test")
+
+@router.get("/api/test")
 async def test(request: Request):
     print("COOKIES:", request.cookies)
     return {"cookies": request.cookies}
