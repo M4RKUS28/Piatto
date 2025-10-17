@@ -17,9 +17,9 @@ class Recipe(Base):
     is_permanent = Column(Boolean, default=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
-class GenContext(Base):
-    """Database model for a generation context."""
-    __tablename__ = "gen_contexts"
+class PreparingSession(Base):
+    """Database model for a preparing session."""
+    __tablename__ = "preparing_sessions"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(String(50), ForeignKey("users.id"), nullable=False)

@@ -1,0 +1,56 @@
+import { Link } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
+
+export default function Header({ showAuthButtons = true }) {
+  const { isAuthenticated } = useAuth()
+
+  return (
+    <nav className="bg-[#FFF8F0] border-b border-[#F5F5F5] sticky top-0 z-50">
+      <div className="w-full py-4 px-6">
+        <div className="flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-white rounded-2xl shadow-md flex items-center justify-center">
+              <img src="/logo_no_P.svg" alt="Piatto" className="w-10 h-10" />
+            </div>
+            <span className="text-2xl font-bold text-[#035035]" style={{ fontFamily: 'Georgia, serif' }}>Piatto</span>
+          </Link>
+
+          <div className="hidden md:flex items-center gap-8">
+            <Link to="/#features" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">Features</Link>
+            <Link to="/#how-it-works" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">How It Works</Link>
+            <Link to="/#recipes" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">Recipes</Link>
+            <Link to="/about" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">About</Link>
+          </div>
+
+          {showAuthButtons && (
+            <>
+              {isAuthenticated ? (
+                <Link
+                  to="/app"
+                  className="bg-[#035035] text-white px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all shadow-md hover:shadow-lg"
+                >
+                  Dashboard
+                </Link>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <Link
+                    to="/login"
+                    className="text-[#035035] hover:text-[#FF9B7B] transition-colors font-semibold"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="bg-[#035035] text-white px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all shadow-md hover:shadow-lg"
+                  >
+                    Get Started Free
+                  </Link>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </nav>
+  )
+}

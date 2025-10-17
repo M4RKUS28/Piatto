@@ -11,7 +11,7 @@ from backend.src.agents.utils import create_text_query, load_instruction_from_fi
 
 
 class ImageAgent:
-    def __init__(self):
+    def __init__(self, app_name, session_service):
         self.client = genai.Client() # use normal gemini client because it is easier to use with image output
         self.full_instructions = load_instruction_from_file("image_agent/instructions.txt")
 

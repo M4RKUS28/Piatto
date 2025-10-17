@@ -109,7 +109,7 @@ async def register_user(user_data: user_schema.UserCreate, db: AsyncSession, res
         username = user_data.username,
         email = user_data.email,
         hashed_password = security.get_password_hash(user_data.password),
-        profile_image_base64 = user_data.profile_image_base64,
+        profile_image_url = user_data.profile_image_url,
         theme = user_data.theme,
         language = getattr(user_data, "language", None) or "en",
     )
@@ -301,15 +301,15 @@ async def handle_oauth_callback(request: Request, db: AsyncSession, website: str
                                 detail=f"Could not fetch user email from {website}.")
 
         db_user = await users_crud.get_user_by_email(db, email)
-        profile_image_base64_data = None
+        profile_image_url_data = None
 
         if picture_url:
             try:
                 response = requests.get(picture_url, timeout=10)
                 response.raise_for_status()
-                profile_image_base64_data = base64.b64encode(response.content).decode('utf-8')
+                profile_image_url_data = base64.b64encode(response.content).decode('utf-8')
             except requests.exceptions.RequestException:
-                profile_image_base64_data = None
+                profile_image_url_data = None
 
         if not db_user:
             logger.info("Creating new user for %s OAuth login: %s (%s)", website, email, name)
@@ -330,13 +330,13 @@ async def handle_oauth_callback(request: Request, db: AsyncSession, website: str
                 hashed_password,
                 is_active=True,
                 role=UserRole.USER.value,
-                profile_image_base64=profile_image_base64_data,
+                profile_image_url=profile_image_url_data,
                 language="en",
             )
         else:
             logger.info("Using existing user %s from database for %s OAuth login.", db_user.username, website)
-            if profile_image_base64_data and getattr(db_user, 'profile_image_base64', None) != profile_image_base64_data:
-                await users_crud.update_user_profile_image(db, db_user, profile_image_base64_data)
+            if profile_image_url_data and getattr(db_user, 'profile_image_url', None) != profile_image_url_data:
+                await users_crud.update_user_profile_image(db, db_user, profile_image_url_data)
 
         if not db_user or not db_user.is_active:  # type: ignore
             logger.warning("Inactive user OAuth login attempt: %s", email)
