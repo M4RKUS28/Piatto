@@ -15,9 +15,9 @@ router = APIRouter(prefix="/files", tags=["files"])
 
 @router.post("/upload")
 async def upload(user_id: str, file: UploadFile = File(...), sess: BucketSession = Depends(get_bucket_session)):
-    # Cloud Run: /tmp vorhanden
+    # tempfile.gettempdir() works cross-platform (Windows: C:\Users\...\AppData\Local\Temp, Linux: /tmp)
     suffix = os.path.splitext(file.filename)[1]
-    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix, dir="/tmp") as tmp:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         body = await file.read()
         tmp.write(body)
         tmp.flush()
