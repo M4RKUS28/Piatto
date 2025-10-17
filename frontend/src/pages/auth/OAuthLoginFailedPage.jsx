@@ -1,0 +1,121 @@
+import { Link, useSearchParams } from 'react-router-dom';
+import { AlertCircle, Home, ArrowLeft, RefreshCw } from 'lucide-react';
+
+export default function OAuthLoginFailedPage() {
+  const [searchParams] = useSearchParams();
+  const reason = searchParams.get('reason') || 'An unexpected error occurred during OAuth login';
+
+  const handleRetryOAuth = () => {
+    // Redirect to Google OAuth login
+    const backendUrl = window.location.origin;
+    window.location.href = `${backendUrl}/api/auth/login/google`;
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#FFF8F0] via-white to-[#F5F5F5] flex items-center justify-center px-6 relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="fixed top-20 right-20 w-64 h-64 rounded-full bg-[#A8C9B8] opacity-10 blur-3xl"></div>
+      <div className="fixed bottom-40 left-10 w-80 h-80 rounded-full bg-[#FF9B7B] opacity-10 blur-3xl"></div>
+
+      <div className="w-full max-w-lg relative z-10">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center gap-3 mb-6">
+            <div className="w-14 h-14 bg-white rounded-2xl shadow-lg flex items-center justify-center">
+              <img src="/logo_no_P.svg" alt="Piatto" className="w-12 h-12" />
+            </div>
+            <span className="text-3xl font-bold text-[#035035]" style={{ fontFamily: 'Georgia, serif' }}>
+              Piatto
+            </span>
+          </Link>
+        </div>
+
+        {/* Error Card */}
+        <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#F5F5F5]">
+          <div className="text-center mb-6">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-12 h-12 text-red-600" />
+            </div>
+            <h1 className="text-3xl font-bold text-[#035035] mb-3">OAuth Login Failed</h1>
+            <p className="text-[#2D2D2D] text-lg">We couldn't complete your Google sign-in</p>
+          </div>
+
+          {/* Error Details */}
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
+            <p className="text-sm font-medium text-red-800 mb-1">Error Details:</p>
+            <p className="text-sm text-red-600">{reason}</p>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            <button
+              onClick={handleRetryOAuth}
+              className="w-full bg-[#035035] text-white py-3 rounded-full font-semibold text-lg hover:scale-105 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+            >
+              <RefreshCw className="w-5 h-5" />
+              Retry with Google
+            </button>
+
+            <Link
+              to="/login"
+              className="w-full bg-white border-2 border-[#F5F5F5] text-[#2D2D2D] py-3 rounded-full font-semibold text-lg hover:border-[#035035] hover:scale-105 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              Back to Login
+            </Link>
+            
+            <Link
+              to="/"
+              className="w-full bg-transparent border-2 border-[#A8C9B8] text-[#035035] py-3 rounded-full font-semibold text-lg hover:bg-[#A8C9B8] hover:text-white transition-all flex items-center justify-center gap-2"
+            >
+              <Home className="w-5 h-5" />
+              Go Home
+            </Link>
+          </div>
+
+          {/* Help Section */}
+          <div className="mt-8 pt-6 border-t border-[#F5F5F5] text-center">
+            <p className="text-sm text-[#2D2D2D] mb-3">Common OAuth issues:</p>
+            <ul className="text-sm text-[#2D2D2D] space-y-2 text-left">
+              <li className="flex items-start gap-2">
+                <span className="text-[#FF9B7B] mt-1">•</span>
+                <span>Make sure pop-ups are enabled in your browser</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[#FF9B7B] mt-1">•</span>
+                <span>Check that you're using a valid Google account</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[#FF9B7B] mt-1">•</span>
+                <span>Try clearing your browser cache and cookies</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[#FF9B7B] mt-1">•</span>
+                <span>Ensure third-party cookies are not blocked</span>
+              </li>
+            </ul>
+            <p className="text-sm text-[#2D2D2D] mt-4">
+              Still having trouble?{' '}
+              <Link to="/contact" className="text-[#FF9B7B] hover:text-[#035035] font-semibold">
+                Contact Support
+              </Link>
+            </p>
+          </div>
+
+          {/* Alternative Login */}
+          <div className="mt-6 pt-6 border-t border-[#F5F5F5] text-center">
+            <p className="text-sm text-[#2D2D2D] mb-3">
+              Prefer to use email and password instead?
+            </p>
+            <Link
+              to="/login"
+              className="inline-block text-[#FF9B7B] hover:text-[#035035] font-semibold text-sm"
+            >
+              Sign in with Email →
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

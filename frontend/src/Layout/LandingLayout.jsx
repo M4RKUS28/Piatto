@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 export default function LandingLayout({ children }) {
+  const { isAuthenticated } = useAuth()
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <nav className="bg-[#FFF8F0] border-b border-[#F5F5F5] sticky top-0 z-50">
@@ -17,14 +20,32 @@ export default function LandingLayout({ children }) {
               <a href="#features" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">Features</a>
               <a href="#how-it-works" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">How It Works</a>
               <a href="#recipes" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">Recipes</a>
+              <Link to="/about" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">About</Link>
             </div>
 
-            <Link
-              to="/app"
-              className="bg-[#035035] text-white px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all shadow-md hover:shadow-lg"
-            >
-              Get Started Free
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                to="/app"
+                className="bg-[#035035] text-white px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all shadow-md hover:shadow-lg"
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Link
+                  to="/login"
+                  className="text-[#035035] hover:text-[#FF9B7B] transition-colors font-semibold"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/register"
+                  className="bg-[#035035] text-white px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all shadow-md hover:shadow-lg"
+                >
+                  Get Started Free
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </nav>
@@ -49,18 +70,18 @@ export default function LandingLayout({ children }) {
             <div>
               <h4 className="font-bold mb-4">Product</h4>
               <ul className="space-y-2 text-sm opacity-80">
-                <li><a href="#" className="hover:opacity-100 transition-opacity">Features</a></li>
-                <li><a href="#" className="hover:opacity-100 transition-opacity">Recipes</a></li>
-                <li><a href="#" className="hover:opacity-100 transition-opacity">Pricing</a></li>
+                <li><a href="#features" className="hover:opacity-100 transition-opacity">Features</a></li>
+                <li><a href="#recipes" className="hover:opacity-100 transition-opacity">Recipes</a></li>
+                <li><Link to="/about" className="hover:opacity-100 transition-opacity">About</Link></li>
               </ul>
             </div>
 
             <div>
               <h4 className="font-bold mb-4">Company</h4>
               <ul className="space-y-2 text-sm opacity-80">
-                <li><a href="#" className="hover:opacity-100 transition-opacity">About Us</a></li>
-                <li><a href="#" className="hover:opacity-100 transition-opacity">Blog</a></li>
-                <li><a href="#" className="hover:opacity-100 transition-opacity">Contact</a></li>
+                <li><Link to="/about" className="hover:opacity-100 transition-opacity">About Us</Link></li>
+                <li><Link to="/contact" className="hover:opacity-100 transition-opacity">Contact</Link></li>
+                <li><Link to="/privacy" className="hover:opacity-100 transition-opacity">Privacy Policy</Link></li>
               </ul>
             </div>
 

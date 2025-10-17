@@ -35,15 +35,20 @@ apiWithCookies.interceptors.response.use(
     const originalRequest = error.config;
     const originalResponseType = originalRequest?.responseType;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Don't try to refresh token for auth endpoints (login, signup, refresh)
+    const isAuthEndpoint = originalRequest.url?.includes('/auth/login') || 
+                          originalRequest.url?.includes('/auth/signup') ||
+                          originalRequest.url?.includes('/auth/refresh');
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
+        }).then(() => {
           // Preserve the original responseType when retrying
           if (originalResponseType) {
             originalRequest.responseType = originalResponseType;
           }
-          return apiWithCookies(originalRequest);
           return apiWithCookies(originalRequest);
         });
       }
@@ -55,15 +60,15 @@ apiWithCookies.interceptors.response.use(
         await axios.post('/api/auth/refresh', null, { withCredentials: true });
         processQueue(null);
         // Preserve the original responseType when retrying
-        if (originalRequest.responseType) {
-          originalRequest.responseType = originalRequest.responseType;
+        if (originalResponseType) {
+          originalRequest.responseType = originalResponseType;
         }
         return apiWithCookies(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError);
         if (typeof window !== 'undefined' && 
-            window.location.pathname !== '/auth/login') {
-          window.location.href = '/auth/login';
+            window.location.pathname !== '/login') {
+          window.location.href = '/login';
         }
         return Promise.reject(refreshError);
       } finally {

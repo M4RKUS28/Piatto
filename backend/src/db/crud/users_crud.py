@@ -35,7 +35,7 @@ async def create_user(db: AsyncSession,
                 email: str, hashed_password: str,
                 is_active=True,
                 role=UserRole.USER.value,
-                profile_image_base64=None,
+                profile_image_url=None,
                 theme: str = ThemePreference.LIGHT.value,
                 language: str = "en"):
     """Create a new user in the database."""
@@ -55,8 +55,8 @@ async def create_user(db: AsyncSession,
         theme=theme,
         language=sanitized_language or "en",
     )
-    if profile_image_base64:
-        user.profile_image_base64 = profile_image_base64
+    if profile_image_url:
+        user.profile_image_url = profile_image_url
     db.add(user)
     await db.commit()
     await db.refresh(user)
@@ -89,9 +89,9 @@ async def update_user_last_login(db: AsyncSession, user_id: str) -> Optional[Use
         await db.refresh(user)
     return user
 
-async def update_user_profile_image(db: AsyncSession, user: User, profile_image_base64: str):
+async def update_user_profile_image(db: AsyncSession, user: User, profile_image_url: str):
     """Update the profile image of an existing user."""
-    user.profile_image_base64 = profile_image_base64 # type: ignore
+    user.profile_image_url = profile_image_url # type: ignore
     await db.commit()
     await db.refresh(user)
     return user

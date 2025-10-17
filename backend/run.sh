@@ -66,5 +66,5 @@ import uvicorn
 import os
 
 port = int(os.getenv('PORT', $PORT))
-uvicorn.run('src.main:app', host='0.0.0.0', port=port)
+uvicorn.run('src.main:app', host='0.0.0.0', port=port, reload=True)
 "
