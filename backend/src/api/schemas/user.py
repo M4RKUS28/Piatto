@@ -20,7 +20,7 @@ class UserBase(BaseModel):
     """Base model for user data, used for both creation and updates."""
     username: str
     email: EmailStr
-    profile_image_base64: Optional[str] = None # Added for profile image
+    profile_image_url: Optional[str] = None
     theme: Optional[ThemePreference] = Field(default=ThemePreference.LIGHT)
     language: Optional[str] = Field(default="en", min_length=2, max_length=10)
 
@@ -80,7 +80,7 @@ class UserUpdate(BaseModel):
     """Model for updating an existing user."""
     username: Optional[str] = None
     email: Optional[EmailStr] = None
-    profile_image_base64: Optional[str] = None # Added for profile image
+    profile_image_url: Optional[str] = None
     password: Optional[str] = Field(
         default=None, # Password is optional on update
         description="New password (if changing) must meet complexity requirements."
@@ -168,11 +168,10 @@ class User(UserBase):
     id: str
     is_active: bool
     role: UserRole
-    profile_image_base64: Optional[str] = None # Added for profile image
+    profile_image_url: Optional[str] = None # Added for profile image
     created_at: datetime
     last_login: datetime
     login_streak: int
-    total_learn_time: Optional[int] = None # Total time spent learning in Minutes
 
     class Config:
         from_attributes = True
