@@ -88,6 +88,9 @@ class BucketEngine:
                 logger.warning("GCS transient error on attempt %d/%d: %s (retrying in %.1fs)", attempt, max_retries, e, backoff)
                 await asyncio.sleep(backoff)
                 backoff = min(backoff * 2, 16.0)
+            except (gapi_exc.NotFound, gapi_exc.PermissionDenied, gapi_exc.BadRequest) as e:
+                # Expected errors - don't retry, don't log as error
+                raise e
             except Exception as e:
                 last_exc = e
                 logger.error("GCS non-retryable error: %s", e)

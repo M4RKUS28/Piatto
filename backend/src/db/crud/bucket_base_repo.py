@@ -129,14 +129,19 @@ async def get_file_info(sess: BucketSession, key: str) -> Dict[str, Any]:
     """
     Holt File-Informationen inkl. Metadata.
     """
+    from google.api_core import exceptions as gapi_exc
+    
     blob = sess.bucket.blob(key)
     
     try:
         # Blob neu laden um Metadata zu holen
         await BucketEngine._retry(blob.reload, timeout=sess.timeout)
+    except gapi_exc.NotFound:
+        # Expected: File doesn't exist - no error log
+        raise HTTPException(status_code=404, detail="File not found")
     except Exception as e:
-        logger.exception("Failed to get file info for gs://%s/%s: %s", sess.bucket.name, key, e)
-        raise HTTPException(status_code=404, detail="File not found") from e
+        logger.error("Failed to get file info for gs://%s/%s: %s", sess.bucket.name, key, e)
+        raise HTTPException(status_code=500, detail="Failed to get file info") from e
     
     return {
         "key": key,
@@ -155,9 +160,16 @@ async def make_file_public(sess: BucketSession, key: str) -> Dict[str, Any]:
     Setzt die einzelne Datei öffentlich (Fine-grained ACL).
     Der Bucket selbst bleibt privat, nur diese Datei wird für allUsers lesbar.
     """
+    from google.api_core import exceptions as gapi_exc
+    
     blob = sess.bucket.blob(key)
 
-    exists = await BucketEngine._retry(blob.exists, timeout=sess.timeout)
+    try:
+        exists = await BucketEngine._retry(blob.exists, timeout=sess.timeout)
+    except Exception as e:
+        logger.error("Failed to check file existence for gs://%s/%s: %s", sess.bucket.name, key, e)
+        raise HTTPException(status_code=500, detail="Failed to check file existence") from e
+        
     if not exists:
         raise HTTPException(status_code=404, detail="File not found")
 
@@ -165,8 +177,12 @@ async def make_file_public(sess: BucketSession, key: str) -> Dict[str, Any]:
         # Setze ACL für diese Datei auf public-read
         await BucketEngine._retry(blob.make_public, timeout=sess.timeout)
         logger.info("File made public: gs://%s/%s", sess.bucket.name, key)
+    except gapi_exc.BadRequest as e:
+        # z.B. Uniform Bucket-Level Access enabled
+        logger.warning("Cannot make file public (probably uniform bucket-level access): %s", e)
+        raise HTTPException(status_code=400, detail="Cannot make file public. Check bucket access settings.") from e
     except Exception as e:
-        logger.exception("make_public failed for gs://%s/%s: %s", sess.bucket.name, key, e)
+        logger.error("make_public failed for gs://%s/%s: %s", sess.bucket.name, key, e)
         raise HTTPException(status_code=500, detail="Failed to make file public") from e
 
     # Metadata laden
@@ -187,9 +203,16 @@ async def generate_signed_get_url(
     """
     Erzeugt eine v4 signed GET-URL (Standard: 60 Minuten gültig).
     """
+    from google.api_core import exceptions as gapi_exc
+    
     blob = sess.bucket.blob(key)
 
-    exists = await BucketEngine._retry(blob.exists, timeout=sess.timeout)
+    try:
+        exists = await BucketEngine._retry(blob.exists, timeout=sess.timeout)
+    except Exception as e:
+        logger.error("Failed to check file existence for gs://%s/%s: %s", sess.bucket.name, key, e)
+        raise HTTPException(status_code=500, detail="Failed to check file existence") from e
+        
     if not exists:
         raise HTTPException(status_code=404, detail="File not found")
 
@@ -208,7 +231,7 @@ async def generate_signed_get_url(
         
         return file_info
     except Exception as e:
-        logger.exception("signed GET url failed for gs://%s/%s: %s", sess.bucket.name, key, e)
+        logger.error("signed GET url failed for gs://%s/%s: %s", sess.bucket.name, key, e)
         raise HTTPException(status_code=500, detail="Failed to generate signed URL") from e
 
 
@@ -222,10 +245,15 @@ async def generate_signed_put_url(
 ) -> Dict[str, Any]:
     """
     Erzeugt eine v4 signed PUT-URL, damit das Frontend direkt zu GCS hochladen kann.
-    Wichtig: content_type muss vom Client gesetzt werden (gleicher Wert beim PUT).
+    
+    WICHTIG: Client muss beim PUT die Headers setzen:
+    - Content-Type: <gleicher content_type wie hier>
+    - x-goog-meta-original_filename: <original_filename>
+    - x-goog-meta-category: <category>
+    - x-goog-meta-uploaded_at: <timestamp>
     
     Returns:
-        Dict mit key, signed_url, metadata, etc.
+        Dict mit key, signed_url, headers (die der Client setzen muss)
     """
     if content_type not in ALLOWED_MIME:
         raise HTTPException(status_code=415, detail=f"Unsupported MIME type: {content_type}")
@@ -234,12 +262,8 @@ async def generate_signed_put_url(
     key = _generate_storage_key(user_id, category, original_filename)
     blob = sess.bucket.blob(key)
     
-    # Metadata setzen (wird beim PUT vom Client überschrieben, daher nur info)
-    metadata = {
-        "original_filename": original_filename,
-        "category": category,
-        "uploaded_at": datetime.utcnow().isoformat(),
-    }
+    # Metadata für den Client (muss als x-goog-meta-* Header gesetzt werden)
+    uploaded_at = datetime.utcnow().isoformat()
 
     try:
         url = await BucketEngine._retry(
@@ -258,11 +282,18 @@ async def generate_signed_put_url(
             "expires_in_minutes": minutes,
             "original_filename": original_filename,
             "category": category,
-            "metadata": metadata,
+            "uploaded_at": uploaded_at,
+            # Headers die der Client beim PUT setzen MUSS
+            "required_headers": {
+                "Content-Type": content_type,
+                "x-goog-meta-original_filename": original_filename,
+                "x-goog-meta-category": category,
+                "x-goog-meta-uploaded_at": uploaded_at,
+            },
             "status": "upload_url_generated",
         }
     except Exception as e:
-        logger.exception("signed PUT url failed for gs://%s/%s: %s", sess.bucket.name, key, e)
+        logger.error("signed PUT url failed for gs://%s/%s: %s", sess.bucket.name, key, e)
         raise HTTPException(status_code=500, detail="Failed to generate upload URL") from e
 
 
@@ -270,9 +301,11 @@ async def delete_file(sess: BucketSession, key: str) -> Dict[str, Any]:
     """
     Löscht eine Datei anhand des Keys.
     """
+    from google.api_core import exceptions as gapi_exc
+    
     blob = sess.bucket.blob(key)
     try:
-        # Hole Info vor dem Löschen
+        # Hole Info vor dem Löschen (wirft 404 wenn nicht existent)
         file_info = await get_file_info(sess, key)
         
         await BucketEngine._retry(blob.delete, timeout=sess.timeout)
@@ -280,9 +313,13 @@ async def delete_file(sess: BucketSession, key: str) -> Dict[str, Any]:
         file_info["status"] = "deleted"
         return file_info
     except HTTPException:
+        # 404 from get_file_info - re-raise
         raise
+    except gapi_exc.NotFound:
+        # File already deleted
+        raise HTTPException(status_code=404, detail="File not found")
     except Exception as e:
-        logger.warning("Delete failed for gs://%s/%s: %s", sess.bucket.name, key, e)
+        logger.error("Delete failed for gs://%s/%s: %s", sess.bucket.name, key, e)
         raise HTTPException(status_code=500, detail="Delete failed") from e
 
 
@@ -303,7 +340,7 @@ async def file_exists(sess: BucketSession, key: str) -> Dict[str, Any]:
                 "status": "not_found",
             }
     except Exception as e:
-        logger.exception("Exists check failed for gs://%s/%s: %s", sess.bucket.name, key, e)
+        logger.error("Exists check failed for gs://%s/%s: %s", sess.bucket.name, key, e)
         raise HTTPException(status_code=500, detail="Exists check failed") from e
 
 
@@ -354,5 +391,5 @@ async def list_files(
         files = await BucketEngine._run_blocking(_list_blobs)
         return files
     except Exception as e:
-        logger.exception("List files failed under gs://%s/%s: %s", sess.bucket.name, pre, e)
+        logger.error("List files failed under gs://%s/%s: %s", sess.bucket.name, pre, e)
         raise HTTPException(status_code=500, detail="List files failed") from e
