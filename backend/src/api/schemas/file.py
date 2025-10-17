@@ -9,6 +9,7 @@ class Document(BaseModel):
     """Document to upload"""
     file: UploadFile
 
+
 class Image(BaseModel):
     """Image to upload"""
     file: UploadFile
