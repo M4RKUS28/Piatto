@@ -47,7 +47,10 @@ app.add_middleware(
 def health():
     return {"ok": True}
 
-
+@app.get("/api/test")
+async def test(request: Request):
+    print("COOKIES:", request.cookies)
+    return {"cookies": request.cookies}
 
 from fastapi import FastAPI, UploadFile, HTTPException
 from google.cloud import storage
