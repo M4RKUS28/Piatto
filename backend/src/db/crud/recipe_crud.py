@@ -5,14 +5,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.src.db.models.db_recipe import Recipe, GenContext, CookingSession, PromptHistory
 
-# UpdateRecipe (z.B. permanent)
-# Create Recipe
-# Create CookingSession
-# Update CookingSession State
-# Get RecipePreviews !
-# Get Recipe !
-# Get CookingSession !
-# Get PromptHistory !
 
 async def get_recipes_by_gen_context_id(db: AsyncSession, gen_context_id: int) -> Optional[List[Recipe]]:
     """Retrieve the last three recipes by generation context ID."""
@@ -108,36 +100,65 @@ async def create_recipe(db: AsyncSession,
     await db.refresh(recipe)
     return recipe
 
+async def update_recipe(db: AsyncSession,
+                recipe_id: int,
+                user_id: Optional[str] = None,
+                title: Optional[str] = None,
+                description: Optional[str] = None,
+                ingredients: Optional[str] = None,
+                instructions: Optional[str] = None,
+                image_url: Optional[str] = None,
+                is_permanent: Optional[bool] = None) -> Optional[Recipe]:
+    """Update an existing recipe in the database."""
+    result = await db.execute(select(Recipe).filter(Recipe.id == recipe_id))
+    recipe = result.scalar_one_or_none()
+    if not recipe:
+        return None
 
-async def create_user(db: AsyncSession,
-                user_id: str,
-                username: str,
-                email: str, hashed_password: str,
-                is_active=True,
-                role=UserRole.USER.value,
-                profile_image_base64=None,
-                theme: str = ThemePreference.LIGHT.value,
-                language: str = "en"):
-    """Create a new user in the database."""
-    if isinstance(theme, ThemePreference):
-        theme = theme.value
-    normalized_language = (language or "en").strip().lower()
-    primary_language = normalized_language.split("-")[0]
-    sanitized_language = primary_language[:10] if primary_language else "en"
+    if user_id is not None:
+        recipe.user_id = user_id
+    if title is not None:
+        recipe.title = title
+    if description is not None:
+        recipe.description = description
+    if ingredients is not None:
+        recipe.ingredients = ingredients
+    if instructions is not None:
+        recipe.instructions = instructions
+    if image_url is not None:
+        recipe.image_url = image_url
+    if is_permanent is not None:
+        recipe.is_permanent = is_permanent
 
-    user = User(
-        id=user_id,
-        username=username,
-        email=email,
-        hashed_password=hashed_password,
-        is_active=is_active,
-        role=role,
-        theme=theme,
-        language=sanitized_language or "en",
-    )
-    if profile_image_base64:
-        user.profile_image_base64 = profile_image_base64
-    db.add(user)
+    db.add(recipe)
     await db.commit()
-    await db.refresh(user)
-    return user
+    await db.refresh(recipe)
+    return recipe
+
+async def create_cooking_session(db: AsyncSession,
+                         user_id: str,
+                         recipe_id: int) -> CookingSession:
+    """Create a new cooking session in the database."""
+    cooking_session = CookingSession(
+        user_id=user_id,
+        recipe_id=recipe_id,
+        state=1,
+    )
+    db.add(cooking_session)
+    await db.commit()
+    await db.refresh(cooking_session)
+    return cooking_session
+
+async def update_cooking_session_state(db: AsyncSession,
+                               cooking_session_id: int,
+                               new_state: int) -> Optional[CookingSession]:
+    """Update the state of an existing cooking session in the database."""
+    result = await db.execute(select(CookingSession).filter(CookingSession.id == cooking_session_id))
+    cooking_session = result.scalar_one_or_none()
+    if not cooking_session:
+        return None
+    cooking_session.state = new_state
+    db.add(cooking_session)
+    await db.commit()
+    await db.refresh(cooking_session)
+    return cooking_session
