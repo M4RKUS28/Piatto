@@ -3,6 +3,7 @@ from typing import List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.src.api.schemas.recipe import Ingredient
 from backend.src.db.models.db_recipe import Recipe, GenContext, CookingSession, PromptHistory
 
 
@@ -81,9 +82,9 @@ async def create_recipe(db: AsyncSession,
                 user_id: str,
                 title: str,
                 description: str,
-                ingredients: str,
+                ingredients: List[Ingredient],
                 instructions: str,
-                image_url: Optional[str] = None,
+                image_id: Optional[int] = None,
                 is_permanent: bool = False) -> Recipe:
     """Create a new recipe in the database."""
     recipe = Recipe(
@@ -92,7 +93,7 @@ async def create_recipe(db: AsyncSession,
         description=description,
         ingredients=ingredients,
         instructions=instructions,
-        image_url=image_url,
+        image_id=image_id,
         is_permanent=is_permanent,
     )
     db.add(recipe)
