@@ -46,7 +46,6 @@ class CookingSession(BaseModel):
 
 class PromptHistory(BaseModel):
     """Schema for prompt history."""
-    id: int
     prompts: List[str]
     responses: List[str]
 
