@@ -47,6 +47,9 @@ app.add_middleware(
 def health():
     return {"ok": True}
 
+
+from starlette.requests import Request
+
 @app.get("/api/test")
 async def test(request: Request):
     print("COOKIES:", request.cookies)
