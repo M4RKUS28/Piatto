@@ -9,7 +9,7 @@ from ..schemas.recipe import (
     AskQuestionRequest, Recipe, RecipePreview, PromptHistory, CookingSession
 )
 from ...utils.auth import get_read_write_user_id, get_readonly_user_id, get_user_id_optional, get_read_write_user_token_data
-from ...db.crud import recipe_crud
+from ...db.crud import recipe_crud, preparing_crud
 from sqlalchemy.ext.asyncio import AsyncSession
 
 agent_service = AgentService()
@@ -60,3 +60,18 @@ async def get_recipe_options(preparing_session_id: int,
         ))
     return result
 
+@router.delete("/{preparing_session_id}/finish")
+async def finish_session(preparing_session_id: int,
+                        db: AsyncSession = Depends(get_db)):
+        """
+        Finish a preparing session based on the provided session ID.
+    
+        Args:
+            preparing_session_id (int): The ID of the preparing session.
+    
+        Returns:
+            dict: A confirmation message.
+        """
+    
+        await preparing_crud.delete_preparing_session(db, preparing_session_id)
+        return

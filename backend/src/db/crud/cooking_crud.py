@@ -73,3 +73,14 @@ async def update_cooking_session_state(db: AsyncSession,
     await db.commit()
     await db.refresh(cooking_session)
     return cooking_session
+
+async def delete_cooking_session(db: AsyncSession, # TODO Also delete related prompt histories
+                               cooking_session_id: int) -> bool:
+    """Delete a cooking session from the database."""
+    result = await db.execute(select(CookingSession).filter(CookingSession.id == cooking_session_id))
+    cooking_session = result.scalar_one_or_none()
+    if not cooking_session:
+        return False
+    await db.delete(cooking_session)
+    await db.commit()
+    return True
