@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.src.api.schemas.recipe import Ingredient
-from backend.src.db.models.db_recipe import Recipe, GenContext
+from backend.src.db.models.db_recipe import Recipe, PreparingSession
 
 
 async def get_recipe_by_id(db: AsyncSession, recipe_id: int) -> Optional[Recipe]:
@@ -12,18 +12,18 @@ async def get_recipe_by_id(db: AsyncSession, recipe_id: int) -> Optional[Recipe]
     result = await db.execute(select(Recipe).filter(Recipe.id == recipe_id))
     return result.scalar_one_or_none()
 
-async def get_recipes_by_gen_context_id(db: AsyncSession, gen_context_id: int) -> Optional[List[Recipe]]:
-    """Retrieve the last three recipes by generation context ID."""
-     # Step 1: Get the generation context
-    result = await db.execute(select(GenContext).where(GenContext.id == gen_context_id))
-    gen_context = result.scalars().first()
+async def get_recipes_by_preparing_session_id(db: AsyncSession, preparing_session_id: int) -> Optional[List[Recipe]]:
+    """Retrieve the last three recipes by preparing session ID."""
+     # Step 1: Get the preparing session
+    result = await db.execute(select(PreparingSession).where(PreparingSession.id == preparing_session_id))
+    preparing_session = result.scalars().first()
 
-    if not gen_context or not gen_context.context_suggestions:
+    if not preparing_session or not preparing_session.context_suggestions:
         return None
 
     # Step 2: Parse recipe IDs from JSON string
     try:
-        recipe_ids = json.loads(gen_context.context_suggestions)
+        recipe_ids = json.loads(preparing_session.context_suggestions)
         if not isinstance(recipe_ids, list):
             return None
     except (json.JSONDecodeError, TypeError):

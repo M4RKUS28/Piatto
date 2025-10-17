@@ -54,7 +54,7 @@ class PromptHistory(BaseModel):
 class GenerateRecipeRequest(BaseModel):
     """Schema for generating recipes using AI."""
     prompt: str
-    gen_context_id: Optional[int] = None
+    preparing_session_id: Optional[int] = None
 
 class ChangeRecipeAIRequest(BaseModel):
     """Schema for changing a recipe using AI."""

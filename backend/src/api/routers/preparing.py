@@ -23,33 +23,33 @@ router = APIRouter(
 @router.post("/generate", response_model=int) # TODO
 async def generate_recipe(request: GenerateRecipeRequest, user_id: str = Depends(get_read_write_user_id)):
     """
-    Generate a recipe based on the user ID, prompt, and optional generation context ID.
+    Generate a recipe based on the user ID, prompt, and optional preparing session ID.
 
     Args:
-        request (GenerateRecipeRequest): The request containing prompt, and optional generation context ID.
+        request (GenerateRecipeRequest): The request containing prompt, and optional preparing session ID.
 
     Returns:
-        int: A generation context ID (The one given as an argument if available).
+        int: A preparing session ID (The one given as an argument if available).
     """
-    gen_context_id = request.gen_context_id if request.gen_context_id is not None else 0
-    return await agent_service.generate_recipe(user_id, request.prompt, gen_context_id)
+    preparing_session_id = request.preparing_session_id if request.preparing_session_id is not None else 0
+    return await agent_service.generate_recipe(user_id, request.prompt, preparing_session_id)
 
-@router.get("/{gen_context_id}/get_options", response_model=List[RecipePreview])
-async def get_recipe_options(gen_context_id: int,
+@router.get("/{preparing_session_id}/get_options", response_model=List[RecipePreview])
+async def get_recipe_options(preparing_session_id: int,
                       db: AsyncSession = Depends(get_db)):
     """
-    Get available recipe options based on the provided context ID.
+    Get available recipe options based on the provided preparing session ID.
 
     Args:
-        gen_context_id (int): The context ID of the generated recipes.
+        preparing_session_id (int): The id of the current preparation session.
 
     Returns:
         List[RecipePreview]: A list of recipe previews.
     """
 
-    recipes = await recipe_crud.get_recipes_by_gen_context_id(db, gen_context_id)
+    recipes = await recipe_crud.get_recipes_by_preparing_session_id(db, preparing_session_id)
     if not recipes:
-        raise HTTPException(status_code=404, detail="No recipes found for the given generation context ID")
+        raise HTTPException(status_code=404, detail="No recipes found for the given preparing session ID")
     result = []
     for recipe in recipes:
         result.append(RecipePreview(
