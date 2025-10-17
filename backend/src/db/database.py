@@ -6,115 +6,133 @@ from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import text
-from sqlalchemy.engine.url import URL, make_url
+
 from sqlalchemy.pool import NullPool
 
 from ..config import settings
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_MYSQL_URL = (
-    f"mysql+aiomysql://{settings.DB_USER}:{settings.DB_PASSWORD}"
-    f"@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
-)
+DATABASE_URL = settings.DATABASE_URL  # supports mysql or sqlite
 
-DATABASE_URL = getattr(settings, "DATABASE_URL", "") or DEFAULT_MYSQL_URL
-#DATABASE_URL="sqlite+aiosqlite:///./test.db"
-
-
-def _normalize_url(url: str | URL) -> URL:
-    """Ensure we operate on a SQLAlchemy URL instance."""
-    return make_url(url) if isinstance(url, str) else url
-
-
-def _build_engine_options(url_obj: str | URL) -> dict[str, Any]:
-    url_inst = _normalize_url(url_obj)
-    if url_inst.drivername.startswith("sqlite"):
-        return {
-            "poolclass": NullPool,
-            "connect_args": {"timeout": settings.DB_CONNECT_TIMEOUT},
-        }
-    return {
-        "pool_recycle": settings.DB_POOL_RECYCLE,
-        "pool_pre_ping": settings.DB_POOL_PRE_PING,
-        "pool_size": settings.DB_POOL_SIZE,
-        "max_overflow": settings.DB_MAX_OVERFLOW,
-        "connect_args": {"connect_timeout": settings.DB_CONNECT_TIMEOUT},
-    }
-
-# Engine placeholder
+# Global engine
 engine = None
 
-async def _create_engine_with_retry(
-    url: str | URL,
+# -------------------------------
+# LOCAL SQLITE FALLBACK ENGINE
+# -------------------------------
+async def _create_local_engine_with_retry(
+    url: str,
+    max_retries: int = 3,
+    wait_seconds: int = 1,
+):
+    last_exc = None
+    
+    # Convert sqlite:// to sqlite+aiosqlite:// for async support
+    if url.startswith("sqlite://") and not url.startswith("sqlite+aiosqlite://"):
+        url = url.replace("sqlite://", "sqlite+aiosqlite://", 1)
+        logger.info(f"Converted SQLite URL to use aiosqlite driver: {url}")
+    
+    for attempt in range(1, max_retries + 1):
+        try:
+            _engine = create_async_engine(
+                url,
+                poolclass=NullPool,  # no pooling for sqlite
+                connect_args={"check_same_thread": False},
+            )
+            async with _engine.connect() as conn:
+                await conn.execute(text("SELECT 1"))
+            logger.info(f"✅ Local SQLite DB connected on attempt {attempt}")
+            return _engine
+        except Exception as e:
+            last_exc = e
+            logger.warning(
+                f"⚠️ Local DB connection attempt {attempt}/{max_retries} failed: {e}"
+            )
+            await asyncio.sleep(wait_seconds)
+    raise last_exc
+
+
+# -------------------------------
+# CLOUD SQL MYSQL ENGINE
+# -------------------------------
+async def _create_cloud_engine_with_retry(
     max_retries: int = 5,
     wait_seconds: int = 3,
 ):
-    url_obj = _normalize_url(url)
-    engine_options = _build_engine_options(url_obj)
     last_exc = None
     for attempt in range(1, max_retries + 1):
         try:
             _engine = create_async_engine(
-                str(url_obj),
-                **engine_options,
+                "mysql+aiomysql://",
+                username=settings.DB_USER,
+                password=settings.DB_PASSWORD,
+                host=settings.DB_HOST,
+                port=int(settings.DB_PORT),
+                database=settings.DB_NAME,
+                pool_recycle=settings.DB_POOL_RECYCLE,
+                pool_pre_ping=settings.DB_POOL_PRE_PING,
+                pool_size=settings.DB_POOL_SIZE,
+                max_overflow=settings.DB_MAX_OVERFLOW,
+                connect_args={"connect_timeout": settings.DB_CONNECT_TIMEOUT},
             )
-
             async with _engine.connect() as conn:
                 await conn.execute(text("SELECT 1"))
-
-            logger.info("✅ DB connected successfully on attempt %s", attempt)
+            logger.info(f"✅ Cloud SQL DB connected on attempt {attempt}")
             return _engine
-
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             last_exc = e
             logger.warning(
-                "⚠️ DB connection attempt %s/%s failed: %s", attempt, max_retries, str(e)
+                f"⚠️ Cloud DB connection attempt {attempt}/{max_retries} failed: {e}"
             )
-            if attempt < max_retries:
-                logger.info("🔁 Retrying in %s seconds...", wait_seconds)
-                await asyncio.sleep(wait_seconds)
-
-    logger.error("❌ Could not connect to database after retries")
+            await asyncio.sleep(wait_seconds)
     raise last_exc
 
+
+# -------------------------------
+# ENGINE SELECTOR
+# -------------------------------
 async def get_engine():
-    """Get or create the async database engine."""
     global engine
     if engine is None:
-        engine = await _create_engine_with_retry(DATABASE_URL)
+        logger.info("Initializing database engine with URL: %s", DATABASE_URL)
+        if DATABASE_URL.startswith("sqlite"):
+            logger.info("Using local SQLite database.")
+            engine = await _create_local_engine_with_retry(DATABASE_URL)
+        else:
+            logger.info("Using Cloud SQL MySQL database.")
+            engine = await _create_cloud_engine_with_retry()
     return engine
 
-# Session factory
+
+# -------------------------------
+# SESSION FACTORY
+# -------------------------------
 async_session_factory = sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False,
     autoflush=False,
     autocommit=False,
-    bind=None,
 )
 
-# FastAPI dependency
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """FastAPI dependency that provides a database session."""
     db_engine = await get_engine()
     async_session_factory.configure(bind=db_engine)
-    session: AsyncSession = async_session_factory()
+    session = async_session_factory()
     try:
         yield session
     finally:
         await session.close()
 
-# Declarative Base
+# Base model for SQLAlchemy
 Base = declarative_base()
 
-# Async context manager
+# Optional context manager
 @asynccontextmanager
 async def get_async_db_context():
-    """Async context manager for database session."""
     db_engine = await get_engine()
     async_session_factory.configure(bind=db_engine)
-    session: AsyncSession = async_session_factory()
+    session = async_session_factory()
     try:
         yield session
         await session.commit()
