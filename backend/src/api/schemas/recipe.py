@@ -19,8 +19,7 @@ class Recipe(BaseModel):
     description: str
     ingredients: List[Ingredient]
     instructions: List[Instruction]
-    image_id: int
-    is_permanent: bool = False  # falls du sie erstmal temporär speicherst
+    image_url: int
 
     class Config:
         from_attributes = True  # wichtig, wenn du ORM-Objekte nutzt
@@ -55,7 +54,7 @@ class PromptHistory(BaseModel):
 class GenerateRecipeRequest(BaseModel):
     """Schema for generating recipes using AI."""
     prompt: str
-    gen_context_id: Optional[int] = None
+    preparing_session_id: Optional[int] = None
 
 class ChangeRecipeAIRequest(BaseModel):
     """Schema for changing a recipe using AI."""
