@@ -9,6 +9,9 @@ from requests.sessions import Session
 from currency_converter import CurrencyConverter
 from tokencost import calculate_prompt_cost, calculate_completion_cost
 
+
+
+
 class CostService:
     def __init__(self):
         self.currency_converter = CurrencyConverter()

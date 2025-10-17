@@ -5,7 +5,7 @@ export default function Header({ showAuthButtons = true }) {
   const { isAuthenticated } = useAuth()
 
   return (
-    <nav className="bg-[#FFF8F0] border-b border-[#F5F5F5] sticky top-0 z-50">
+    <nav className="bg-[#F5EFE6] border-b border-[#D4C5B0] sticky top-0 z-50">
       <div className="w-full py-4 px-6">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
