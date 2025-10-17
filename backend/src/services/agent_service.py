@@ -3,6 +3,7 @@ This file defines the service that coordinates the interaction between all the a
 """
 from logging import getLogger
 
+from .query_service import get_recipe_gen_query
 from ..agents.image_analyzer_agent import ImageAnalyzerAgent
 from ..agents.recipe_agent import RecipeAgent
 from ..db.crud import images_crud
@@ -37,9 +38,19 @@ class AgentService:
 
     # Rezepte Erstellen
     async def generate_recipe(self, user_id: str, prompt: str, written_ingredients: str, gen_context_id: int, image_id: int = None):
+        analyzed_ingredients = None
         if image_id:
             analyzed_ingredients = await self.analyze_ingredients(user_id, image_id)
 
+        query = get_recipe_gen_query(prompt, written_ingredients, analyzed_ingredients)
+        recipe =  await self.recipe_agent.run(
+            user_id=user_id,
+            state={},
+            content=query,
+        )
+
+        #TODO create recipe in database
+        return recipe
 
 
     async def change_recipe(self, user_id: str, change_prompt: str, recipe_id: int):
