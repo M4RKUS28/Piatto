@@ -360,8 +360,6 @@ Diese README bildet die **verbindliche, funktionierende Zielkonfiguration** ab.
 Wenn du irgendwann **Staging** hinzufügen möchtest (zweites Hosting-Target, zweite Cloud-Run-Service-Instanz, zweite DB), erweitern wir die Schritte analog.
 
 
-
-
 ## Link zum Chat
 
 [Chat GPT Chat öffnen](https://chatgpt.com/share/68f23c67-42a4-8004-97fd-be80da6845ca)
