@@ -231,6 +231,12 @@ checkpoints/
 .env*
 !.env.example
 *key.json
+.firebase/
+.firebase-tools
+firebase-debug.log
+firebase-deployer-key.json
+
+
 
 # Frontend
 frontend/*/node_modules
