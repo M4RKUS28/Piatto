@@ -235,6 +235,7 @@ checkpoints/
 .firebase-tools
 firebase-debug.log
 firebase-deployer-key.json
+service-key.json
 
 
 

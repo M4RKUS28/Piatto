@@ -38,12 +38,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.get("/health")
+def health():
+    return {"ok": True}
+
+
+
+from fastapi import FastAPI, UploadFile, HTTPException
+from google.cloud import storage
+import os
+
+
 # Include your existing routers under this api_router
 app.include_router(users.router)
 app.include_router(auth_router.api_router)
-
-
-
+from .api.routers import files_example_with_bucket
+app.include_router(files_example_with_bucket.router)
 
 
 
@@ -52,3 +63,5 @@ app.include_router(auth_router.api_router)
 async def root():
     """Status endpoint for the API."""
     return {"message": "Welcome to Piatto API. Visit /api/docs for API documentation."}
+
+

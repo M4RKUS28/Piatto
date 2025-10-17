@@ -24,7 +24,7 @@ deprecated~=1.2.18
 asyncio~=3.4.3
 dataclasses~=0.6
 httpx
-
+google-cloud-storage>=2.14.0
 
 
 #uv~=0.7.12
