@@ -79,7 +79,7 @@ async def start_recipe(recipe_id: int):
     pass
 
 @router.put("/change_state")
-asyncdef change_state(request: ChangeStateRequest):
+async def change_state(request: ChangeStateRequest):
     """
     Change the state of a recipe session based on the provided session ID and state details.
 

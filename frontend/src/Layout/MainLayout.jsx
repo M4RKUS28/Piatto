@@ -23,7 +23,7 @@ export default function MainLayout({ children }) {
 
   const navItems = [
     { label: 'Dashboard', to: '/app', icon: Home, end: true },
-    { label: 'Recipes', to: '/app/recipes', icon: UtensilsCrossed }
+    { label: 'RecipeLibrary', to: '/app/recipes', icon: UtensilsCrossed }
   ];
 
   const content = children ?? <Outlet />;

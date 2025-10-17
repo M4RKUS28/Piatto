@@ -1,68 +1,46 @@
 """
 This file defines the service that coordinates the interaction between all the agents
 """
-import json
-import asyncio
-import traceback
-from typing import List
 from logging import getLogger
 
-
+from ..agents.image_analyzer_agent import ImageAnalyzerAgent
+from ..agents.recipe_agent import RecipeAgent
+from ..db.crud import images_crud
+from ..db.models.db_file import Image
 from google.adk.sessions import InMemorySessionService
-
-from .cost_service import CostService
-from ..services import vector_service
-from ..services.course_content_service import CourseContentService
-
-from .query_service import QueryService
-from .state_service import StateService, CourseState
-from ..agents.explainer_agent.agent import ExplainerAgent
-from ..agents.grader_agent.agent import GraderAgent
-from ..db.crud import chapters_crud, documents_crud, images_crud, questions_crud, courses_crud
-
-
-from google.adk.sessions import InMemorySessionService
-
-from ..agents.planner_agent import PlannerAgent
-from ..agents.info_agent.agent import InfoAgent
-
-from ..agents.image_agent.agent import ImageAgent
-
-from ..agents.tester_agent import TesterAgent
-from ..agents.utils import create_text_query
-from ..db.models.db_course import CourseStatus
-from ..api.schemas.course import CourseRequest
-#from ..services.notification_service import WebSocketConnectionManager
-from ..db.models.db_course import Course
-from ..db.database import get_db_context
-from google.genai import types
-
-#from .data_processors.pdf_processor import PDFProcessor
-
-from ..db.models.db_file import Document, Image
-from ..db.crud import usage_crud
 from ..agents.utils import create_text_query, create_docs_query
-
-
+from ..db.database import get_async_db_context
 
 logger = getLogger(__name__)
-
 
 class AgentService:
     def __init__(self):
         self.session_service = InMemorySessionService()
-        self.app_name = "Nexora"
+        self.app_name = "Piatto"
 
-        self.agent = TesterAgent(self.app_name, self.session_service)
+        self.image_analyzer_agent = ImageAnalyzerAgent(self.app_name, self.session_service)
+        self.recipe_agent = RecipeAgent(self.app_name, self.session_service)
+
+    async def analyze_ingredients(self, user_id: str, image_id: int):
+        async with get_async_db_context() as db:
+            image: Image = await images_crud.get_image_by_id(db, image_id)
+
+        query = create_docs_query("Analyze this image for food items.", [], [image])
+        response = await self.image_analyzer_agent.run(
+            user_id=user_id,
+            state={},
+            content=query,
+        )
+
+        return response['output']
+
 
     # Rezepte Erstellen
-    async def generate_recipe(self, user_id: str, prompt: str, gen_context_id: int): # Irgendwie Kontext
-        content = create_text_query("Hallo, wie geht es dir")
-        agent_return = self.agent.run(user_id, state={}, content=content)
-        # Prompt/Kontext an Agent übergeben
-        # Rezepte in Datenbank speichern (als temporär)
-        # Rezepte zurückgeben
-        pass
+    async def generate_recipe(self, user_id: str, prompt: str, written_ingredients: str, gen_context_id: int, image_id: int = None):
+        if image_id:
+            analyzed_ingredients = await self.analyze_ingredients(user_id, image_id)
+
+
 
     async def change_recipe(self, user_id: str, change_prompt: str, recipe_id: int):
         # Prompt/Kontext an Agent übergeben

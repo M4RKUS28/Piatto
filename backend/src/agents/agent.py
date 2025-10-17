@@ -9,7 +9,6 @@ from typing import Any, Dict
 from google.genai import types
 
 from ..config import settings
-from ..services.settings_service import dynamic_settings
 
 if not settings.AGENT_DEBUG_MODE:
     logging.getLogger("google_adk.google.adk.models.google_llm").setLevel(logging.WARNING)
@@ -22,7 +21,7 @@ class StandardAgent(ABC):
     def __init__(self, app_name: str, session_service):
         self.app_name = app_name
         self.session_service = session_service
-        self.model = dynamic_settings.get("STANDARD_AGENT_MODEL")
+        self.model = "gemini-2.5-flash"
 
     async def run(self, user_id: str, state: dict, content: types.Content, debug: bool = False) -> Dict[str, Any]:
         """
@@ -69,13 +68,7 @@ class StandardAgent(ABC):
                             # Assuming text response in the first part
                             return {
                                 "status": "success",
-                                "output": event.content.parts[0].text,  # TODO rename to output/content
-                                "inputs": [
-                                    self.full_instructions,
-                                    content.parts[0].text
-                                ],
-                                "outputs": [part.text for part in event.content.parts],
-                                "model": self.model
+                                "output": event.content.parts[0].text
                             }
                         elif event.actions and event.actions.escalate:  # Handle potential errors/escalations
                             error_msg = f"Agent escalated: {event.error_message or 'No specific message.'}"
@@ -120,7 +113,7 @@ class StructuredAgent(ABC):
     def __init__(self, app_name: str, session_service):
         self.app_name = app_name
         self.session_service = session_service
-        self.model = dynamic_settings.get("STRUCTURED_AGENT_MODEL")
+        self.model = "gemini-2.5-flash"
     async def run(self, user_id: str, state: dict, content: types.Content, debug: bool = False, max_retries: int = 1, retry_delay: float = 2.0) -> Dict[str, Any]:
         """
         Wraps the event handling and runner from adk into a simple run() method that includes error handling
@@ -166,10 +159,6 @@ class StructuredAgent(ABC):
                             # Try parsing the json response into a dictionary
                             try:
                                 dict_response = json.loads(json_text)
-                                dict_response["status"] = "success"
-                                dict_response["inputs"] = content.parts[0].text
-                                dict_response["outputs"] = json_text
-                                dict_response["model"] = self.model
                                 return dict_response
                             except json.JSONDecodeError as e:
                                 error_msg = f"Error parsing JSON response: {e}"
