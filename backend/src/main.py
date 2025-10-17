@@ -8,10 +8,8 @@ from starlette.middleware.sessions import SessionMiddleware
 from .config.settings import SESSION_SECRET_KEY
 from .core.lifespan import lifespan
 
-
 from .api.routers import auth as auth_router
 from .api.routers import users
-
 
 # Create the main app instance
 app = FastAPI(
@@ -19,8 +17,6 @@ app = FastAPI(
     root_path="/api",
     lifespan=lifespan  # Use the lifespan context manager
 )
-
-
 
 app.add_middleware(
     SessionMiddleware,
@@ -45,6 +41,7 @@ app.add_middleware(
 # Include your existing routers under this api_router
 app.include_router(users.router)
 app.include_router(auth_router.api_router)
+
 
 
 
