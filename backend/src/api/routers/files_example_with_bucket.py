@@ -14,7 +14,23 @@ from ...db.crud.bucket_base_repo import (
 router = APIRouter(prefix="/files", tags=["files"])
 
 @router.post("/upload")
-async def upload(user_id: str, file: UploadFile = File(...), sess: BucketSession = Depends(get_bucket_session)):
+async def upload(
+    user_id: str, 
+    category: str,
+    file: UploadFile = File(...), 
+    sess: BucketSession = Depends(get_bucket_session)
+):
+    """
+    Upload a file to GCS bucket.
+    
+    Args:
+        user_id: User ID
+        category: File category (e.g., "recipes", "images", "documents")
+        file: File to upload
+        
+    Returns:
+        File info including key, original_filename, size, etc.
+    """
     # tempfile.gettempdir() works cross-platform (Windows: C:\Users\...\AppData\Local\Temp, Linux: /tmp)
     suffix = os.path.splitext(file.filename)[1]
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
@@ -23,45 +39,78 @@ async def upload(user_id: str, file: UploadFile = File(...), sess: BucketSession
         tmp.flush()
         tmp_path = tmp.name
     try:
-        key = await upload_file(sess, user_id, tmp_path, file.filename, file.content_type)
-        return {"status": "ok", "key": key}
+        file_info = await upload_file(
+            sess, 
+            user_id, 
+            category,
+            tmp_path, 
+            file.filename, 
+            file.content_type
+        )
+        return file_info
     finally:
         try:
             os.remove(tmp_path)
         except OSError:
             pass
 
-@router.get("/public-url")
-async def public_url(user_id: str, filename: str, sess: BucketSession = Depends(get_bucket_session)):
-    url = await make_file_public(sess, user_id, filename)
-    return {"public_url": url}
+@router.get("/info/{key:path}")
+async def get_info(key: str, sess: BucketSession = Depends(get_bucket_session)):
+    """Get file information by key."""
+    from ...db.crud.bucket_base_repo import get_file_info
+    return await get_file_info(sess, key)
 
-@router.get("/signed-url")
-async def signed_get(user_id: str, filename: str, minutes: int = 60, sess: BucketSession = Depends(get_bucket_session)):
-    url = await generate_signed_get_url(sess, user_id, filename, minutes)
-    return {"signed_url": url, "expires_min": minutes}
+@router.post("/public-url")
+async def public_url(key: str, sess: BucketSession = Depends(get_bucket_session)):
+    """Make file public and get public URL."""
+    return await make_file_public(sess, key)
+
+@router.post("/signed-url")
+async def signed_get(key: str, minutes: int = 60, sess: BucketSession = Depends(get_bucket_session)):
+    """Generate signed GET URL for private file access."""
+    return await generate_signed_get_url(sess, key, minutes)
 
 @router.post("/signed-put")
-async def signed_put(user_id: str, filename: str, content_type: str, minutes: int = 15, sess: BucketSession = Depends(get_bucket_session)):
-    url = await generate_signed_put_url(sess, user_id, filename, content_type, minutes)
-    return {"upload_url": url, "method": "PUT", "content_type": content_type, "expires_min": minutes}
+async def signed_put(
+    user_id: str, 
+    category: str,
+    filename: str, 
+    content_type: str, 
+    minutes: int = 15, 
+    sess: BucketSession = Depends(get_bucket_session)
+):
+    """Generate signed PUT URL for direct upload from client."""
+    return await generate_signed_put_url(sess, user_id, category, filename, content_type, minutes)
 
-@router.get("/exists")
-async def exists(user_id: str, filename: str, sess: BucketSession = Depends(get_bucket_session)):
-    ok = await file_exists(sess, user_id, filename)
-    return {"exists": ok}
+@router.get("/exists/{key:path}")
+async def exists(key: str, sess: BucketSession = Depends(get_bucket_session)):
+    """Check if file exists and get info."""
+    return await file_exists(sess, key)
 
 @router.get("/list")
-async def list_(user_id: str, prefix: str = "", sess: BucketSession = Depends(get_bucket_session)):
-    items = await list_files(sess, user_id, prefix)
-    return {"files": items}
+async def list_(
+    user_id: str, 
+    category: str = None,
+    date_prefix: str = None,
+    max_results: int = 1000,
+    sess: BucketSession = Depends(get_bucket_session)
+):
+    """
+    List files for a user.
+    
+    Args:
+        user_id: User ID
+        category: Optional filter by category (e.g., "recipes")
+        date_prefix: Optional filter by date (e.g., "01-10-2025" or "01-10")
+        max_results: Max number of results
+    """
+    items = await list_files(sess, user_id, category, date_prefix, max_results)
+    return {"files": items, "count": len(items)}
 
-@router.delete("")
-async def delete_(user_id: str, filename: str, sess: BucketSession = Depends(get_bucket_session)):
-    ok = await delete_file(sess, user_id, filename)
-    if not ok:
-        raise HTTPException(status_code=404, detail="File not found or cannot delete")
-    return {"deleted": True}
+@router.delete("/{key:path}")
+async def delete_(key: str, sess: BucketSession = Depends(get_bucket_session)):
+    """Delete file by key."""
+    return await delete_file(sess, key)
 
 
 

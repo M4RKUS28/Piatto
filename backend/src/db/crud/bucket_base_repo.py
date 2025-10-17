@@ -1,7 +1,8 @@
 import os
 import logging
-from datetime import timedelta
-from typing import List, Optional
+import uuid
+from datetime import datetime, timedelta
+from typing import List, Optional, Dict, Any
 
 from fastapi import HTTPException
 from google.cloud.storage import Blob
@@ -23,24 +24,31 @@ ALLOWED_MIME: set[str] = {
 }
 
 # ------ Helpers ------
-def _sanitize_filename(filename: str) -> str:
-    """Sanitize filename to prevent path traversal attacks."""
-    # Remove any path components and keep only the filename
-    import os.path
-    return os.path.basename(filename)
-
-def _user_key(user_id: str, filename: str) -> str:
+def _generate_storage_key(user_id: str, category: str, original_filename: str) -> str:
+    """
+    Generiert einen eindeutigen Storage-Key:
+    users/<user_id>/<category>/<day-month-year>/<random_uuid>.<extension>
+    """
     if not user_id:
         raise HTTPException(status_code=400, detail="user_id is required")
-    if not filename:
+    if not category:
+        raise HTTPException(status_code=400, detail="category is required")
+    if not original_filename:
         raise HTTPException(status_code=400, detail="filename is required")
     
-    # Sanitize filename to prevent path traversal
-    safe_filename = _sanitize_filename(filename)
-    if not safe_filename or safe_filename in (".", ".."):
-        raise HTTPException(status_code=400, detail="Invalid filename")
+    # Datum: DD-MM-YYYY
+    date_str = datetime.utcnow().strftime("%d-%m-%Y")
     
-    return f"users/{user_id}/{safe_filename}"
+    # Extension extrahieren
+    _, ext = os.path.splitext(original_filename)
+    if not ext:
+        ext = ".bin"  # Fallback für Dateien ohne Extension
+    
+    # Eindeutige ID generieren
+    unique_id = uuid.uuid4().hex
+    
+    return f"users/{user_id}/{category}/{date_str}/{unique_id}{ext}"
+
 
 def _validate_upload_inputs(content_type: Optional[str], file_size: int) -> None:
     if file_size > MAX_FILE_BYTES:
@@ -55,13 +63,22 @@ def _validate_upload_inputs(content_type: Optional[str], file_size: int) -> None
 async def upload_file(
     sess: BucketSession,
     user_id: str,
+    category: str,
     tmp_path: str,
-    filename: str,
+    original_filename: str,
     content_type: Optional[str],
-) -> str:
+) -> Dict[str, Any]:
     """
-    Lädt eine Datei aus tmp_path nach gs://<bucket>/users/<user_id>/<filename>.
-    Wirft HTTPException bei Fehlern. Gibt den Objekt-Key zurück.
+    Lädt eine Datei hoch und speichert sie mit generiertem Key.
+    
+    Returns:
+        Dict mit:
+        - key: Storage-Key (UUID-basiert)
+        - original_filename: Originaler Dateiname
+        - content_type: MIME-Type
+        - size: Dateigröße in Bytes
+        - category: Kategorie
+        - uploaded_at: ISO-Timestamp
     """
     if not os.path.exists(tmp_path):
         raise HTTPException(status_code=400, detail="Temp file not found")
@@ -73,8 +90,16 @@ async def upload_file(
 
     _validate_upload_inputs(content_type, size)
 
-    key = _user_key(user_id, filename)
+    # Generiere eindeutigen Key
+    key = _generate_storage_key(user_id, category, original_filename)
     blob: Blob = sess.bucket.blob(key)
+
+    # Metadata setzen
+    blob.metadata = {
+        "original_filename": original_filename,
+        "category": category,
+        "uploaded_at": datetime.utcnow().isoformat(),
+    }
 
     logger.info("GCS upload -> gs://%s/%s (%d bytes, %s)", sess.bucket.name, key, size, content_type)
 
@@ -89,14 +114,46 @@ async def upload_file(
         logger.exception("Upload failed for gs://%s/%s: %s", sess.bucket.name, key, e)
         raise HTTPException(status_code=500, detail="Upload failed") from e
 
-    return key
+    return {
+        "key": key,
+        "original_filename": original_filename,
+        "content_type": content_type,
+        "size": size,
+        "category": category,
+        "uploaded_at": blob.metadata["uploaded_at"],
+        "status": "uploaded",
+    }
 
 
-async def make_file_public(sess: BucketSession, user_id: str, filename: str) -> str:
+async def get_file_info(sess: BucketSession, key: str) -> Dict[str, Any]:
     """
-    Setzt die Datei öffentlich und gibt die öffentliche URL zurück.
+    Holt File-Informationen inkl. Metadata.
     """
-    key = _user_key(user_id, filename)
+    blob = sess.bucket.blob(key)
+    
+    try:
+        # Blob neu laden um Metadata zu holen
+        await BucketEngine._retry(blob.reload, timeout=sess.timeout)
+    except Exception as e:
+        logger.exception("Failed to get file info for gs://%s/%s: %s", sess.bucket.name, key, e)
+        raise HTTPException(status_code=404, detail="File not found") from e
+    
+    return {
+        "key": key,
+        "original_filename": blob.metadata.get("original_filename", "unknown") if blob.metadata else "unknown",
+        "content_type": blob.content_type,
+        "size": blob.size,
+        "category": blob.metadata.get("category", "uncategorized") if blob.metadata else "uncategorized",
+        "uploaded_at": blob.metadata.get("uploaded_at") if blob.metadata else None,
+        "public_url": blob.public_url if blob.public_url else None,
+        "status": "exists",
+    }
+
+
+async def make_file_public(sess: BucketSession, key: str) -> Dict[str, Any]:
+    """
+    Setzt die Datei öffentlich und gibt Infos inkl. URL zurück.
+    """
     blob = sess.bucket.blob(key)
 
     exists = await BucketEngine._retry(blob.exists, timeout=sess.timeout)
@@ -109,20 +166,22 @@ async def make_file_public(sess: BucketSession, user_id: str, filename: str) -> 
         logger.exception("make_public failed for gs://%s/%s: %s", sess.bucket.name, key, e)
         raise HTTPException(status_code=500, detail="Failed to make file public") from e
 
-    # Öffentliche URL (funktioniert nur, wenn blob öffentlich ist)
-    return f"https://storage.googleapis.com/{sess.bucket.name}/{key}"
+    # Metadata laden
+    file_info = await get_file_info(sess, key)
+    file_info["public_url"] = f"https://storage.googleapis.com/{sess.bucket.name}/{key}"
+    file_info["status"] = "public"
+    
+    return file_info
 
 
 async def generate_signed_get_url(
     sess: BucketSession,
-    user_id: str,
-    filename: str,
+    key: str,
     minutes: int = 60,
-) -> str:
+) -> Dict[str, Any]:
     """
     Erzeugt eine v4 signed GET-URL (Standard: 60 Minuten gültig).
     """
-    key = _user_key(user_id, filename)
     blob = sess.bucket.blob(key)
 
     exists = await BucketEngine._retry(blob.exists, timeout=sess.timeout)
@@ -136,7 +195,13 @@ async def generate_signed_get_url(
             expiration=timedelta(minutes=minutes),
             method="GET",
         )
-        return url
+        
+        file_info = await get_file_info(sess, key)
+        file_info["signed_url"] = url
+        file_info["expires_in_minutes"] = minutes
+        file_info["status"] = "signed_url_generated"
+        
+        return file_info
     except Exception as e:
         logger.exception("signed GET url failed for gs://%s/%s: %s", sess.bucket.name, key, e)
         raise HTTPException(status_code=500, detail="Failed to generate signed URL") from e
@@ -145,20 +210,31 @@ async def generate_signed_get_url(
 async def generate_signed_put_url(
     sess: BucketSession,
     user_id: str,
-    filename: str,
+    category: str,
+    original_filename: str,
     content_type: str,
     minutes: int = 15,
-) -> str:
+) -> Dict[str, Any]:
     """
     Erzeugt eine v4 signed PUT-URL, damit das Frontend direkt zu GCS hochladen kann.
     Wichtig: content_type muss vom Client gesetzt werden (gleicher Wert beim PUT).
-    Optional: Content-Length-Limit clientseitig sicherstellen.
+    
+    Returns:
+        Dict mit key, signed_url, metadata, etc.
     """
     if content_type not in ALLOWED_MIME:
         raise HTTPException(status_code=415, detail=f"Unsupported MIME type: {content_type}")
 
-    key = _user_key(user_id, filename)
+    # Generiere Key vorab
+    key = _generate_storage_key(user_id, category, original_filename)
     blob = sess.bucket.blob(key)
+    
+    # Metadata setzen (wird beim PUT vom Client überschrieben, daher nur info)
+    metadata = {
+        "original_filename": original_filename,
+        "category": category,
+        "uploaded_at": datetime.utcnow().isoformat(),
+    }
 
     try:
         url = await BucketEngine._retry(
@@ -168,43 +244,110 @@ async def generate_signed_put_url(
             method="PUT",
             content_type=content_type,
         )
-        return url
+        
+        return {
+            "key": key,
+            "signed_url": url,
+            "method": "PUT",
+            "content_type": content_type,
+            "expires_in_minutes": minutes,
+            "original_filename": original_filename,
+            "category": category,
+            "metadata": metadata,
+            "status": "upload_url_generated",
+        }
     except Exception as e:
         logger.exception("signed PUT url failed for gs://%s/%s: %s", sess.bucket.name, key, e)
         raise HTTPException(status_code=500, detail="Failed to generate upload URL") from e
 
 
-async def delete_file(sess: BucketSession, user_id: str, filename: str) -> bool:
-    key = _user_key(user_id, filename)
+async def delete_file(sess: BucketSession, key: str) -> Dict[str, Any]:
+    """
+    Löscht eine Datei anhand des Keys.
+    """
     blob = sess.bucket.blob(key)
     try:
+        # Hole Info vor dem Löschen
+        file_info = await get_file_info(sess, key)
+        
         await BucketEngine._retry(blob.delete, timeout=sess.timeout)
-        return True
+        
+        file_info["status"] = "deleted"
+        return file_info
+    except HTTPException:
+        raise
     except Exception as e:
         logger.warning("Delete failed for gs://%s/%s: %s", sess.bucket.name, key, e)
-        return False
+        raise HTTPException(status_code=500, detail="Delete failed") from e
 
 
-async def file_exists(sess: BucketSession, user_id: str, filename: str) -> bool:
-    key = _user_key(user_id, filename)
+async def file_exists(sess: BucketSession, key: str) -> Dict[str, Any]:
+    """
+    Prüft ob Datei existiert und gibt Info zurück.
+    """
     blob = sess.bucket.blob(key)
     try:
-        return await BucketEngine._retry(blob.exists, timeout=sess.timeout)
+        exists = await BucketEngine._retry(blob.exists, timeout=sess.timeout)
+        
+        if exists:
+            return await get_file_info(sess, key)
+        else:
+            return {
+                "key": key,
+                "exists": False,
+                "status": "not_found",
+            }
     except Exception as e:
         logger.exception("Exists check failed for gs://%s/%s: %s", sess.bucket.name, key, e)
         raise HTTPException(status_code=500, detail="Exists check failed") from e
 
 
-async def list_files(sess: BucketSession, user_id: str, prefix: str = "", max_results: int = 1000) -> List[str]:
-    pre = f"users/{user_id}/" + (prefix or "")
+async def list_files(
+    sess: BucketSession, 
+    user_id: str, 
+    category: Optional[str] = None,
+    date_prefix: Optional[str] = None,
+    max_results: int = 1000
+) -> List[Dict[str, Any]]:
+    """
+    Listet Dateien eines Users auf, optional gefiltert nach Kategorie und/oder Datum.
+    
+    Args:
+        user_id: User ID
+        category: Optional - filtert nach Kategorie (z.B. "recipes", "images")
+        date_prefix: Optional - filtert nach Datum-Prefix (z.B. "01-10-2025" oder "01-10")
+        max_results: Max. Anzahl Ergebnisse
+        
+    Returns:
+        Liste von File-Info Dicts
+    """
+    # Prefix aufbauen
+    if category and date_prefix:
+        pre = f"users/{user_id}/{category}/{date_prefix}"
+    elif category:
+        pre = f"users/{user_id}/{category}/"
+    else:
+        pre = f"users/{user_id}/"
+    
     try:
         # list_blobs ist sync-Iterator → in Thread ausführen
         def _list_blobs():
-            it = sess.client.list_blobs(sess.bucket, prefix=pre, max_results=max_results)
-            return [b.name for b in it]
+            blobs = sess.client.list_blobs(sess.bucket, prefix=pre, max_results=max_results)
+            result = []
+            for b in blobs:
+                result.append({
+                    "key": b.name,
+                    "original_filename": b.metadata.get("original_filename", "unknown") if b.metadata else "unknown",
+                    "content_type": b.content_type,
+                    "size": b.size,
+                    "category": b.metadata.get("category", "uncategorized") if b.metadata else "uncategorized",
+                    "uploaded_at": b.metadata.get("uploaded_at") if b.metadata else None,
+                    "status": "exists",
+                })
+            return result
         
-        names: List[str] = await BucketEngine._run_blocking(_list_blobs)
-        return names
+        files = await BucketEngine._run_blocking(_list_blobs)
+        return files
     except Exception as e:
         logger.exception("List files failed under gs://%s/%s: %s", sess.bucket.name, pre, e)
         raise HTTPException(status_code=500, detail="List files failed") from e
