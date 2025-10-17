@@ -42,4 +42,6 @@ ENV WORKERS=1 \
 
 EXPOSE 8080
 
+HEALTHCHECK CMD curl --fail http://localhost:8080/health || exit 1
+
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT} --workers ${WORKERS}"]

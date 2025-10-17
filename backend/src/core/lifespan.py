@@ -5,6 +5,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 
 from ..db.database import get_engine, Base
+from ..db.bucket_session import get_bucket_engine
 
 
 scheduler = AsyncIOScheduler()
@@ -30,6 +31,10 @@ async def lifespan(_app: FastAPI):
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         logger.info("✅ Database tables created/verified")
+        
+        # Initialize bucket engine
+        bucket_engine = await get_bucket_engine()
+        logger.info("✅ Bucket engine initialized")
         
         logger.info("Scheduler started.")   
 

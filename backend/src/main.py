@@ -8,10 +8,8 @@ from starlette.middleware.sessions import SessionMiddleware
 from .config.settings import SESSION_SECRET_KEY
 from .core.lifespan import lifespan
 
-
 from .api.routers import auth as auth_router
 from .api.routers import users
-
 
 # Create the main app instance
 app = FastAPI(
@@ -19,8 +17,6 @@ app = FastAPI(
     root_path="/api",
     lifespan=lifespan  # Use the lifespan context manager
 )
-
-
 
 app.add_middleware(
     SessionMiddleware,
@@ -42,11 +38,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.get("/health")
+def health():
+    return {"ok": True}
+
+
+
+from fastapi import FastAPI, UploadFile, HTTPException
+from google.cloud import storage
+import os
+
+
 # Include your existing routers under this api_router
 app.include_router(users.router)
 app.include_router(auth_router.api_router)
-
-
+from .api.routers import files_example_with_bucket
+app.include_router(files_example_with_bucket.router)
 
 
 
@@ -55,3 +63,5 @@ app.include_router(auth_router.api_router)
 async def root():
     """Status endpoint for the API."""
     return {"message": "Welcome to Piatto API. Visit /api/docs for API documentation."}
+
+
