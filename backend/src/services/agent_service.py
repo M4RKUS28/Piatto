@@ -3,10 +3,11 @@ This file defines the service that coordinates the interaction between all the a
 """
 from logging import getLogger
 
-from .query_service import get_recipe_gen_query
+from .query_service import get_recipe_gen_query, get_image_gen_query
+from ..agents.image_agent.agent import ImageAgent
 from ..agents.image_analyzer_agent import ImageAnalyzerAgent
 from ..agents.recipe_agent import RecipeAgent
-from ..db.crud import images_crud
+from ..db.crud import images_crud, recipe_crud
 from ..db.models.db_file import Image
 from google.adk.sessions import InMemorySessionService
 from ..agents.utils import create_text_query, create_docs_query
@@ -21,6 +22,7 @@ class AgentService:
 
         self.image_analyzer_agent = ImageAnalyzerAgent(self.app_name, self.session_service)
         self.recipe_agent = RecipeAgent(self.app_name, self.session_service)
+        self.image_agent = ImageAgent(self.app_name, self.session_service)
 
     async def analyze_ingredients(self, user_id: str, image_id: int):
         async with get_async_db_context() as db:
@@ -48,6 +50,22 @@ class AgentService:
             state={},
             content=query,
         )
+        image = await self.image_agent.run(
+            user_id=user_id,
+            state={},
+            content=get_image_gen_query(recipe),
+        )
+        async with get_async_db_context() as db:
+            recipe_crud.create_recipe(
+                db=db,
+                user_id=user_id,
+                title=recipe['title'],
+                description=recipe['description'],
+                ingredients=recipe['ingredients'],
+            )
+            image_db = images_crud.create_image(
+                recipe_id=
+            )
 
         #TODO create recipe in database
         return recipe

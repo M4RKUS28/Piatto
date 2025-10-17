@@ -19,7 +19,7 @@ class Recipe(BaseModel):
     description: str
     ingredients: List[Ingredient]
     instructions: List[Instruction]
-    image_url: str
+    image_id: int
     is_permanent: bool = False  # falls du sie erstmal temporär speicherst
 
     class Config:
