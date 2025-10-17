@@ -14,8 +14,6 @@ async def get_cooking_session_by_id(db: AsyncSession, cooking_session_id: int) -
 async def get_prompt_history_by_cooking_session_id(db: AsyncSession, cooking_session_id: int) -> Optional[PromptHistory]:
     """Retrieve the prompt history by cooking session ID."""
 
-    #TODO Create new prompt history if not exists
-
     # Step 1: Get the cooking session to know its current state
     result = await db.execute(select(CookingSession).where(CookingSession.id == cooking_session_id))
     cooking_session = result.scalars().first()
@@ -29,7 +27,6 @@ async def get_prompt_history_by_cooking_session_id(db: AsyncSession, cooking_ses
             PromptHistory.cooking_session_id == cooking_session.id,
             PromptHistory.state == cooking_session.state,
         )
-        .order_by(PromptHistory.created_at.desc())  # optional: in case multiple entries exist
     )
     prompt_history = result.scalars().first()
 
@@ -44,6 +41,22 @@ async def get_prompt_history_by_cooking_session_id(db: AsyncSession, cooking_ses
         await db.commit()
         await db.refresh(prompt_history)  # refresh to get the assigned ID
 
+    return prompt_history
+
+async def update_prompt_history(db: AsyncSession,
+                                prompt_history_id: int,
+                                new_prompt: str,
+                                new_response: str) -> Optional[PromptHistory]:
+    """Update the prompt history in the database."""
+    result = await db.execute(select(PromptHistory).filter(PromptHistory.id == prompt_history_id))
+    prompt_history = result.scalar_one_or_none()
+    if not prompt_history:
+        return None
+    prompt_history.prompts = json.dumps(json.loads(prompt_history.prompts) + [new_prompt])
+    prompt_history.responses = json.dumps(json.loads(prompt_history.responses) + [new_response])
+    db.add(prompt_history)
+    await db.commit()
+    await db.refresh(prompt_history)
     return prompt_history
 
 async def create_cooking_session(db: AsyncSession,
@@ -74,7 +87,7 @@ async def update_cooking_session_state(db: AsyncSession,
     await db.refresh(cooking_session)
     return cooking_session
 
-async def delete_cooking_session(db: AsyncSession, # TODO Also delete related prompt histories
+async def delete_cooking_session(db: AsyncSession,
                                cooking_session_id: int) -> bool:
     """Delete a cooking session from the database."""
     result = await db.execute(select(CookingSession).filter(CookingSession.id == cooking_session_id))
