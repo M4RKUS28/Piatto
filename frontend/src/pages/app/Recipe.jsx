@@ -130,7 +130,7 @@ const Recipe = () => {
     <div className="h-full overflow-y-auto no-scrollbar">
       <div className="p-6 md:p-8">
         {/* Header */}
-        <h1 className="font-poppins font-bold text-4xl md:text-5xl text-[#035035]">
+        <h1 className="font-poppins font-bold text-3xl md:text-4xl text-[#035035]">
           Spaghetti Bolognese
         </h1>
         <p className="mt-2 text-lg text-[#2D2D2D]/80">

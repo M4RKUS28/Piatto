@@ -3,7 +3,7 @@ import { ChefHat, Clock, Heart, TrendingUp } from 'lucide-react';
 
 export default function Dashboard() {
   const stats = [
-    { label: 'Recipes Saved', value: '24', icon: Heart, color: '#FF9B7B' },
+    { label: 'RecipeLibrary Saved', value: '24', icon: Heart, color: '#FF9B7B' },
     { label: 'Cooked This Week', value: '8', icon: ChefHat, color: '#035035' },
     { label: 'Avg Cook Time', value: '32m', icon: Clock, color: '#A8C9B8' },
     { label: 'Streak Days', value: '12', icon: TrendingUp, color: '#FF9B7B' },
@@ -48,7 +48,7 @@ export default function Dashboard() {
           })}
         </div>
 
-        {/* Recent Recipes */}
+        {/* Recent RecipeLibrary */}
         <div className="bg-white rounded-2xl border border-[#F5F5F5] p-6">
           <h2 className="text-2xl font-bold text-[#035035] mb-6">Recent Recipes</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -40,14 +40,12 @@ class CookingSession(BaseModel):
     id: int
     recipe_id: int
     state: int  # 0: not started, 1,2... steps of the recipe
-    #   prompt_histories: List[int]  # List of PromptHistory IDs
 
     class Config:
         from_attributes = True
 
 class PromptHistory(BaseModel):
     """Schema for prompt history."""
-    id: int
     prompts: List[str]
     responses: List[str]
 
@@ -67,7 +65,11 @@ class ChangeRecipeAIRequest(BaseModel):
 class ChangeRecipeManualRequest(BaseModel):
     """Schema for manually changing a recipe."""
     recipe_id: int
-    recipe: Recipe
+    title: Optional[str] = None
+    description: Optional[str] = None
+    ingredients: Optional[List[Ingredient]] = None
+    instructions: Optional[List[Instruction]] = None
+    image_url: Optional[str] = None
 
 class ChangeStateRequest(BaseModel):
     """Schema for changing the cooking state."""

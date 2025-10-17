@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Clock, Users, Filter } from 'lucide-react';
 
-export default function Recipes() {
+export default function RecipeLibrary() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const recipes = [

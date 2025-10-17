@@ -10,14 +10,13 @@ from google.genai import types
 
 from ..agent import StructuredAgent
 from ..utils import load_instruction_from_file
-from ...services.settings_service import dynamic_settings
 from .schema import LearningPath
 
 
 
 class PlannerAgent(StructuredAgent):
     def __init__(self, app_name: str, session_service):
-        self.model = dynamic_settings.get("PLANNER_AGENT_MODEL")
+        self.model = "gemini-2.5-flash"
         self.full_instructions = load_instruction_from_file("planner_agent/instructions.txt")
         # Create the planner agent
         self.model = "gemini-2.5-flash"
