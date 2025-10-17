@@ -29,13 +29,6 @@ router = APIRouter(
 from starlette.requests import Request
 
 
-@router.get("/api/test")
-async def test(request: Request):
-    print("COOKIES:", request.cookies)
-    return {"cookies": request.cookies}
-
-
-
 @router.get("/me",
             response_model=Optional[user_schemas.User],
             summary="Get current logged-in user's profile")
