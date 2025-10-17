@@ -5,6 +5,7 @@ import LandingLayout from '../Layout/LandingLayout.jsx'
 export default function LandingPage() {
   const [activeRecipe, setActiveRecipe] = useState(0)
 
+
   const recipes = [
     {
       name: 'Mediterranean Sunset Bowl',
