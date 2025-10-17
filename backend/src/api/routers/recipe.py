@@ -168,14 +168,9 @@ async def get_prompt_history(cooking_session_id: int,
     Returns:
         PromptHistory: The prompt history.
     """
-    # DB: Get Prompt History
 
     history = await recipe_crud.get_prompt_history_by_cooking_session_id(db, cooking_session_id)
-    try:
-        prompts = json.loads(history.prompts)   
-        responses = json.loads(history.responses)
-    except json.JSONDecodeError:
-        prompts = []
-        responses = []
-    result = PromptHistory(id=int(history.id), prompts=[], responses=[])  # TODO: parse JSON strings to lists
+    prompts = json.loads(history.prompts)
+    responses = json.loads(history.responses)
+    result = PromptHistory(prompts=prompts, responses=responses)
     return result

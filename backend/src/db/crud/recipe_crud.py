@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.src.db.models.db_recipe import Recipe, GenContext, CookingSession, PromptHistory
 
 # UpdateRecipe (z.B. permanent)
+# Create Recipe
 # Create CookingSession
 # Update CookingSession State
 # Get RecipePreviews !
@@ -52,6 +53,8 @@ async def get_cooking_session_by_id(db: AsyncSession, cooking_session_id: int) -
 async def get_prompt_history_by_cooking_session_id(db: AsyncSession, cooking_session_id: int) -> Optional[PromptHistory]:
     """Retrieve the prompt history by cooking session ID."""
 
+    #TODO Create new prompt history if not exists
+
     # Step 1: Get the cooking session to know its current state
     result = await db.execute(select(CookingSession).where(CookingSession.id == cooking_session_id))
     cooking_session = result.scalars().first()
@@ -67,11 +70,43 @@ async def get_prompt_history_by_cooking_session_id(db: AsyncSession, cooking_ses
         )
         .order_by(PromptHistory.created_at.desc())  # optional: in case multiple entries exist
     )
+    prompt_history = result.scalars().first()
 
-    return result.scalars().first()
+    if not prompt_history:
+        prompt_history = PromptHistory(
+            cooking_session_id=cooking_session.id,
+            state=cooking_session.state,
+            prompts=json.dumps([]),     # start empty
+            responses=json.dumps([]),   # start empty
+        )
+        db.add(prompt_history)
+        await db.commit()
+        await db.refresh(prompt_history)  # refresh to get the assigned ID
 
+    return prompt_history
 
-
+async def create_recipe(db: AsyncSession,
+                user_id: str,
+                title: str,
+                description: str,
+                ingredients: str,
+                instructions: str,
+                image_url: Optional[str] = None,
+                is_permanent: bool = False) -> Recipe:
+    """Create a new recipe in the database."""
+    recipe = Recipe(
+        user_id=user_id,
+        title=title,
+        description=description,
+        ingredients=ingredients,
+        instructions=instructions,
+        image_url=image_url,
+        is_permanent=is_permanent,
+    )
+    db.add(recipe)
+    await db.commit()
+    await db.refresh(recipe)
+    return recipe
 
 
 async def create_user(db: AsyncSession,
