@@ -98,6 +98,14 @@ def set_access_cookie(response : Response, access_token: str):
         secure=settings.SECURE_COOKIE,  # use secure cookies if configured
         samesite=SAME_SITE,  # use configured SameSite policy
     )
+    response.set_cookie(
+        key="__session",
+        value=access_token,
+        path="/",  # send to all paths
+        httponly=True,
+        secure=settings.SECURE_COOKIE,  # use secure cookies if configured
+        samesite=SAME_SITE,  # use configured SameSite policy
+    )
 
 
 def set_refresh_cookie(response : Response, refresh_token: str):

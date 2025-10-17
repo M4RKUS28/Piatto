@@ -39,6 +39,7 @@ async def read_current_user(request: Request,
     Retrieve the profile of the currently authenticated user.
     Returns user data if a valid session (cookie) is present, otherwise returns null.
     """
+    return {"cookies": request.cookies, "user_id": current_user_id}
     if current_user_id is None:
         return None
 
