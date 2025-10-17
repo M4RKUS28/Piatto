@@ -24,16 +24,26 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+from starlette.requests import Request
+
+@app.get("/api/test")
+async def test(request: Request):
+    print("COOKIES:", request.cookies)
+    return {"cookies": request.cookies}
+
+
+
 @router.get("/me",
             response_model=Optional[user_schemas.User],
             summary="Get current logged-in user's profile")
-async def read_current_user(
+async def read_current_user(request: Request,
     current_user_id: Optional[str] = Depends(get_user_id_optional)
 ):
     """
     Retrieve the profile of the currently authenticated user.
     Returns user data if a valid session (cookie) is present, otherwise returns null.
     """
+    return {"cookies": request.cookies, "user_id": current_user_id}
     if current_user_id is None:
         return None
 

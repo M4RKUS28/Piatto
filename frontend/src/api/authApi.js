@@ -46,6 +46,7 @@ export const logout = async () => {
 export const getCurrentUser = async () => {
   try {
     const response = await apiWithCookies.get('/users/me');
+    console.log("Current User:", response.data);
     return response.data;
   } catch (error) {
     if (error.response?.status === 404) {

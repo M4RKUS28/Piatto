@@ -48,18 +48,6 @@ def health():
     return {"ok": True}
 
 
-from starlette.requests import Request
-
-@app.get("/api/test")
-async def test(request: Request):
-    print("COOKIES:", request.cookies)
-    return {"cookies": request.cookies}
-
-from fastapi import FastAPI, UploadFile, HTTPException
-from google.cloud import storage
-import os
-
-
 # Include your existing routers under this api_router
 app.include_router(users.router)
 app.include_router(auth_router.api_router)
