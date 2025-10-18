@@ -124,6 +124,10 @@ def set_refresh_cookie(response : Response, refresh_token: str):
 def clear_access_cookie(response : Response):
     """Clear the access token cookie in the response."""
     response.delete_cookie(
+        key="__session",
+        path="/",  # send to all paths
+    )
+    response.delete_cookie(
         key="access_token",
         path="/",  # send to all paths
     )
@@ -144,7 +148,8 @@ async def get_access_token_from_cookie(request: Request) -> Optional[str]:
     This is useful for endpoints where the user may not be required to be logged in.
     Or for future fallback mechanisms where the access token might be in a header or query parameter.
     """
-    access_token = request.cookies.get("access_token")
+    #access_token = request.cookies.get("access_token")
+    access_token = request.cookies.get("__session")
 
     #if not access_token:
     #    raise HTTPException(
