@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text, func, Boolean
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text, func, Boolean, Float
 from sqlalchemy.orm import relationship
 from ..database import Base
 
@@ -11,11 +11,30 @@ class Recipe(Base):
     user_id = Column(String(50), ForeignKey("users.id"), nullable=False)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=False)
-    ingredients = Column(Text, nullable=False)  # Store as JSON string
     instructions = Column(Text, nullable=False)  # Store as JSON string
     image_url = Column(String(255), nullable=True)
     is_permanent = Column(Boolean, default=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
+
+    ingredients = relationship(
+        "RecipeIngredient",
+        back_populates="recipe",
+        cascade="all, delete-orphan",
+        order_by="RecipeIngredient.id",
+    )
+
+
+class RecipeIngredient(Base):
+    """Database model for a recipe ingredient scoped to a recipe."""
+    __tablename__ = "recipe_ingredients"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    recipe_id = Column(Integer, ForeignKey("recipes.id", ondelete="CASCADE"), nullable=False)
+    name = Column(String(255), nullable=False)
+    quantity = Column(Float, nullable=True)
+    unit = Column(String(50), nullable=True)
+
+    recipe = relationship("Recipe", back_populates="ingredients")
 
 class PreparingSession(Base):
     """Database model for a preparing session."""
