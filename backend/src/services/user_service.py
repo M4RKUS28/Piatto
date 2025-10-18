@@ -41,6 +41,15 @@ async def update_user(db: AsyncSession, user_id: str, user_update, current_user_
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to update this user")
 
     update_data = user_update.model_dump(exclude_unset=True)
+    
+    # Check if username is being updated and if it already exists
+    if "username" in update_data and update_data["username"]:
+        existing_user = await users_crud.get_user_by_username(db, update_data["username"])
+        if existing_user and str(existing_user.id) != str(user_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail=f"Username '{update_data['username']}' is already taken. Please choose a different username."
+            )
     if "password" in update_data and update_data["password"]:
         if str(db_user.id) == str(current_user_id):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Use /change_password to update your password.")
