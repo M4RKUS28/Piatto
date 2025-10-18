@@ -31,9 +31,9 @@ class AgentService:
         self.recipe_agent = RecipeAgent(self.app_name, self.session_service)
         self.image_agent = ImageAgent(self.app_name, self.session_service)
 
-    async def analyze_ingredients(self, user_id: str, image_id: int):
+    async def analyze_ingredients(self, user_id: str, image_key: str):
         async with get_async_db_context() as db:
-            image: Image = await images_crud.get_image_by_id(db, image_id)
+            image: Image = await images_crud.get_image_by_id(db, image_key)
 
         query = create_docs_query("Analyze this image for food items.", [], [image])
         response = await self.image_analyzer_agent.run(
@@ -46,10 +46,10 @@ class AgentService:
 
 
     # Rezepte Erstellen
-    async def generate_recipe(self, user_id: str, prompt: str, written_ingredients: str, preparing_session_id: int, image_id: int = None):
+    async def generate_recipe(self, user_id: str, prompt: str, written_ingredients: str, preparing_session_id: int = None, image_key: str = None):
         analyzed_ingredients = None
-        if image_id:
-            analyzed_ingredients = await self.analyze_ingredients(user_id, image_id)
+        if image_key:
+            analyzed_ingredients = await self.analyze_ingredients(user_id, image_key)
 
         query = get_recipe_gen_query(prompt, written_ingredients, analyzed_ingredients)
         recipe =  await self.recipe_agent.run(
@@ -81,6 +81,7 @@ class AgentService:
     async def change_recipe(self, change_prompt: str, recipe_id: int,db : AsyncSession = Depends(get_db)):
         # Prompt/Kontext an Agent übergeben
         # Rezept in Datenbank updaten (als temporär)
+        
         recipe = await recipe_crud.update_recipe(
             db=db,
             recipe_id=recipe_id,
