@@ -24,7 +24,6 @@ from ..core import security
 from ..core.enums import AccessLevel
 from ..core.security import oauth
 from ..db.crud import users_crud
-from ..db.models.db_user import User as UserModel
 
 from ..core.enums import UserRole
 
@@ -150,7 +149,7 @@ async def logout_user(response: Response) -> auth_schema.APIResponseStatus:
     security.clear_refresh_cookie(response)
 
     return auth_schema.APIResponseStatus(status="success", msg="Successfully logged out")
-    
+
 async def refresh_token(token: Optional[str], db: AsyncSession, response: Response) -> auth_schema.APIResponseStatus:
     """Refreshes the access token for a user."""
 
@@ -316,9 +315,11 @@ async def handle_oauth_callback(request: Request, db: AsyncSession, website: str
             base_username = (name.lower().replace(" ", ".")[:40] if name else (email.split("@")[0][:40] if email else "user"))
             username_candidate = base_username[:42]
             final_username = username_candidate
-            while db.query(UserModel).filter(UserModel.username == final_username).first():
+
+            while await users_crud.get_user_by_username(db, final_username):
                 suffix = secrets.token_hex(3)
                 final_username = f"{username_candidate[:42]}.{suffix}"
+
             random_password = secrets.token_urlsafe(16)
             hashed_password = security.get_password_hash(random_password)
 
@@ -361,22 +362,10 @@ async def handle_oauth_callback(request: Request, db: AsyncSession, website: str
                                 detail="Frontend base URL is not configured.")
 
         redirect_response = RedirectResponse(url=frontend_base_url)
-        redirect_response.set_cookie(
-            key="access_token",
-            value=access_token,
-            path="/",
-            httponly=True,
-            secure=settings.SECURE_COOKIE,
-            samesite="lax"
-        )
-        redirect_response.set_cookie(
-            key="refresh_token",
-            value=refresh_token_value,
-            path="/api/auth/refresh",
-            httponly=True,
-            secure=settings.SECURE_COOKIE,
-            samesite="lax"
-        )
+
+        # Set the access & refresh token in the response cookie
+        security.set_access_cookie(redirect_response, access_token)
+        security.set_refresh_cookie(redirect_response, refresh_token_value)
 
         return redirect_response
 
@@ -389,4 +378,5 @@ async def handle_oauth_callback(request: Request, db: AsyncSession, website: str
     except Exception:  # pragma: no cover - error routing  # noqa: BLE001  # pylint: disable=broad-except
         logger.exception("Unexpected OAuth callback failure for %s", website)
         return _build_login_failed_redirect("Unexpected error occurred during OAuth login. Please try again later.")
+
 

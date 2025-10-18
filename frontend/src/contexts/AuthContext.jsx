@@ -24,7 +24,9 @@ export const AuthProvider = ({ children }) => {
   const fetchAndSetCurrentUser = useCallback(async () => {
     try {
       setLoading(true);
+      console.log('AuthContext: Fetching current user...');
       const userData = await authApi.getCurrentUser();
+      console.log("Current User after await authApi.getCurrentUser();:", userData);
       
       if (userData && userData.id) {
         setUser(userData);
