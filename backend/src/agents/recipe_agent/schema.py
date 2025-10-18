@@ -22,3 +22,8 @@ class Recipe(BaseModel):
         Field(description="List of needed ingredients for the recipe"))
     servings: int = (
         Field(description="Number of servings that the given ingredients produce"))
+
+class Recipes(BaseModel):
+    recipes: List[Recipe] = (
+        Field(description="List of recipes")
+    )
