@@ -12,7 +12,9 @@ from .query_service import get_recipe_gen_query, get_image_gen_query
 from ..agents.image_agent.agent import ImageAgent
 from ..agents.image_analyzer_agent import ImageAnalyzerAgent
 from ..agents.recipe_agent import RecipeAgent
+from ..db.bucket_session import get_bucket_session
 from ..db.crud import images_crud, recipe_crud
+from ..db.crud.bucket_base_repo import get_file
 from ..db.models.db_file import Image
 from google.adk.sessions import InMemorySessionService
 from ..agents.utils import create_text_query, create_docs_query
@@ -31,9 +33,9 @@ class AgentService:
         self.recipe_agent = RecipeAgent(self.app_name, self.session_service)
         self.image_agent = ImageAgent(self.app_name, self.session_service)
 
-    async def analyze_ingredients(self, user_id: str, image_id: int):
-        async with get_async_db_context() as db:
-            image: Image = await images_crud.get_image_by_id(db, image_id)
+    async def analyze_ingredients(self, user_id: str, image_key: str):
+        async with get_async_bucket_session() as bs:
+            image: bytes = await get_file(bs, image_key)
 
         query = create_docs_query("Analyze this image for food items.", [], [image])
         response = await self.image_analyzer_agent.run(
@@ -46,10 +48,10 @@ class AgentService:
 
 
     # Rezepte Erstellen
-    async def generate_recipe(self, user_id: str, prompt: str, written_ingredients: str, preparing_session_id: int, image_id: int = None):
+    async def generate_recipe(self, user_id: str, prompt: str, written_ingredients: str, preparing_session_id: int = None, image_key: str = None):
         analyzed_ingredients = None
-        if image_id:
-            analyzed_ingredients = await self.analyze_ingredients(user_id, image_id)
+        if image_key:
+            analyzed_ingredients = await self.analyze_ingredients(user_id, image_key)
 
         query = get_recipe_gen_query(prompt, written_ingredients, analyzed_ingredients)
         recipe =  await self.recipe_agent.run(
@@ -80,12 +82,17 @@ class AgentService:
 
     async def change_recipe(self, change_prompt: str, recipe_id: int,db : AsyncSession = Depends(get_db)):
         # Prompt/Kontext an Agent übergeben
-        # Rezept in Datenbank updaten (als temporär)
+        # Agent returned agents/recipe_agent/schema.py:Recipe
+        agent_return = ... # Agent call
+
+
         recipe = await recipe_crud.update_recipe(
             db=db,
             recipe_id=recipe_id,
-            title="ExampleTitle",
-        )
+            title=agent_return.name,
+            description=agent_return.description,
+            instructions=agent_return.instructions,
+            ingredients=agent_return.ingredients,)
         if not recipe:
             raise HTTPException(status_code=404, detail="Recipe not found")
         result = Recipe(

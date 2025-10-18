@@ -1,98 +1,116 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+# app/routes/files_deprecated.py
+import os
+import tempfile
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session
-from ...utils.auth import get_read_write_user_id
+
+from ...db.bucket_session import get_bucket_session, BucketSession
+from ...db.crud.bucket_base_repo import (
+    upload_file, make_file_public, generate_signed_get_url,
+    generate_signed_put_url, delete_file, file_exists, list_files,
+)
 from ...db.database import get_db
-from ...api.schemas.file import (
-    ImageInfo
-)
-from ...db.models.db_file import Image
 
-router = APIRouter(
-    prefix="/files",
-    tags=["files"],
-    responses={404: {"description": "Not found"}},
-)
+router = APIRouter(prefix="/files", tags=["files"])
 
-ALLOWED_IMAGE_TYPES = {
-    "image/jpeg": [".jpg", ".jpeg"],
-    "image/png": [".png"],
-    "image/gif": [".gif"],
-    "image/webp": [".webp"],
-}
-
-# File size limits (in bytes)
-MAX_DOCUMENT_SIZE = 30 * 1024 * 1024  # 30 MB TODO find suitable limit
-MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5 MB
-
-
-def validate_file_type(filename: str, content_type: str, allowed_types: dict) -> bool:
-    """Validate if file type is allowed."""
-    if content_type not in allowed_types:
-        return False
-
-    # Check file extension
-    filename_lower = filename.lower()
-    allowed_extensions = allowed_types[content_type]
-    return any(filename_lower.endswith(ext) for ext in allowed_extensions)
-
-
-async def verify_image_ownership(image_id: int, user_id: int, db: Session) -> Image:
-    """Verify image belongs to current user."""
-    image = db.query(Image).filter(
-        Image.id == image_id,
-        Image.user_id == user_id
-    ).first()
-
-    if not image:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Image not found or access denied"
-        )
-    return image
-
-# ========== IMAGE ENDPOINTS ==========
-
-@router.post("/images", response_model=ImageInfo)
-async def upload_image(
-        file: UploadFile = File(...),
-        current_user_id: str = Depends(get_read_write_user_id),
-        db: AsyncSession = Depends(get_db)
+@router.post("/upload")
+async def upload(
+    user_id: str, 
+    category: str,
+    file: UploadFile = File(...), 
+    sess: BucketSession = Depends(get_bucket_session),
 ):
-    """Upload an image (JPEG, PNG, GIF, WebP)."""
-    # Validate file type
-    if not validate_file_type(file.filename, file.content_type, ALLOWED_IMAGE_TYPES):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Image type not allowed. Allowed types: {list(ALLOWED_IMAGE_TYPES.keys())}"
+    """
+    Upload a file to GCS bucket.
+    
+    Args:
+        user_id: User ID
+        category: File category (e.g., "recipes", "images", "documents")
+        file: File to upload
+        
+    Returns:
+        File info including key, original_filename, size, etc.
+    """
+    # tempfile.gettempdir() works cross-platform (Windows: C:\Users\...\AppData\Local\Temp, Linux: /tmp)
+    suffix = os.path.splitext(file.filename)[1]
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        body = await file.read()
+        tmp.write(body)
+        tmp.flush()
+        tmp_path = tmp.name
+    try:
+        file_info = await upload_file(
+            sess, 
+            user_id, 
+            category,
+            tmp_path, 
+            file.filename, 
+            file.content_type
         )
+        return file_info['key']
+    finally:
+        try:
+            os.remove(tmp_path)
+        except OSError:
+            pass
 
-    # Read file data
-    image_data = await file.read()
-    file_size = len(image_data)
+@router.get("/info/{key:path}")
+async def get_info(key: str, sess: BucketSession = Depends(get_bucket_session)):
+    """Get file information by key."""
+    from ...db.crud.bucket_base_repo import get_file_info
+    return await get_file_info(sess, key)
 
-    # Validate file size
-    if file_size > MAX_IMAGE_SIZE:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Image too large. Maximum size: {MAX_IMAGE_SIZE // (1024 * 1024)} MB"
-        )
+@router.post("/public-url")
+async def public_url(key: str, sess: BucketSession = Depends(get_bucket_session)):
+    """Make file public and get public URL."""
+    return await make_file_public(sess, key)
 
-    if file_size == 0:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Empty file not allowed"
-        )
+@router.post("/signed-url")
+async def signed_get(key: str, minutes: int = 60, sess: BucketSession = Depends(get_bucket_session)):
+    """Generate signed GET URL for private file access."""
+    return await generate_signed_get_url(sess, key, minutes)
 
-    # Create image record
-    image = Image(
-        user_id=current_user_id,
-        content_type=file.content_type,
-        image_data=image_data,
-    )
+@router.post("/signed-put")
+async def signed_put(
+    user_id: str, 
+    category: str,
+    filename: str, 
+    content_type: str, 
+    minutes: int = 15, 
+    sess: BucketSession = Depends(get_bucket_session)
+):
+    """Generate signed PUT URL for direct upload from client."""
+    return await generate_signed_put_url(sess, user_id, category, filename, content_type, minutes)
 
-    db.add(image)
-    await db.commit()
-    await db.refresh(image)
+@router.get("/exists/{key:path}")
+async def exists(key: str, sess: BucketSession = Depends(get_bucket_session)):
+    """Check if file exists and get info."""
+    return await file_exists(sess, key)
 
-    return image
+@router.get("/list")
+async def list_(
+    user_id: str, 
+    category: str = None,
+    date_prefix: str = None,
+    max_results: int = 1000,
+    sess: BucketSession = Depends(get_bucket_session)
+):
+    """
+    List files for a user.
+    
+    Args:
+        user_id: User ID
+        category: Optional filter by category (e.g., "recipes")
+        date_prefix: Optional filter by date (e.g., "01-10-2025" or "01-10")
+        max_results: Max number of results
+    """
+    items = await list_files(sess, user_id, category, date_prefix, max_results)
+    return {"files": items, "count": len(items)}
+
+@router.delete("/{key:path}")
+async def delete_(key: str, sess: BucketSession = Depends(get_bucket_session)):
+    """Delete file by key."""
+    return await delete_file(sess, key)
+
+
+

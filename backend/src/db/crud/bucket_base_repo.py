@@ -155,6 +155,45 @@ async def get_file_info(sess: BucketSession, key: str) -> Dict[str, Any]:
     }
 
 
+async def get_file(sess: BucketSession, key: str) -> bytes:
+    """
+    Lädt den kompletten Dateiinhalt als bytes herunter.
+    
+    Args:
+        sess: BucketSession
+        key: Storage-Key der Datei
+        
+    Returns:
+        bytes: Dateiinhalt
+        
+    Raises:
+        HTTPException: 404 wenn Datei nicht gefunden, 500 bei anderen Fehlern
+    """
+    from google.api_core import exceptions as gapi_exc
+    
+    blob = sess.bucket.blob(key)
+    
+    try:
+        # Prüfe ob Datei existiert
+        exists = await BucketEngine._retry(blob.exists, timeout=sess.timeout)
+        if not exists:
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        # Lade Dateiinhalt herunter
+        content = await BucketEngine._retry(blob.download_as_bytes, timeout=sess.timeout)
+        logger.info("Downloaded file gs://%s/%s (%d bytes)", sess.bucket.name, key, len(content))
+        return content
+        
+    except gapi_exc.NotFound:
+        raise HTTPException(status_code=404, detail="File not found")
+    except HTTPException:
+        # Re-raise unsere eigenen HTTPExceptions
+        raise
+    except Exception as e:
+        logger.error("Download failed for gs://%s/%s: %s", sess.bucket.name, key, e)
+        raise HTTPException(status_code=500, detail="Download failed") from e
+
+
 async def make_file_public(sess: BucketSession, key: str) -> Dict[str, Any]:
     """
     Setzt die einzelne Datei öffentlich (Fine-grained ACL).

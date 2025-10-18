@@ -18,6 +18,9 @@ for _logger_name in (
 ):
     logging.getLogger(_logger_name).setLevel(logging.WARNING)
 
+#
+from ..db.database import Base, engine
+from ..db.models import db_recipe
 
 
 @asynccontextmanager
@@ -30,6 +33,8 @@ async def lifespan(_app: FastAPI):
         engine = await get_engine()
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            await conn.run_sync(db_recipe.Base.metadata.create_all)
+
         logger.info("✅ Database tables created/verified")
         
         # Initialize bucket engine

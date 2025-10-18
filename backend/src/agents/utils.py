@@ -28,7 +28,7 @@ def create_text_query(query: str) -> types.Content:
     return types.Content(role="user", parts=[types.Part(text=query)])
 
 
-def create_docs_query(query: str, docs: List[Document], images: List[Image]) -> types.Content:
+def create_docs_query(query: str, docs: List[Document], images: List[bytes]) -> types.Content:
     """ Takes a string and fastapi UploadFile object and returns a user query that can be sent to an agent """
     parts = [types.Part(text=query)]
     for doc in docs:
@@ -38,8 +38,8 @@ def create_docs_query(query: str, docs: List[Document], images: List[Image]) -> 
         ))
     for image in images:
         parts.append(types.Part.from_bytes(
-            data=image.image_data,
-            mime_type=image.content_type,
+            data=image,
+            mime_type="image/png",
         ))
     return types.Content(role="user", parts=parts)
 

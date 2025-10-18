@@ -4,6 +4,7 @@ import logging
 import asyncio
 from dataclasses import dataclass
 from typing import Optional, Callable
+from contextlib import asynccontextmanager
 
 from google.cloud import storage
 from google.auth.credentials import Credentials
@@ -112,7 +113,31 @@ async def get_bucket_engine(bucket_name: str = "piatto-bucket") -> BucketEngine:
         await _engine.start()
     return _engine
 
+
 # FastAPI Dependency: liefert pro Request eine Session
 async def get_bucket_session() -> BucketSession:
+    """
+    FastAPI Dependency für bucket sessions.
+    Verwendung: bucket_session: BucketSession = Depends(get_bucket_session)
+    """
     engine = await get_bucket_engine()
     return engine.session()
+
+
+# Async Context Manager: für manuelle Verwendung außerhalb von FastAPI
+@asynccontextmanager
+async def get_async_bucket_session():
+    """
+    Async context manager für bucket sessions.
+    Verwendung: async with get_async_bucket_session() as session:
+    
+    Im Gegensatz zu DB-Sessions gibt es hier kein commit/rollback,
+    da GCS-Operationen sofort ausgeführt werden.
+    """
+    engine = await get_bucket_engine()
+    session = engine.session()
+    try:
+        yield session
+    finally:
+        # Cleanup falls nötig (aktuell keine Ressourcen zu schließen)
+        pass
