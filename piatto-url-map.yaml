@@ -10,5 +10,13 @@ pathMatchers:
   defaultService: https://www.googleapis.com/compute/v1/projects/cloud-run-hackathon-475303/global/backendServices/piatto-frontend-service
   pathRules:
   - paths:
+    - /assets/*
+    - /index.html
+    - /logo_full_name.svg
+    - /logo_no_P.svg
+    - /logo_P.svg
+    - /logo_P_test.png
+    service: https://www.googleapis.com/compute/v1/projects/cloud-run-hackathon-475303/global/backendBuckets/frontend-bucket
+  - paths:
     - /api/*
     service: https://www.googleapis.com/compute/v1/projects/cloud-run-hackathon-475303/global/backendServices/fastapi-backend-service
