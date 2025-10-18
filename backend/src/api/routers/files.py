@@ -31,6 +31,8 @@ async def upload(
     Returns:
         File info including key, original_filename, size, etc.
     """
+    print(f"Uploading file: {file.filename}, content_type: {file.content_type}, user_id: {user_id}, category: {category}")
+
     # tempfile.gettempdir() works cross-platform (Windows: C:\Users\...\AppData\Local\Temp, Linux: /tmp)
     suffix = os.path.splitext(file.filename)[1]
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:

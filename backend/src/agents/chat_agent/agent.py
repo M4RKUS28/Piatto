@@ -2,7 +2,7 @@ import asyncio
 from google import genai
 from google.genai import types
 
-from backend.src.agents.utils import load_instruction_from_file
+from ..utils import load_instruction_from_file
 
 
 class ChatAgent:

@@ -92,15 +92,19 @@ class AgentService:
                 recipe_ids.append(recipe_db.id)
 
             # Create or update preparing session with the generated recipes and metadata
-            session = await preparing_crud.create_or_update_preparing_session(
-                db=db,
-                user_id=user_id,
-                prompt=prompt,
-                recipe_ids=recipe_ids,
-                image_key=image_key,
-                analyzed_ingredients=analyzed_ingredients,
-                preparing_session_id=preparing_session_id,
-            )
+            try:
+                session = await preparing_crud.create_or_update_preparing_session(
+                    db=db,
+                    user_id=user_id,
+                    prompt=prompt,
+                    recipe_ids=recipe_ids,
+                    image_key=image_key,
+                    analyzed_ingredients=analyzed_ingredients,
+                    preparing_session_id=preparing_session_id,
+                )
+            except PermissionError as error:
+                logger.warning("Preparing session %s cannot be updated by user %s", preparing_session_id, user_id)
+                raise HTTPException(status_code=403, detail="Preparing session does not belong to the authenticated user") from error
 
         return session.id
 

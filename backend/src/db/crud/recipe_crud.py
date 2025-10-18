@@ -25,32 +25,30 @@ async def get_recipes_by_user_id(db: AsyncSession, user_id: str) -> List[Recipe]
     return result.scalars().all()
 
 async def get_recipes_by_preparing_session_id(db: AsyncSession, preparing_session_id: int) -> Optional[List[Recipe]]:
-    """Retrieve the last three recipes by preparing session ID."""
-     # Step 1: Get the preparing session
+    """Retrieve the active recipes for a preparing session in creation order."""
+    # Step 1: Get the preparing session
     result = await db.execute(select(PreparingSession).where(PreparingSession.id == preparing_session_id))
     preparing_session = result.scalars().first()
 
-    if not preparing_session or not preparing_session.context_suggestions:
+    if not preparing_session:
         return None
 
-    # Step 2: Parse recipe IDs from JSON string
-    try:
-        recipe_ids = json.loads(preparing_session.context_suggestions)
-        if not isinstance(recipe_ids, list):
-            return None
-    except (json.JSONDecodeError, TypeError):
-        return None
+    # Step 2: Determine the active recipe IDs, falling back to full history when needed
+    active_recipe_ids = _parse_recipe_id_list(preparing_session.current_recipes)
+    if not active_recipe_ids:
+        active_recipe_ids = _parse_recipe_id_list(preparing_session.context_suggestions)[-3:]
+    if not active_recipe_ids:
+        return []
 
-    # Step 3: Get the last three recipe IDs (preserve order if possible)
-    last_three_ids = recipe_ids[-3:]
-
-    # Step 4: Fetch the recipes from the DB
+    # Step 3: Fetch the recipes from the DB
     result = await db.execute(
         select(Recipe)
         .options(selectinload(Recipe.ingredients))
-        .where(Recipe.id.in_(last_three_ids))
+        .where(Recipe.id.in_(active_recipe_ids))
     )
-    return result.scalars().all()
+    recipes = result.scalars().all()
+    recipe_lookup = {recipe.id: recipe for recipe in recipes}
+    return [recipe_lookup[recipe_id] for recipe_id in active_recipe_ids if recipe_id in recipe_lookup]
 
 async def get_all_recipes_by_user_id(db: AsyncSession, user_id: str) -> List[Recipe]:
     """Retrieve all recipes for a given user ID."""
@@ -186,3 +184,22 @@ def _ingredient_to_payload(ingredient: Any) -> dict:
         return ingredient
 
     raise ValueError("Unsupported ingredient payload type")
+
+
+def _parse_recipe_id_list(raw_value: Optional[str]) -> List[int]:
+    """Parse a JSON encoded list of recipe identifiers."""
+    if not raw_value:
+        return []
+    try:
+        payload = json.loads(raw_value)
+    except (json.JSONDecodeError, TypeError):
+        return []
+    if not isinstance(payload, list):
+        return []
+    result: List[int] = []
+    for item in payload:
+        try:
+            result.append(int(item))
+        except (TypeError, ValueError):
+            continue
+    return result

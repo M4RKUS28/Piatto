@@ -92,3 +92,65 @@ export const finishPreparingSession = async (preparingSessionId) => {
     throw error;
   }
 };
+
+/**
+ * Get image analysis metadata for a preparing session
+ * @param {number} preparingSessionId - The preparing session ID
+ * @returns {Promise<{image_key: string|null, analyzed_ingredients: string|null}>}
+ * @throws {Error} If the request fails
+ */
+export const getImageAnalysisBySessionId = async (preparingSessionId) => {
+  try {
+    const response = await apiWithCookies.get(`/preparing/${preparingSessionId}/image-analysis`);
+    return response.data;
+  } catch (error) {
+    // Log all errors to console with full error details for debugging
+    console.error('getImageAnalysisBySessionId error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      response: error.response,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      config: {
+        url: error.config?.url,
+        method: error.config?.method
+      }
+    });
+    throw error;
+  }
+};
+
+/**
+ * Remove a recipe from the current list for a preparing session
+ * @param {number} preparingSessionId - The preparing session ID
+ * @param {number} recipeId - The recipe ID
+ * @returns {Promise<Object>} Updated current recipe ids
+ * @throws {Error} If the request fails
+ */
+export const removeRecipeFromCurrent = async (preparingSessionId, recipeId) => {
+  try {
+    const response = await apiWithCookies.delete(`/preparing/${preparingSessionId}/current-recipes/${recipeId}`);
+    return response.data;
+  } catch (error) {
+    console.error('removeRecipeFromCurrent error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Re-add a recipe to the current list for a preparing session
+ * @param {number} preparingSessionId - The preparing session ID
+ * @param {number} recipeId - The recipe ID
+ * @returns {Promise<Object>} Updated current recipe ids
+ * @throws {Error} If the request fails
+ */
+export const addRecipeToCurrent = async (preparingSessionId, recipeId) => {
+  try {
+    const response = await apiWithCookies.post(`/preparing/${preparingSessionId}/current-recipes/${recipeId}`);
+    return response.data;
+  } catch (error) {
+    console.error('addRecipeToCurrent error:', error);
+    throw error;
+  }
+};
