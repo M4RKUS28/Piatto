@@ -69,6 +69,16 @@ def _resolve_content_type(original_filename: str, provided: Optional[str]) -> st
 
     raise HTTPException(status_code=400, detail="content_type is required for image upload")
 
+def verify_user_access(key: str, user_id: str) -> None:
+    """
+    Verifiziert ob der gegebene user_id Zugriff auf die Datei mit dem Key hat.
+    Wir gehen davon aus, dass der Key das Format "users/<user_id>/..." hat.
+    """
+    if not user_id or '/' in user_id:
+        raise HTTPException(status_code=400, detail="Invalid user_id")
+    if not key.startswith(f"users/{user_id}/"):
+        raise HTTPException(status_code=403, detail="Forbidden: You do not have access to this file.")
+
 # ============================================================
 # Public API (funktional, erwartet BucketSession als Parameter)
 # ============================================================
@@ -111,7 +121,7 @@ async def upload_file(
     blob.metadata = {
         "original_filename": original_filename,
         "category": category,
-        "uploaded_at": datetime.utcnow().isoformat(),
+        "uploaded_at": datetime.utcnow().isoformat()
     }
 
     logger.info("GCS upload -> gs://%s/%s (%d bytes, %s)", sess.bucket.name, key, size, content_type)

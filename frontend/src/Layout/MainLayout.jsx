@@ -100,25 +100,29 @@ export default function MainLayout({ children }) {
         {/* Navigation Items */}
         <nav className="flex-1 py-4">
           <div className="space-y-1 px-2">
-            {navItems.map(({ label, to, icon: Icon, end }) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={end}
-                onClick={() => setProfileMenuOpen(false)}
-                className={({ isActive }) =>
-                  [
-                    'flex items-center gap-3 px-3 py-3 rounded-xl transition-all group',
-                    isActive
-                      ? 'bg-white text-[#035035] shadow-sm'
-                      : 'text-[#2D2D2D] hover:bg-white hover:text-[#035035]'
-                  ].join(' ')
-                }
-              >
-                <Icon className="w-5 h-5 flex-shrink-0" />
-                {sidebarExpanded && <span className="font-medium">{label}</span>}
-              </NavLink>
-            ))}
+            {navItems.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.end}
+                  onClick={() => setProfileMenuOpen(false)}
+                  className={({ isActive }) =>
+                    [
+                      'flex items-center gap-3 px-3 py-3 rounded-xl transition-all group',
+                      isActive
+                        ? 'bg-white text-[#035035] shadow-sm'
+                        : 'text-[#2D2D2D] hover:bg-white hover:text-[#035035]'
+                    ].join(' ')
+                  }
+                >
+                  {Icon && <Icon className="w-5 h-5 flex-shrink-0" />}
+                  {sidebarExpanded && <span className="font-medium">{item.label}</span>}
+                </NavLink>
+              );
+            })}
           </div>
         </nav>
 
@@ -147,10 +151,10 @@ export default function MainLayout({ children }) {
           {/* Profile Dropdown */}
           {profileMenuOpen && (
             <div
-              className={`absolute bg-white rounded-2xl shadow-lg border border-[#F5F5F5] p-3 ${sidebarExpanded ? 'bottom-16 left-2 right-2' : 'bottom-16 left-2 w-56'
+              className={`absolute bg-white rounded-2xl shadow-lg border border-[#F5F5F5] p-3 z-[60] min-w-[14rem] ${sidebarExpanded ? 'bottom-16 left-2 right-2' : 'bottom-16 left-2'
                 }`}
               style={{
-                animation: 'scaleIn 200ms cubic-bezier(0.34, 1.56, 0.64, 1)'
+                animation: 'scaleIn 300ms cubic-bezier(0.34, 1.56, 0.64, 1)',
               }}
             >
               {/* User Info */}

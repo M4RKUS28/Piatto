@@ -58,16 +58,17 @@ DB_CONNECT_TIMEOUT = int(os.getenv("DB_CONNECT_TIMEOUT", "10"))
 # Google OAuth settings
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "https://www.piatto-cooks.com/api/google/callback")
-FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "https://www.piatto-cooks.com/google/callback")
+GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "https://piatto-cooks.com/api/auth/google/callback")
+FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "https://piatto-cooks.com/oauth/callback")
+
 
 
 GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
 GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
-GITHUB_REDIRECT_URI = os.getenv("GITHUB_REDIRECT_URI", "https://www.piatto-cooks.com/api/github/callback")
+GITHUB_REDIRECT_URI = os.getenv("GITHUB_REDIRECT_URI", "https://piatto-cooks.com/api/github/callback")
 DISCORD_CLIENT_ID = os.getenv("DISCORD_CLIENT_ID")
 DISCORD_CLIENT_SECRET = os.getenv("DISCORD_CLIENT_SECRET")
-DISCORD_REDIRECT_URI = os.getenv("DISCORD_REDIRECT_URI", "https://www.piatto-cooks.com/api/discord/callback")
+DISCORD_REDIRECT_URI = os.getenv("DISCORD_REDIRECT_URI", "https://piatto-cooks.com/api/discord/callback")
 
 UNSPLASH_ACCESS_KEY = os.getenv("UNSPLASH_ACCESS_KEY")
 UNSPLASH_SECRET_KEY = os.getenv("UNSPLASH_SECRET_KEY")

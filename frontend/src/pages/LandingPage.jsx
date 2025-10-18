@@ -1,12 +1,9 @@
-import { useState } from 'react'
 import { ChefHat, Sparkles, BookOpen, Clock } from 'lucide-react'
 import LandingLayout from '../Layout/LandingLayout.jsx'
 
 
 
 export default function LandingPage() {
-  const [activeRecipe, setActiveRecipe] = useState(0)
-
   const recipes = [
     {
       name: 'Mediterranean Sunset Bowl',
@@ -110,7 +107,6 @@ export default function LandingPage() {
                       <div
                         key={recipe.name}
                         className="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform hover:scale-[1.02] transition-all border-2 border-transparent hover:border-[#FF9B7B]"
-                        onMouseEnter={() => setActiveRecipe(index)}
                         style={{ animation: `slideIn 0.5s ease-out ${index * 0.1}s backwards` }}
                       >
                         <div

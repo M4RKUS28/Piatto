@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { Buffer } from 'node:buffer'
 
 export default defineConfig({
   plugins: [
@@ -15,10 +16,8 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
         ws: true,
-        configure: (proxy, _options) => {
-
-
-            proxy.on('proxyRes', (proxyRes, req) => {
+    configure: (proxy) => {
+      proxy.on('proxyRes', (proxyRes, req) => {
               const chunks = [];
 
               proxyRes.on('data', (chunk) => {
