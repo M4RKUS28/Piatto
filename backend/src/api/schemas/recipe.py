@@ -3,8 +3,9 @@ from typing import List, Optional
 
 class Ingredient(BaseModel):
     """Schema representing an ingredient."""
+    id: Optional[int] = None
     name: str
-    quantity: Optional[int] = None
+    quantity: Optional[float] = None
     unit: Optional[str] = None  # z.B. Gramm, Tassen, EL
 
 class Instruction(BaseModel):
@@ -19,7 +20,7 @@ class Recipe(BaseModel):
     description: str
     ingredients: List[Ingredient]
     instructions: List[Instruction]
-    image_url: int
+    image_url: Optional[str] = None
 
     class Config:
         from_attributes = True  # wichtig, wenn du ORM-Objekte nutzt
