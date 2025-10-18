@@ -80,13 +80,17 @@ class AgentService:
 
     async def change_recipe(self, change_prompt: str, recipe_id: int,db : AsyncSession = Depends(get_db)):
         # Prompt/Kontext an Agent übergeben
-        # Rezept in Datenbank updaten (als temporär)
-        
+        # Agent returned agents/recipe_agent/schema.py:Recipe
+        agent_return = ... # Agent call
+
+
         recipe = await recipe_crud.update_recipe(
             db=db,
             recipe_id=recipe_id,
-            title="ExampleTitle",
-        )
+            title=agent_return.name,
+            description=agent_return.description,
+            instructions=agent_return.instructions,
+            ingredients=agent_return.ingredients,)
         if not recipe:
             raise HTTPException(status_code=404, detail="Recipe not found")
         result = Recipe(

@@ -113,6 +113,7 @@ async def get_bucket_engine(bucket_name: str = "piatto-bucket") -> BucketEngine:
         await _engine.start()
     return _engine
 
+
 # FastAPI Dependency: liefert pro Request eine Session
 async def get_bucket_session() -> BucketSession:
     """
@@ -121,6 +122,7 @@ async def get_bucket_session() -> BucketSession:
     """
     engine = await get_bucket_engine()
     return engine.session()
+
 
 # Async Context Manager: für manuelle Verwendung außerhalb von FastAPI
 @asynccontextmanager

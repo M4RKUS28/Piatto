@@ -12,6 +12,7 @@ from .api.routers import auth as auth_router
 from .api.routers import users
 from .api.routers import files, cooking, preparing, recipe
 
+
 # Create the main app instance
 app = FastAPI(
     title="User Management API",
