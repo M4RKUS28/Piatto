@@ -8,7 +8,7 @@ import MainLayout from './Layout/MainLayout.jsx'
 import Dashboard from './pages/app/Dashboard.jsx'
 import RecipeLibrary from './pages/app/RecipeLibrary.jsx'
 import RecipeView from "./pages/app/RecipeView.jsx"
-import RecipeGeneration from './pages/app/RecipeGeneration.jsx'
+import RecipeGeneration from './pages/app/RecipeGeneration/index.jsx'
 import ProfileSettings from './pages/app/ProfileSettings.jsx'
 import LoginPage from './pages/auth/LoginPage.jsx'
 import RegisterPage from './pages/auth/RegisterPage.jsx'

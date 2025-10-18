@@ -117,6 +117,15 @@ async def save_recipe(recipe_id: int,
     await recipe_crud.update_recipe(db, recipe_id, is_permanent=True)
     return
 
+
+@router.post("/{recipe_id}/unsave")
+async def unsave_recipe(recipe_id: int,
+                        db: AsyncSession = Depends(get_db)):
+    """Mark a recipe as temporary by clearing its permanent flag."""
+
+    await recipe_crud.update_recipe(db, recipe_id, is_permanent=False)
+    return
+
 @router.delete("/{recipe_id}/delete")
 async def delete_recipe(recipe_id: int,
                         db: AsyncSession = Depends(get_db)):

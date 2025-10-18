@@ -10,7 +10,7 @@ from google.genai import types
 
 from ..agent import StructuredAgent
 from ..utils import load_instruction_from_file
-from .schema import Recipe
+from .schema import Recipes
 
 
 
@@ -23,7 +23,7 @@ class RecipeAgent(StructuredAgent):
             name="recipe_agent",
             model=self.model,
             description="Agent for creating custom cooking recipes.",
-            output_schema=Recipe,
+            output_schema=Recipes,
             instruction=self.full_instructions
         )
 

@@ -76,12 +76,12 @@ async def upload_public(
 ):
     """
     Upload a file to GCS bucket.
-    
+
     Args:
         user_id: User ID
         category: File category (e.g., "recipes", "images", "documents")
         file: File to upload
-        
+
     Returns:
         public URL of the uploaded file.
     """

@@ -48,6 +48,22 @@ export const saveRecipe = async (recipeId) => {
 };
 
 /**
+ * Unsave a recipe (mark as temporary)
+ * @param {number} recipeId - The recipe ID
+ * @returns {Promise<void>}
+ * @throws {Error} If the request fails
+ */
+export const unsaveRecipe = async (recipeId) => {
+  try {
+    const response = await apiWithCookies.post(`/recipe/${recipeId}/unsave`);
+    return response.data;
+  } catch (error) {
+    console.error('unsaveRecipe error:', error);
+    throw error;
+  }
+};
+
+/**
  * Delete a recipe
  * @param {number} recipeId - The recipe ID
  * @returns {Promise<void>}

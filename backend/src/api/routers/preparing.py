@@ -1,14 +1,10 @@
-import json
 from typing import List
 
 from ...db.database import get_db
 from ...services.agent_service import AgentService
-from fastapi import APIRouter, HTTPException, Body, Depends
-from ..schemas.recipe import (
-    GenerateRecipeRequest, ChangeRecipeAIRequest, ChangeRecipeManualRequest, ChangeStateRequest,
-    AskQuestionRequest, Recipe, RecipePreview, PromptHistory, CookingSession, ImageAnalysisResponse
-)
-from ...utils.auth import get_read_write_user_id, get_readonly_user_id, get_user_id_optional, get_read_write_user_token_data
+from fastapi import APIRouter, HTTPException, Depends
+from ..schemas.recipe import GenerateRecipeRequest, RecipePreview, ImageAnalysisResponse
+from ...utils.auth import get_read_write_user_id
 from ...db.crud import recipe_crud, preparing_crud
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,9 +17,9 @@ router = APIRouter(
 )
 
 @router.post("/generate", response_model=int)
-async def generate_recipe(request: GenerateRecipeRequest, user_id: str = Depends(get_read_write_user_id)):
+async def generate_recipes(request: GenerateRecipeRequest, user_id: str = Depends(get_read_write_user_id)):
     """
-    Generate a recipe based on the user ID, prompt, and optional preparing session ID.
+    Generate a recipes based on the user ID, prompt, and optional preparing session ID.
 
     Args:
         request (GenerateRecipeRequest): The request containing prompt, written_ingredients, image_key, and optional preparing session ID.
@@ -53,8 +49,9 @@ async def get_recipe_options(preparing_session_id: int,
     """
 
     recipes = await recipe_crud.get_recipes_by_preparing_session_id(db, preparing_session_id)
-    if not recipes:
-        raise HTTPException(status_code=404, detail="No recipes found for the given preparing session ID")
+    if recipes is None:
+        raise HTTPException(status_code=404, detail="Preparing session not found")
+
     result = []
     for recipe in recipes:
         result.append(RecipePreview(
@@ -88,3 +85,41 @@ async def get_image_analysis_by_session_id(preparing_session_id: int, db: AsyncS
     if analysis is None:
         raise HTTPException(status_code=404, detail="Preparing session not found")
     return analysis
+
+
+@router.delete("/{preparing_session_id}/current-recipes/{recipe_id}")
+async def remove_current_recipe(
+    preparing_session_id: int,
+    recipe_id: int,
+    user_id: str = Depends(get_read_write_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Remove a recipe from the active list for the session."""
+    try:
+        updated_ids = await preparing_crud.remove_recipe_from_current(db, preparing_session_id, user_id, recipe_id)
+    except PermissionError:
+        raise HTTPException(status_code=403, detail="Preparing session does not belong to the authenticated user") from None
+
+    if updated_ids is None:
+        raise HTTPException(status_code=404, detail="Preparing session not found")
+
+    return {"current_recipes": updated_ids}
+
+
+@router.post("/{preparing_session_id}/current-recipes/{recipe_id}")
+async def add_current_recipe(
+    preparing_session_id: int,
+    recipe_id: int,
+    user_id: str = Depends(get_read_write_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Re-add a recipe to the active list for the session."""
+    try:
+        updated_ids = await preparing_crud.add_recipe_to_current(db, preparing_session_id, user_id, recipe_id)
+    except PermissionError:
+        raise HTTPException(status_code=403, detail="Preparing session does not belong to the authenticated user") from None
+
+    if updated_ids is None:
+        raise HTTPException(status_code=404, detail="Preparing session not found")
+
+    return {"current_recipes": updated_ids}
