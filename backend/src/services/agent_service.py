@@ -6,6 +6,7 @@ from logging import getLogger
 
 from fastapi import Depends, HTTPException
 
+
 from ..api.schemas.recipe import Recipe
 
 from .query_service import get_recipe_gen_query, get_image_gen_query
@@ -13,7 +14,7 @@ from ..agents.image_agent.agent import ImageAgent
 from ..agents.image_analyzer_agent import ImageAnalyzerAgent
 from ..agents.recipe_agent import RecipeAgent
 from ..db.bucket_session import get_bucket_session, get_async_bucket_session
-from ..db.crud import recipe_crud, preparing_crud
+from ..db.crud import recipe_crud, preparing_crud, cooking_crud
 from ..db.crud.bucket_base_repo import get_file, upload_file, save_image_bytes
 from google.adk.sessions import InMemorySessionService
 from ..agents.utils import create_text_query, create_docs_query
@@ -112,9 +113,29 @@ class AgentService:
         )
         return result
 
-    async def ask_question(self, user_id: str, cooking_session_id: int, prompt: str):
-        # Prompt/Kontext an Agent übergeben
-        # Prompt History in Datenbank speichern (update_prompt_history)
-        # Potentiell Rezept updaten (update_recipe)
-        # Antwort zurückgeben
-        pass
+    async def ask_question(self, user_id: str, cooking_session_id: int, prompt: str, db: AsyncSession = Depends(get_db)):
+
+
+
+        cooking_session = await cooking_crud.get_cooking_session_by_id(db, cooking_session_id)
+        recipe = await recipe_crud.get_recipe_by_id(db, cooking_session.recipe_id)
+        prompt_history = await cooking_crud.get_prompt_history_by_cooking_session_id(db, cooking_session_id)
+        """ builds the query for the question agent """
+        query = f"""
+        Recipe Name: {recipe.title}
+        Description: {recipe.description}
+        Instructions: {json.loads(recipe.instructions)}
+        Ingredients: {[ingr.name for ingr in recipe.ingredients]}
+        State: {cooking_session.state}
+        User Question: {prompt}
+        Previous Prompts: {json.loads(prompt_history.prompts)}
+        Previous Answers: {json.loads(prompt_history.responses)}
+        """
+        answer = "Agent Answer"
+        await cooking_crud.update_prompt_history(
+            db,
+            prompt_history.id,
+            prompt,
+            answer,
+        )
+        return answer
