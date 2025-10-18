@@ -7,6 +7,7 @@ import {
 import { getRecipeById, saveRecipe, deleteRecipe } from '../../api/recipeApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorMessage from '../../components/ErrorMessage';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const recipeData = {
   baseServings: 4,
@@ -283,7 +284,7 @@ const Recipe = ({ recipeId }) => {
         {/* Image */}
         <div className="relative mt-4 sm:mt-6 rounded-2xl overflow-hidden shadow-sm aspect-video max-w-full">
           <img
-            src={recipe.image_url}
+            src={getImageUrl(recipe.image_url)}
             alt={recipe.title}
             className="w-full h-full object-cover"
             loading="lazy"

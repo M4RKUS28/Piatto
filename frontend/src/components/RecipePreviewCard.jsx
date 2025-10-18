@@ -1,4 +1,5 @@
 import './RecipePreviewCard.css';
+import { getImageUrl } from '../utils/imageUtils';
 
 /**
  * RecipePreviewCard component displays a preview of a recipe option
@@ -33,7 +34,7 @@ const RecipePreviewCard = ({ recipe, onClick }) => {
                         aria-label={`Select recipe: ${recipe.title}. ${recipe.description}`}
                 >
                         <img
-                                src={recipe.image_url}
+                                src={getImageUrl(recipe.image_url)}
                                 alt={`${recipe.title} - Recipe preview image`}
                                 className="recipe-preview-card__image"
                                 loading="lazy"
