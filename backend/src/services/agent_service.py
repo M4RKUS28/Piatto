@@ -81,6 +81,7 @@ class AgentService:
     async def change_recipe(self, change_prompt: str, recipe_id: int,db : AsyncSession = Depends(get_db)):
         # Prompt/Kontext an Agent übergeben
         # Rezept in Datenbank updaten (als temporär)
+        
         recipe = await recipe_crud.update_recipe(
             db=db,
             recipe_id=recipe_id,

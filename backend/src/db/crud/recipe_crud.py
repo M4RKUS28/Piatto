@@ -38,6 +38,11 @@ async def get_recipes_by_preparing_session_id(db: AsyncSession, preparing_sessio
     )
     return result.scalars().all()
 
+async def get_all_recipes_by_user_id(db: AsyncSession, user_id: str) -> List[Recipe]:
+    """Retrieve all recipes for a given user ID."""
+    result = await db.execute(select(Recipe).filter(Recipe.user_id == user_id))
+    return result.scalars().all()
+
 async def create_recipe(db: AsyncSession,
                 user_id: str,
                 title: str,
