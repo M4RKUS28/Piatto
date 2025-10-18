@@ -1,13 +1,13 @@
 # app/routes/files_deprecated.py
 import os
 import tempfile
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...db.bucket_session import get_bucket_session, BucketSession
 from ...db.crud.bucket_base_repo import (
     upload_file, make_file_public, generate_signed_get_url,
-    generate_signed_put_url, delete_file, file_exists, list_files,
+    generate_signed_put_url, delete_file, file_exists, list_files, verify_user_access,
 )
 from ...db.database import get_db
 from ...utils.auth import get_read_write_user_id, get_readonly_user_id
