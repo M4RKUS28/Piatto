@@ -28,7 +28,7 @@ def get_recipe_gen_query(prompt: str, written_ingredients: str, analyzed_ingredi
 def get_image_gen_query(recipe: dict) -> types.Content:
     """ builds the query for the image generation agent """
     query = f"""
-    Recipe Name: {recipe['name']}
+    Recipe Name: {recipe['title']}
     Description: {recipe['description']}
     Ingredients: {[ingr['name'] for ingr in recipe['ingredients']]}
 """

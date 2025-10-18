@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom';
-import { Home, UtensilsCrossed, PanelLeft, Settings as SettingsIcon, LogOut } from 'lucide-react';
+import { Home, UtensilsCrossed, PanelLeft, Settings as SettingsIcon, LogOut, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function MainLayout({ children }) {
@@ -31,7 +31,8 @@ export default function MainLayout({ children }) {
 
   const navItems = [
     { label: 'Dashboard', to: '/app', icon: Home, end: true },
-    { label: 'RecipeLibrary', to: '/app/recipes', icon: UtensilsCrossed }
+    { label: 'Generate Recipe', to: '/app/generate', icon: Sparkles },
+    { label: 'Recipe Library', to: '/app/recipes', icon: UtensilsCrossed }
   ];
 
   const content = children ?? <Outlet />;
@@ -40,9 +41,8 @@ export default function MainLayout({ children }) {
     <div className="min-h-screen bg-white flex">
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-full bg-[#FFF8F0] border-r border-[#F5F5F5] z-50 transition-all duration-300 flex flex-col ${
-          sidebarExpanded ? 'w-64' : 'w-16'
-        }`}
+        className={`fixed left-0 top-0 h-full bg-[#FFF8F0] border-r border-[#F5F5F5] z-50 transition-all duration-300 flex flex-col ${sidebarExpanded ? 'w-64' : 'w-16'
+          }`}
         style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
       >
         {/* Logo / Toggle */}
@@ -132,9 +132,8 @@ export default function MainLayout({ children }) {
           {/* Profile Dropdown */}
           {profileMenuOpen && (
             <div
-              className={`absolute bg-white rounded-2xl shadow-lg border border-[#F5F5F5] p-3 ${
-                sidebarExpanded ? 'bottom-16 left-2 right-2' : 'bottom-16 left-2 w-56'
-              }`}
+              className={`absolute bg-white rounded-2xl shadow-lg border border-[#F5F5F5] p-3 ${sidebarExpanded ? 'bottom-16 left-2 right-2' : 'bottom-16 left-2 w-56'
+                }`}
               style={{
                 animation: 'scaleIn 200ms cubic-bezier(0.34, 1.56, 0.64, 1)'
               }}
@@ -152,7 +151,7 @@ export default function MainLayout({ children }) {
 
               {/* Menu Items */}
               <div className="pt-2 space-y-1">
-                <button 
+                <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[#2D2D2D] hover:bg-[#FFF8F0] transition-all text-left"
                 >
@@ -167,9 +166,8 @@ export default function MainLayout({ children }) {
 
       {/* Main Content */}
       <div
-        className={`flex-1 flex flex-col transition-all duration-300 ${
-          sidebarExpanded ? 'ml-64' : 'ml-16'
-        }`}
+        className={`flex-1 flex flex-col transition-all duration-300 ${sidebarExpanded ? 'ml-64' : 'ml-16'
+          }`}
         style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
       >
         <main className="flex-1">{content}</main>

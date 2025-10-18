@@ -8,6 +8,7 @@ import MainLayout from './Layout/MainLayout.jsx'
 import Dashboard from './pages/app/Dashboard.jsx'
 import RecipeLibrary from './pages/app/RecipeLibrary.jsx'
 import RecipeView from "./pages/app/RecipeView.jsx"
+import RecipeGeneration from './pages/app/RecipeGeneration.jsx'
 import LoginPage from './pages/auth/LoginPage.jsx'
 import RegisterPage from './pages/auth/RegisterPage.jsx'
 import OAuthCallbackPage from './pages/auth/OAuthCallbackPage.jsx'
@@ -46,6 +47,7 @@ function App() {
         {/* Protected app routes with MainLayout */}
         <Route path="/app" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
           <Route index element={<Dashboard />} />
+          <Route path="generate" element={<RecipeGeneration />} />
           <Route path="recipes" element={<RecipeLibrary />} />
           <Route path="recipe/:recipeId" element={<RecipeView />} />
         </Route>

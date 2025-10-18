@@ -66,10 +66,16 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="mt-8 flex gap-4">
+        <div className="mt-8 flex gap-4 flex-wrap">
+          <Link
+            to="/app/generate"
+            className="bg-[#035035] text-white px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all shadow-md inline-flex items-center justify-center"
+          >
+            Generate Recipe
+          </Link>
           <Link
             to="/app/recipes"
-            className="bg-[#035035] text-white px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all shadow-md inline-flex items-center justify-center"
+            className="bg-white text-[#035035] border-2 border-[#035035] px-6 py-3 rounded-full font-semibold hover:bg-[#035035] hover:text-white transition-all inline-flex items-center justify-center"
           >
             Find New Recipes
           </Link>

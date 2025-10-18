@@ -20,20 +20,24 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.post("/generate", response_model=int) # TODO
+@router.post("/generate", response_model=int)
 async def generate_recipe(request: GenerateRecipeRequest, user_id: str = Depends(get_read_write_user_id)):
     """
     Generate a recipe based on the user ID, prompt, and optional preparing session ID.
 
     Args:
-        request (GenerateRecipeRequest): The request containing prompt, and optional preparing session ID.
+        request (GenerateRecipeRequest): The request containing prompt, written_ingredients, image_key, and optional preparing session ID.
 
     Returns:
-        int: A preparing session ID (The one given as an argument if available).
+        int: A preparing session ID containing the generated recipe.
     """
-
-    # Ich würde hier nur prompt und preparing_session_id übergeben, alles andere müsste man im Service aus der db ziehen
-    return await agent_service.generate_recipe(user_id, request.prompt, request.written_ingredients, image_key=request.image_key)
+    return await agent_service.generate_recipe(
+        user_id, 
+        request.prompt, 
+        request.written_ingredients, 
+        preparing_session_id=request.preparing_session_id,
+        image_key=request.image_key
+    )
 
 @router.get("/{preparing_session_id}/get_options", response_model=List[RecipePreview])
 async def get_recipe_options(preparing_session_id: int,
