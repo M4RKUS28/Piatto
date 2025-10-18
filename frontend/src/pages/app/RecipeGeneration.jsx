@@ -1002,7 +1002,7 @@ export default function RecipeGeneration() {
                                 </div>
 
                                 {/* Debug Info (remove in production) */}
-                                {process.env.NODE_ENV === 'development' && (
+                                {import.meta.env.MODE === 'development' && (
                                         <div className="mt-4 p-4 bg-[#F5F5F5] rounded-lg text-xs">
                                                 <div className="font-semibold mb-2">Debug State:</div>
                                                 <div>Current Step: {currentStep}</div>

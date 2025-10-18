@@ -1,7 +1,7 @@
 # app/routes/files_deprecated.py
 import os
 import tempfile
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...db.bucket_session import get_bucket_session, BucketSession
@@ -21,8 +21,8 @@ router = APIRouter(prefix="/files", tags=["files"])
 
 @router.post("/upload")
 async def upload(
-    user_id: str,
-    category: str,
+    user_id: str = Form(...),
+    category: str = Form(...),
     file: UploadFile = File(...),
     sess: BucketSession = Depends(get_bucket_session),
     current_user_id: str = Depends(get_read_write_user_id)
@@ -58,6 +58,47 @@ async def upload(
             file.content_type
         )
         return file_info['key']
+    finally:
+        try:
+            os.remove(tmp_path)
+        except OSError:
+            pass
+
+
+
+@router.post("/public-upload")
+async def upload_public(
+    user_id: str = Form(...),
+    category: str = Form(...),
+    file: UploadFile = File(...),
+    sess: BucketSession = Depends(get_bucket_session),
+    current_user_id: str = Depends(get_read_write_user_id)
+):
+    """
+    Upload a file to GCS bucket.
+    
+    Args:
+        user_id: User ID
+        category: File category (e.g., "recipes", "images", "documents")
+        file: File to upload
+        
+    Returns:
+        public URL of the uploaded file.
+    """
+    if user_id != current_user_id:
+        raise HTTPException(status_code=403, detail="Forbidden: Cannot upload files for other users.")
+
+    # tempfile.gettempdir() works cross-platform (Windows: C:\Users\...\AppData\Local\Temp, Linux: /tmp)
+    suffix = os.path.splitext(file.filename)[1]
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        body = await file.read()
+        tmp.write(body)
+        tmp.flush()
+        tmp_path = tmp.name
+    try:
+        file_info = await upload_file( sess, user_id, category, tmp_path, file.filename, file.content_type)
+        public_meta = await make_file_public(sess, file_info['key'])
+        return public_meta['public_url']
     finally:
         try:
             os.remove(tmp_path)

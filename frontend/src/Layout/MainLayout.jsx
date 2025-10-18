@@ -100,25 +100,29 @@ export default function MainLayout({ children }) {
         {/* Navigation Items */}
         <nav className="flex-1 py-4">
           <div className="space-y-1 px-2">
-            {navItems.map(({ label, to, icon: Icon, end }) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={end}
-                onClick={() => setProfileMenuOpen(false)}
-                className={({ isActive }) =>
-                  [
-                    'flex items-center gap-3 px-3 py-3 rounded-xl transition-all group',
-                    isActive
-                      ? 'bg-white text-[#035035] shadow-sm'
-                      : 'text-[#2D2D2D] hover:bg-white hover:text-[#035035]'
-                  ].join(' ')
-                }
-              >
-                <Icon className="w-5 h-5 flex-shrink-0" />
-                {sidebarExpanded && <span className="font-medium">{label}</span>}
-              </NavLink>
-            ))}
+            {navItems.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.end}
+                  onClick={() => setProfileMenuOpen(false)}
+                  className={({ isActive }) =>
+                    [
+                      'flex items-center gap-3 px-3 py-3 rounded-xl transition-all group',
+                      isActive
+                        ? 'bg-white text-[#035035] shadow-sm'
+                        : 'text-[#2D2D2D] hover:bg-white hover:text-[#035035]'
+                    ].join(' ')
+                  }
+                >
+                  {Icon && <Icon className="w-5 h-5 flex-shrink-0" />}
+                  {sidebarExpanded && <span className="font-medium">{item.label}</span>}
+                </NavLink>
+              );
+            })}
           </div>
         </nav>
 
