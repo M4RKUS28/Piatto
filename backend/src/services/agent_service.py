@@ -3,13 +3,14 @@ This file defines the service that coordinates the interaction between all the a
 """
 import json
 from logging import getLogger
+from typing import Optional
 
 from fastapi import Depends, HTTPException
 
-
+from ..agents.chat_agent.agent import ChatAgent
 from ..api.schemas.recipe import Recipe
 
-from .query_service import get_recipe_gen_query, get_image_gen_query
+from .query_service import get_recipe_gen_query, get_image_gen_query, get_chat_agent_query
 from ..agents.image_agent.agent import ImageAgent
 from ..agents.image_analyzer_agent import ImageAnalyzerAgent
 from ..agents.recipe_agent import RecipeAgent
@@ -32,6 +33,7 @@ class AgentService:
         self.image_analyzer_agent = ImageAnalyzerAgent(self.app_name, self.session_service)
         self.recipe_agent = RecipeAgent(self.app_name, self.session_service)
         self.image_agent = ImageAgent(self.app_name, self.session_service)
+        self.chat_agent = ChatAgent(self.app_name, self.session_service)
 
     async def analyze_ingredients(self, user_id: str, image_key: str):
         async with get_async_bucket_session() as bs:
@@ -44,45 +46,60 @@ class AgentService:
             content=query,
         )
 
-        return response['output']
+        output = response['output']
+        if not isinstance(output, str):
+            output = json.dumps(output)
+        return output
 
 
     # Rezepte Erstellen
-    async def generate_recipe(self, user_id: str, prompt: str, written_ingredients: str, preparing_session_id: int = None, image_key: str = None):
+    async def generate_recipe(
+        self,
+        user_id: str,
+        prompt: str,
+        written_ingredients: str,
+        preparing_session_id: Optional[int] = None,
+        image_key: Optional[str] = None,
+    ):
         analyzed_ingredients = None
         if image_key:
             analyzed_ingredients = await self.analyze_ingredients(user_id, image_key)
 
         query = get_recipe_gen_query(prompt, written_ingredients, analyzed_ingredients)
-        recipe =  await self.recipe_agent.run(
+        recipes =  await self.recipe_agent.run(
             user_id=user_id,
             state={},
             content=query,
         )
-        image = await self.image_agent.run(
-            user_id=user_id,
-            state={},
-            content=get_image_gen_query(recipe),
-        )
+        recipe_ids = []
         async with get_async_db_context() as db:
-            async with get_async_bucket_session() as bs:
-                image_saved = await save_image_bytes(bs, user_id, "image", image, "recipe_image.png")
-            recipe_db = await recipe_crud.create_recipe(
-                db=db,
-                user_id=user_id,
-                title=recipe['title'],
-                description=recipe['description'],
-                ingredients=recipe['ingredients'],
-                image_url=image_saved['key'],
-            )
-            
-            # Create or update preparing session with the generated recipe
+            for recipe in recipes['recipes']:
+                image = await self.image_agent.run(
+                    user_id=user_id,
+                    state={},
+                    content=get_image_gen_query(recipe),
+                )
+                async with get_async_bucket_session() as bs:
+                    image_saved = await save_image_bytes(bs, user_id, "image", image, "recipe_image.png")
+                recipe_db = await recipe_crud.create_recipe(
+                    db=db,
+                    user_id=user_id,
+                    title=recipe['title'],
+                    description=recipe['description'],
+                    ingredients=recipe['ingredients'],
+                    image_url=image_saved['key'],
+                )
+                recipe_ids.append(recipe_db.id)
+
+            # Create or update preparing session with the generated recipes and metadata
             session = await preparing_crud.create_or_update_preparing_session(
                 db=db,
                 user_id=user_id,
                 prompt=prompt,
-                recipe_id=recipe_db.id,
-                preparing_session_id=preparing_session_id
+                recipe_ids=recipe_ids,
+                image_key=image_key,
+                analyzed_ingredients=analyzed_ingredients,
+                preparing_session_id=preparing_session_id,
             )
 
         return session.id
@@ -91,6 +108,8 @@ class AgentService:
     async def change_recipe(self, change_prompt: str, recipe_id: int,db : AsyncSession = Depends(get_db)):
         # Prompt/Kontext an Agent übergeben
         # Agent returned agents/recipe_agent/schema.py:Recipe
+        recipe = await recipe_crud.get_recipe_by_id(db, recipe_id)
+
         agent_return = ... # Agent call
 
 
@@ -114,28 +133,21 @@ class AgentService:
         return result
 
     async def ask_question(self, user_id: str, cooking_session_id: int, prompt: str, db: AsyncSession = Depends(get_db)):
-
-
-
         cooking_session = await cooking_crud.get_cooking_session_by_id(db, cooking_session_id)
         recipe = await recipe_crud.get_recipe_by_id(db, cooking_session.recipe_id)
         prompt_history = await cooking_crud.get_prompt_history_by_cooking_session_id(db, cooking_session_id)
-        """ builds the query for the question agent """
-        query = f"""
-        Recipe Name: {recipe.title}
-        Description: {recipe.description}
-        Instructions: {json.loads(recipe.instructions)}
-        Ingredients: {[ingr.name for ingr in recipe.ingredients]}
-        State: {cooking_session.state}
-        User Question: {prompt}
-        Previous Prompts: {json.loads(prompt_history.prompts)}
-        Previous Answers: {json.loads(prompt_history.responses)}
-        """
-        answer = "Agent Answer"
+        query = get_chat_agent_query(prompt, recipe, cooking_session, prompt_history)
+
+        # STREAMING BACK THE AGENTS RESONSE @MARKUS
+        response = await self.chat_agent.run(
+            user_id=user_id,
+            state={},
+            content=query,
+        )
         await cooking_crud.update_prompt_history(
             db,
             prompt_history.id,
             prompt,
-            answer,
+            response,
         )
-        return answer
+        return response

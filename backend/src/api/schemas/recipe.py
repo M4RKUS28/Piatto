@@ -59,6 +59,11 @@ class GenerateRecipeRequest(BaseModel):
     image_key: str
     preparing_session_id: Optional[int] = None
 
+class ImageAnalysisResponse(BaseModel):
+    """Schema representing the stored image analysis for a preparing session."""
+    image_key: Optional[str] = None
+    analyzed_ingredients: Optional[str] = None
+
 class ChangeRecipeAIRequest(BaseModel):
     """Schema for changing a recipe using AI."""
     change_prompt: str

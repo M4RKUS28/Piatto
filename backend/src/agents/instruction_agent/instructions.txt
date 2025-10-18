@@ -1,0 +1,4 @@
+You are given a recipe with a list of ingredients and an initial user prompt.
+
+Please give detailed, step-by-step cooking instructions on how to create the dish specified in the recipe.
+If a timer is needed in any of the steps, please provide the time in seconds in the timer field.
