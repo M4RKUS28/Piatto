@@ -280,6 +280,202 @@ xl: 32px
 
 ---
 
+## Responsive Design & Mobile Optimization
+
+### Design Philosophy
+All code and interfaces must be **fully optimized for both desktop/laptop and mobile phone usage**. The experience should feel native and intuitive on every device.
+
+### Breakpoints
+```
+Mobile: 320px - 767px
+Tablet: 768px - 1023px
+Desktop: 1024px - 1440px
+Large Desktop: 1441px+
+```
+
+### Mobile-First Approach
+- **Design mobile first**, then scale up
+- Core functionality must work perfectly on small screens
+- Progressive enhancement for larger screens
+- Touch targets minimum 44x44px
+
+### Responsive Typography
+```
+Mobile:
+  Hero/H1: 32px - 40px
+  H2: 24px - 28px
+  H3: 20px - 24px
+  H4: 18px
+  Body: 16px
+  
+Desktop:
+  Hero/H1: 48px - 64px
+  H2: 36px - 48px
+  H3: 28px - 32px
+  H4: 24px
+  Body: 16px - 18px
+```
+
+### Navigation Patterns
+
+**Mobile:**
+- Hamburger menu or bottom navigation bar
+- Collapsible sections
+- Single-column layouts
+- Sticky headers (max 60px height)
+
+**Desktop:**
+- Full horizontal navigation
+- Multi-column layouts where appropriate
+- Hover states and interactions
+- Sidebar navigation (optional)
+
+### Touch & Interaction
+
+**Mobile Considerations:**
+- Minimum touch target: 44x44px
+- Adequate spacing between clickable elements (8px minimum)
+- Swipe gestures for carousels and navigation
+- Pull-to-refresh where appropriate
+- Avoid hover-dependent interactions
+- Bottom-aligned primary actions (easier to reach)
+
+**Desktop Considerations:**
+- Hover states for all interactive elements
+- Keyboard shortcuts
+- Cursor indicators (pointer for clickable)
+- Larger click targets acceptable (32x32px minimum)
+
+### Component Responsiveness
+
+**Buttons:**
+- Mobile: Full-width or flexible width, min height 48px
+- Desktop: Auto width with padding, min height 44px
+
+**Cards:**
+- Mobile: Stack vertically, full-width with margin
+- Tablet: 2-column grid
+- Desktop: 3-4 column grid
+
+**Forms:**
+- Mobile: Single column, full-width inputs, larger text (16px to prevent zoom)
+- Desktop: Can use multi-column layouts, standard sizing
+
+**Images:**
+- Always use responsive images (srcset, picture element)
+- Mobile: Full-width or contained, optimized file sizes
+- Desktop: Flexible sizing, higher quality acceptable
+- Lazy loading for performance
+
+### Performance Optimization
+
+**Mobile-Specific:**
+- Minimize bundle sizes (code splitting)
+- Optimize images (WebP format, compressed)
+- Reduce animation complexity on low-end devices
+- Lazy load off-screen content
+- Minimize third-party scripts
+- Target: < 3s initial load on 3G
+
+**Desktop-Specific:**
+- Can afford richer animations
+- Higher resolution assets
+- More aggressive prefetching
+- Target: < 1.5s initial load
+
+### Layout Patterns
+
+**Mobile:**
+```css
+.container {
+  padding: 16px;
+  max-width: 100%;
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+```
+
+**Desktop:**
+```css
+.container {
+  padding: 48px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+```
+
+### Testing Requirements
+- **Test on real devices**, not just browser dev tools
+- iOS Safari (iPhone)
+- Android Chrome (various screen sizes)
+- Desktop browsers (Chrome, Firefox, Safari, Edge)
+- Tablet devices (iPad, Android tablets)
+- Test in both portrait and landscape orientations
+- Verify performance on mid-range devices
+
+### Media Queries Example
+```css
+/* Mobile-first approach */
+.element {
+  font-size: 16px;
+  padding: 16px;
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+  .element {
+    font-size: 18px;
+    padding: 24px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .element {
+    font-size: 20px;
+    padding: 32px;
+  }
+}
+
+/* Touch device specific */
+@media (hover: none) and (pointer: coarse) {
+  .element {
+    /* Mobile/tablet touch optimizations */
+  }
+}
+
+/* Hover-capable devices */
+@media (hover: hover) and (pointer: fine) {
+  .element:hover {
+    /* Desktop hover effects */
+  }
+}
+```
+
+### Responsive Design Checklist
+- ✓ All layouts work from 320px to 1920px+ width
+- ✓ Touch targets meet minimum size requirements
+- ✓ Typography scales appropriately
+- ✓ Images are responsive and optimized
+- ✓ Navigation adapts to screen size
+- ✓ Forms are easy to complete on mobile
+- ✓ Performance is optimized for mobile networks
+- ✓ No horizontal scrolling (unless intentional)
+- ✓ Content is readable without zooming
+- ✓ Tested on real devices
+
+---
+
 ## Accessibility
 
 ### Requirements
@@ -321,6 +517,9 @@ xl: 32px
 - Make interactions feel responsive
 - Use rounded corners throughout
 - Incorporate decorative elements sparingly
+- Design mobile-first, then scale up
+- Test on real devices regularly
+- Optimize performance for mobile networks
 
 ### Don'ts ✗
 - Overuse animations (avoid chaos)
@@ -330,6 +529,9 @@ xl: 32px
 - Use more than 3 font families
 - Ignore accessibility
 - Make animations too slow (>600ms for interactions)
+- Rely on hover states for mobile interactions
+- Create touch targets smaller than 44x44px
+- Forget to test on actual mobile devices
 
 ---
 
@@ -375,6 +577,7 @@ xl: 32px
 ---
 
 ## Version History
+- v1.1 - October 2025 - Added responsive design and mobile optimization guidelines
 - v1.0 - October 2025 - Initial style guide created
 
 ---

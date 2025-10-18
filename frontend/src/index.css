@@ -3,10 +3,11 @@
 
 body {
   font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
 }
 
 .font-poppins {
-   font-family: 'Poppins', sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 /* Hide scrollbars while keeping wheel/touch scrolling available */
@@ -20,3 +21,40 @@ body {
   height: 0;
 }
 
+/* Prevent horizontal overflow on all containers */
+* {
+  max-width: 100%;
+}
+
+/* Allow specific elements to exceed container width when needed */
+html,
+body,
+#root {
+  max-width: none;
+}
+
+/* Line clamp utility for text truncation */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Ensure images are responsive */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Better touch targets on mobile */
+@media (max-width: 640px) {
+
+  button,
+  a,
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

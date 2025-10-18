@@ -24,7 +24,7 @@ function App() {
     <AuthProvider>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        
+
         {/* Auth pages with minimal AuthLayout (no auth buttons, no footer) */}
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
@@ -42,12 +42,12 @@ function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
-        
+
         {/* Protected app routes with MainLayout */}
         <Route path="/app" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
           <Route index element={<Dashboard />} />
           <Route path="recipes" element={<RecipeLibrary />} />
-          <Route path="spaghetti" element={<RecipeView />} />
+          <Route path="recipe/:recipeId" element={<RecipeView />} />
         </Route>
       </Routes>
     </AuthProvider>
