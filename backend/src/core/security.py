@@ -90,14 +90,14 @@ def verify_token(token: Optional[str]) -> Dict[str, Any]:
 
 def set_access_cookie(response : Response, access_token: str):
     """Set the access token cookie in the response."""
-    response.set_cookie(
-        key="access_token",
-        value=access_token,
-        path="/",  # send to all paths
-        httponly=True,
-        secure=settings.SECURE_COOKIE,  # use secure cookies if configured
-        samesite=SAME_SITE,  # use configured SameSite policy
-    )
+    #response.set_cookie(
+    #    key="access_token",
+    #    value=access_token,
+    #    path="/",  # send to all paths
+    #    httponly=True,
+    #    secure=settings.SECURE_COOKIE,  # use secure cookies if configured
+    #    samesite=SAME_SITE,  # use configured SameSite policy
+    #)
     response.set_cookie(
         key="__session",
         value=access_token,
@@ -127,10 +127,10 @@ def clear_access_cookie(response : Response):
         key="__session",
         path="/",  # send to all paths
     )
-    response.delete_cookie(
-        key="access_token",
-        path="/",  # send to all paths
-    )
+    #response.delete_cookie(
+    #    key="access_token",
+    #    path="/",  # send to all paths
+    #)
 
 def clear_refresh_cookie(response : Response):
     """Clear the refresh token cookie in the response."""
