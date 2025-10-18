@@ -5,6 +5,9 @@ from sqlalchemy.sql import func
 from ..database import Base
 
 
+
+
+
 class Document(Base):
     """Document storage table for PDFs, text files, JSON, etc."""
     __tablename__ = "documents"
