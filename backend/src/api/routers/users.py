@@ -26,13 +26,11 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-from starlette.requests import Request
-
 
 @router.get("/me",
             response_model=Optional[user_schemas.User],
             summary="Get current logged-in user's profile")
-async def read_current_user(request: Request,
+async def read_current_user(
     current_user_id: Optional[str] = Depends(get_user_id_optional)
 ):
     """
