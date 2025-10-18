@@ -11,6 +11,7 @@ from .core.lifespan import lifespan
 from .api.routers import auth as auth_router
 from .api.routers import users
 
+
 # Create the main app instance
 app = FastAPI(
     title="User Management API",
@@ -52,7 +53,6 @@ def health():
 app.include_router(users.router)
 app.include_router(auth_router.api_router)
 from .api.routers import files
-app.include_router(files_example_with_bucket.router)
 
 
 
