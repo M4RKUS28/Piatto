@@ -1,0 +1,54 @@
+flowchart TD
+  A[Client Browser]
+
+  subgraph LB[Global HTTPS Load Balancer]
+    URLMAP{URL Map: piatto-url-map}
+    CDN[(Cloud CDN)]
+  end
+
+  %% Routing decision
+  A -->|HTTPS| URLMAP
+
+  %% URL map rules
+  URLMAP -->|/api/*| BS_API[Backend Service: fastapi-backend-service]
+  URLMAP -->|/assets/*, /index.html, logos| CDN
+  URLMAP -->|default SPA routes| CDN
+
+  %% CDN paths
+  CDN --> BB[Backend Bucket: frontend-bucket]
+  CDN --> BS_FE[Backend Service: piatto-frontend-service]
+
+  %% Backend (API)
+  subgraph CR_API[Cloud Run: Backend]
+    NEG_API[Serverless NEG: fastapi-neg]
+    SRV_API[Service: fastapi-backend]
+    UVICORN[Uvicorn workers]
+    FASTAPI[FastAPI app]
+  end
+  BS_API --> NEG_API --> SRV_API --> UVICORN --> FASTAPI
+
+  %% Data stores
+  subgraph DATA[Data Stores]
+    SQL[(Cloud SQL: MySQL)]
+    GCS[(Cloud Storage)]
+  end
+  FASTAPI --> SQL
+  FASTAPI --> GCS
+
+  %% Frontend (Nginx)
+  subgraph CR_FE[Cloud Run: Frontend]
+    NEG_FE[Serverless NEG: piatto-frontend-neg]
+    SRV_FE[Service: piatto-frontend]
+    NGINX[Nginx]
+    TRYFILES[try_files to /index.html]
+  end
+  BS_FE --> NEG_FE --> SRV_FE --> NGINX --> TRYFILES
+
+  %% Notes as nodes
+  BB_NOTE[Bucket assets cached via origin Cache-Control]:::note
+  INDEX_NOTE[index.html uses Cache-Control: no-cache revalidate]:::note
+
+  BB -.-> BB_NOTE
+  TRYFILES -.-> INDEX_NOTE
+
+  classDef note fill:#fff4e5,stroke:#f0ad4e,stroke-width:1px,color:#333;
