@@ -48,6 +48,33 @@ async def get_recipe(recipe_id: int,
     )
     return result
 
+@router.post("/get_all", response_model=List[Recipe])
+async def get_all_recipes(user_id: str = Depends(get_readonly_user_id),
+                          db : AsyncSession = Depends(get_db)):
+    """
+    Retrieve all recipes for a given user ID.
+
+    Args:
+        user_id (str): The user ID to retrieve recipes for.
+    Returns:
+        List[Recipe]: A list of retrieved recipes.
+    """
+    recipes = await recipe_crud.get_all_recipes_by_user_id(db, user_id)
+    result = []
+    for recipe in recipes:
+        result.append(Recipe(
+            id=recipe.id,
+            title=recipe.title,
+            description=recipe.description,
+            ingredients=json.loads(recipe.ingredients),
+            instructions=json.loads(recipe.instructions),
+            image_url=recipe.image_url,
+        ))
+    return result
+                      
+
+
+
 @router.put("/change_ai", response_model=Recipe)
 async def change_recipe_ai(request: ChangeRecipeAIRequest):
     """
