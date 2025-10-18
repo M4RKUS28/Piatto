@@ -65,7 +65,7 @@ jobs:
             --allow-unauthenticated \
             --vpc-connector=svpc-uscentral1 \
             --vpc-egress=private-ranges-only \
-            --set-env-vars=DB_HOST=10.73.16.3,DB_PORT=3306,DB_USER=backend,DB_NAME=piatto,SAME_SITE=none,GOOGLE_GENAI_USE_VERTEXAI=FALSE,GOOGLE_PROJECT_ID=cloud-run-hackathon-475303 \
+            --set-env-vars=DB_HOST=10.73.16.3,DB_PORT=3306,DB_USER=backend,DB_NAME=piatto,SAME_SITE=none,GOOGLE_GENAI_USE_VERTEXAI=FALSE,GOOGLE_PROJECT_ID=cloud-run-hackathon-475303,GOOGLE_REDIRECT_URI=https://piatto-cooks.com/api/auth/google/callback,FRONTEND_BASE_URL=https://piatto-cooks.com/oauth/callback \
             --set-secrets=DB_PASSWORD=DB_PASSWORD:latest,SECRET_KEY=SECRET_KEY:latest,SESSION_SECRET_KEY=SESSION_SECRET_KEY:latest,GOOGLE_API_KEY=GOOGLE_API_KEY:latest,GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest,GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest \
             --cpu=1 --memory=512Mi --min-instances=0 --max-instances=3
 
