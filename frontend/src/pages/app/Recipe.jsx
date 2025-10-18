@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   PiHeart, PiShareNetwork, PiPrinter, PiClock,
-  PiCookingPot, PiMinus, PiPlus, PiCow
+  PiCookingPot, PiMinus, PiPlus, PiCow, PiTrash
 } from 'react-icons/pi';
+import { getRecipeById, saveRecipe, deleteRecipe } from '../../api/recipeApi';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import ErrorMessage from '../../components/ErrorMessage';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const recipeData = {
   baseServings: 4,
@@ -41,21 +46,108 @@ const nutritionData = {
   potassium: { amount: 800, dv: 17 },
 };
 
-const Recipe = () => {
-  const [servings, setServings] = useState(recipeData.baseServings);
+const Recipe = ({ recipeId }) => {
+  const navigate = useNavigate();
+  const [recipe, setRecipe] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [servings, setServings] = useState(4);
   const [activeTab, setActiveTab] = useState('ingredients');
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
 
-  const adjustIngredient = (amount) => {
-    if (!amount) return '';
-    const newAmount = (amount / recipeData.baseServings) * servings;
-    if (newAmount > 0 && newAmount < 0.1) {
-      return newAmount.toPrecision(1);
-    }
-    return parseFloat(newAmount.toFixed(2));
-  };
+  useEffect(() => {
+    const fetchRecipe = async () => {
+      if (!recipeId) {
+        setError('No recipe ID provided');
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const data = await getRecipeById(recipeId);
+        setRecipe(data);
+        // Set servings to baseServings from recipe or default to 4
+        setServings(data.baseServings || 4);
+      } catch (err) {
+        console.error('Failed to fetch recipe:', err);
+
+        if (err.response?.status === 404) {
+          setError('Recipe not found. It may have been deleted.');
+        } else if (err.response?.status >= 500) {
+          setError('Server error. Please try again later.');
+        } else if (!err.response) {
+          setError('Network error. Please check your connection.');
+        } else {
+          setError('Failed to load recipe. Please try again.');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecipe();
+  }, [recipeId]);
 
   const handleServingChange = (increment) => {
     setServings(prev => Math.max(1, prev + increment));
+  };
+
+  const handleSaveRecipe = async () => {
+    setSaveLoading(true);
+    setSaveError(null);
+    setSaveSuccess(false);
+
+    try {
+      await saveRecipe(recipeId);
+      setSaveSuccess(true);
+      // Hide success message after 3 seconds
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      console.error('Failed to save recipe:', err);
+
+      if (err.response?.status >= 500) {
+        setSaveError('Server error. Please try again later.');
+      } else if (!err.response) {
+        setSaveError('Network error. Please check your connection.');
+      } else {
+        setSaveError('Failed to save recipe. Please try again.');
+      }
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
+  const handleDeleteRecipe = async () => {
+    setDeleteLoading(true);
+    setDeleteError(null);
+
+    try {
+      await deleteRecipe(recipeId);
+      // Show success message briefly before navigating
+      alert('Recipe deleted successfully!');
+      navigate('/app/library');
+    } catch (err) {
+      console.error('Failed to delete recipe:', err);
+
+      if (err.response?.status >= 500) {
+        setDeleteError('Server error. Please try again later.');
+      } else if (!err.response) {
+        setDeleteError('Network error. Please check your connection.');
+      } else {
+        setDeleteError('Failed to delete recipe. Please try again.');
+      }
+      setShowDeleteConfirm(false);
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   const NutritionLabel = ({ servingCount }) => (
@@ -126,119 +218,248 @@ const Recipe = () => {
     </div>
   );
 
+  // Display loading state
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <LoadingSpinner size="large" />
+      </div>
+    );
+  }
+
+  // Display error state
+  if (error) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <ErrorMessage
+          message={error}
+          onRetry={() => navigate('/app/library')}
+        />
+      </div>
+    );
+  }
+
+  // If no recipe data, show error
+  if (!recipe) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <ErrorMessage
+          message="Recipe data not available"
+          onRetry={() => navigate('/app/library')}
+        />
+      </div>
+    );
+  }
+
+  // Transform backend ingredients to component format
+  const transformedIngredients = recipe.ingredients.map(ing => ({
+    amount: ing.quantity,
+    unit: ing.unit || '',
+    name: ing.name
+  }));
+
+  // Get base servings from recipe or default to 4
+  const baseServings = recipe.baseServings || 4;
+
+  const adjustIngredient = (amount) => {
+    if (!amount) return '';
+    const newAmount = (amount / baseServings) * servings;
+    if (newAmount > 0 && newAmount < 0.1) {
+      return newAmount.toPrecision(1);
+    }
+    return parseFloat(newAmount.toFixed(2));
+  };
+
   return (
     <div className="h-full overflow-y-auto no-scrollbar">
-      <div className="p-6 md:p-8">
+      <div className="p-4 sm:p-6 md:p-8">
         {/* Header */}
-        <h1 className="font-poppins font-bold text-3xl md:text-4xl text-[#035035]">
-          Spaghetti Bolognese
+        <h1 className="font-poppins font-bold text-2xl sm:text-3xl md:text-4xl text-[#035035] break-words">
+          {recipe.title}
         </h1>
-        <p className="mt-2 text-lg text-[#2D2D2D]/80">
-          A classic Italian ragu, simmered to perfection for a rich flavor.
+        <p className="mt-2 text-base sm:text-lg text-[#2D2D2D]/80 break-words">
+          {recipe.description}
         </p>
 
         {/* Image */}
-        <div className="relative mt-6 rounded-2xl overflow-hidden shadow-sm aspect-video">
+        <div className="relative mt-4 sm:mt-6 rounded-2xl overflow-hidden shadow-sm aspect-video max-w-full">
           <img
-            src="https://img.chefkoch-cdn.de/rezepte/393031127655461/bilder/1585337/crop-960x540/spaghetti-bolognese.jpg"
-            alt="Spaghetti Bolognese"
+            src={getImageUrl(recipe.image_url)}
+            alt={recipe.title}
             className="w-full h-full object-cover"
+            loading="lazy"
           />
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-3 mt-6">
-          <button className="flex items-center justify-center gap-2 px-6 py-3 bg-[#FF9B7B] text-white font-poppins font-semibold rounded-full shadow-lg shadow-[#FF9B7B]/30 hover:scale-105 transition-transform">
-            <PiHeart /> Save Recipe
+        <div className="flex items-center gap-2 sm:gap-3 mt-4 sm:mt-6 flex-wrap">
+          <button
+            onClick={handleSaveRecipe}
+            disabled={saveLoading || saveSuccess}
+            className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 bg-[#FF9B7B] text-white font-poppins font-semibold rounded-full shadow-lg shadow-[#FF9B7B]/30 hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 min-h-[44px] text-sm sm:text-base"
+          >
+            <PiHeart className="w-5 h-5" />
+            <span className="hidden xs:inline">{saveLoading ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save Recipe'}</span>
+            <span className="xs:hidden">{saveLoading ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save'}</span>
           </button>
-          <button className="p-4 border-2 border-[#A8C9B8] rounded-full text-[#035035] hover:bg-[#A8C9B8]/30 transition-colors">
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 border-2 border-red-500 text-red-500 font-poppins font-semibold rounded-full hover:bg-red-50 transition-colors min-h-[44px] text-sm sm:text-base"
+          >
+            <PiTrash className="w-5 h-5" />
+            <span>Delete</span>
+          </button>
+          <button className="p-3 sm:p-4 border-2 border-[#A8C9B8] rounded-full text-[#035035] hover:bg-[#A8C9B8]/30 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
             <PiShareNetwork className="h-5 w-5" />
           </button>
-          <button className="p-4 border-2 border-[#A8C9B8] rounded-full text-[#035035] hover:bg-[#A8C9B8]/30 transition-colors">
+          <button className="p-3 sm:p-4 border-2 border-[#A8C9B8] rounded-full text-[#035035] hover:bg-[#A8C9B8]/30 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
             <PiPrinter className="h-5 w-5" />
           </button>
         </div>
 
+        {/* Save Success Message */}
+        {saveSuccess && (
+          <div className="mt-4 p-4 bg-[#A8C9B8]/20 border border-[#A8C9B8] rounded-lg text-[#035035] font-medium">
+            Recipe saved successfully!
+          </div>
+        )}
+
+        {/* Save Error Message */}
+        {saveError && (
+          <div className="mt-4 p-4 bg-[#FF9B7B]/20 border border-[#FF9B7B] rounded-lg text-[#035035]">
+            <p className="font-medium">{saveError}</p>
+            <button
+              onClick={handleSaveRecipe}
+              className="mt-2 text-sm underline hover:no-underline"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
+        {/* Delete Error Message */}
+        {deleteError && (
+          <div className="mt-4 p-4 bg-[#FF9B7B]/20 border border-[#FF9B7B] rounded-lg text-[#035035]">
+            <p className="font-medium">{deleteError}</p>
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="mt-2 text-sm underline hover:no-underline"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
+        {/* Delete Confirmation Dialog */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-5 sm:p-6 max-w-md w-full shadow-2xl mx-4">
+              <h3 className="font-poppins font-bold text-xl sm:text-2xl text-[#035035] mb-3 sm:mb-4 break-words">
+                Delete Recipe?
+              </h3>
+              <p className="text-sm sm:text-base text-[#2D2D2D]/80 mb-5 sm:mb-6 break-words">
+                Are you sure you want to delete "{recipe.title}"? This action cannot be undone.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={deleteLoading}
+                  className="px-6 py-3 border-2 border-[#A8C9B8] text-[#035035] font-poppins font-semibold rounded-full hover:bg-[#A8C9B8]/30 transition-colors disabled:opacity-50 min-h-[44px] order-2 sm:order-1"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteRecipe}
+                  disabled={deleteLoading}
+                  className="px-6 py-3 bg-red-500 text-white font-poppins font-semibold rounded-full hover:bg-red-600 transition-colors disabled:opacity-50 min-h-[44px] order-1 sm:order-2"
+                >
+                  {deleteLoading ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Recipe Info */}
-        <div className="grid grid-cols-3 gap-4 text-center mt-8 py-4 border-y border-[#F5F5F5]">
-          <div className="flex flex-col items-center gap-2">
-            <PiClock className="h-7 w-7 text-[#035035]" />
-            <span className="text-sm">45 Min.</span>
-            <span className="text-xs text-gray-500">Total Time</span>
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center mt-6 sm:mt-8 py-4 border-y border-[#F5F5F5]">
+          <div className="flex flex-col items-center gap-1 sm:gap-2">
+            <PiClock className="h-6 w-6 sm:h-7 sm:w-7 text-[#035035]" />
+            <span className="text-xs sm:text-sm font-medium">45 Min.</span>
+            <span className="text-xs text-gray-500 hidden sm:block">Total Time</span>
           </div>
-          <div className="flex flex-col items-center gap-2">
-            <PiCookingPot className="h-7 w-7 text-[#035035]" />
-            <span className="text-sm">Easy</span>
-            <span className="text-xs text-gray-500">Difficulty</span>
+          <div className="flex flex-col items-center gap-1 sm:gap-2">
+            <PiCookingPot className="h-6 w-6 sm:h-7 sm:w-7 text-[#035035]" />
+            <span className="text-xs sm:text-sm font-medium">Easy</span>
+            <span className="text-xs text-gray-500 hidden sm:block">Difficulty</span>
           </div>
-          <div className="flex flex-col items-center gap-2">
-            <PiCow className="h-7 w-7 text-[#035035]" />
-            <span className="text-sm">Contains Meat</span>
-            <span className="text-xs text-gray-500">Beef-based</span>
+          <div className="flex flex-col items-center gap-1 sm:gap-2">
+            <PiCow className="h-6 w-6 sm:h-7 sm:w-7 text-[#035035]" />
+            <span className="text-xs sm:text-sm font-medium">Contains Meat</span>
+            <span className="text-xs text-gray-500 hidden sm:block">Beef-based</span>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="mt-8">
-          <div className="flex border-b border-gray-200">
+        <div className="mt-6 sm:mt-8">
+          <div className="flex border-b border-gray-200 overflow-x-auto no-scrollbar">
             <button
               onClick={() => setActiveTab('ingredients')}
-              className={`-mb-px px-6 py-3 font-poppins font-semibold text-lg transition-colors duration-300 ${
-                activeTab === 'ingredients'
-                  ? 'text-[#035035] border-b-2 border-[#035035]'
-                  : 'text-gray-500 hover:text-[#035035]'
-              }`}
+              className={`-mb-px px-4 sm:px-6 py-3 font-poppins font-semibold text-base sm:text-lg transition-colors duration-300 whitespace-nowrap min-h-[44px] ${activeTab === 'ingredients'
+                ? 'text-[#035035] border-b-2 border-[#035035]'
+                : 'text-gray-500 hover:text-[#035035]'
+                }`}
             >
               Ingredients
             </button>
-            <button
-              onClick={() => setActiveTab('nutrition')}
-              className={`-mb-px px-6 py-3 font-poppins font-semibold text-lg transition-colors duration-300 ${
-                activeTab === 'nutrition'
+            {recipe.nutrition && (
+              <button
+                onClick={() => setActiveTab('nutrition')}
+                className={`-mb-px px-4 sm:px-6 py-3 font-poppins font-semibold text-base sm:text-lg transition-colors duration-300 whitespace-nowrap min-h-[44px] ${activeTab === 'nutrition'
                   ? 'text-[#035035] border-b-2 border-[#035035]'
                   : 'text-gray-500 hover:text-[#035035]'
-              }`}
-            >
-              Nutrition
-            </button>
+                  }`}
+              >
+                Nutrition
+              </button>
+            )}
           </div>
 
-          <div className="mt-6">
+          <div className="mt-4 sm:mt-6">
             {activeTab === 'ingredients' && (
               <div>
-                <div className="flex justify-between items-center bg-[#F5F5F5] p-3 rounded-lg">
-                  <span className="font-medium">For {servings} serving{servings > 1 && 's'}</span>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-[#F5F5F5] p-3 sm:p-4 rounded-lg gap-3 sm:gap-0">
+                  <span className="font-medium text-sm sm:text-base">For {servings} serving{servings > 1 && 's'}</span>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleServingChange(-1)}
-                      className="p-2 bg-white rounded-full shadow-sm hover:bg-[#FFF8F0] transition-colors disabled:opacity-50"
+                      className="p-2 sm:p-3 bg-white rounded-full shadow-sm hover:bg-[#FFF8F0] transition-colors disabled:opacity-50 min-h-[44px] min-w-[44px] flex items-center justify-center"
                       disabled={servings <= 1}
                     >
-                      <PiMinus />
+                      <PiMinus className="w-5 h-5" />
                     </button>
-                    <span className="w-8 text-center font-bold">{servings}</span>
+                    <span className="w-10 sm:w-12 text-center font-bold text-lg">{servings}</span>
                     <button
                       onClick={() => handleServingChange(1)}
-                      className="p-2 bg-white rounded-full shadow-sm hover:bg-[#FFF8F0] transition-colors"
+                      className="p-2 sm:p-3 bg-white rounded-full shadow-sm hover:bg-[#FFF8F0] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                     >
-                      <PiPlus />
+                      <PiPlus className="w-5 h-5" />
                     </button>
                   </div>
                 </div>
-                <ul className="mt-4 space-y-3">
-                  {recipeData.ingredients.map((ing, index) => (
-                    <li key={index} className="flex items-center gap-4 py-3 border-b border-[#F5F5F5]/60">
-                      <p className="font-medium text-right w-20">
+                <ul className="mt-4 space-y-2 sm:space-y-3">
+                  {transformedIngredients.map((ing, index) => (
+                    <li key={index} className="flex items-start sm:items-center gap-3 sm:gap-4 py-2 sm:py-3 border-b border-[#F5F5F5]/60">
+                      <p className="font-medium text-right w-16 sm:w-20 text-sm sm:text-base flex-shrink-0">
                         {adjustIngredient(ing.amount)} {ing.unit}
                       </p>
-                      <p>{ing.name}</p>
+                      <p className="text-sm sm:text-base break-words">{ing.name}</p>
                     </li>
                   ))}
                 </ul>
               </div>
             )}
 
-            {activeTab === 'nutrition' && (
+            {activeTab === 'nutrition' && recipe.nutrition && (
               <NutritionLabel servingCount={servings} />
             )}
           </div>

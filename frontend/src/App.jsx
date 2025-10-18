@@ -8,6 +8,8 @@ import MainLayout from './Layout/MainLayout.jsx'
 import Dashboard from './pages/app/Dashboard.jsx'
 import RecipeLibrary from './pages/app/RecipeLibrary.jsx'
 import RecipeView from "./pages/app/RecipeView.jsx"
+import RecipeGeneration from './pages/app/RecipeGeneration.jsx'
+import ProfileSettings from './pages/app/ProfileSettings.jsx'
 import LoginPage from './pages/auth/LoginPage.jsx'
 import RegisterPage from './pages/auth/RegisterPage.jsx'
 import OAuthCallbackPage from './pages/auth/OAuthCallbackPage.jsx'
@@ -24,7 +26,7 @@ function App() {
     <AuthProvider>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        
+
         {/* Auth pages with minimal AuthLayout (no auth buttons, no footer) */}
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
@@ -42,12 +44,14 @@ function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
-        
+
         {/* Protected app routes with MainLayout */}
         <Route path="/app" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
           <Route index element={<Dashboard />} />
+          <Route path="generate" element={<RecipeGeneration />} />
           <Route path="recipes" element={<RecipeLibrary />} />
-          <Route path="spaghetti" element={<RecipeView />} />
+          <Route path="recipe/:recipeId" element={<RecipeView />} />
+          <Route path="settings" element={<ProfileSettings />} />
         </Route>
       </Routes>
     </AuthProvider>

@@ -1,14 +1,26 @@
 import { useState, useRef, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { PiX, PiCaretRight } from 'react-icons/pi';
 import Recipe from './Recipe';
 import Instructions from './Instructions';
 
 // Main RecipeView component
 const RecipeView = () => {
+  const { recipeId } = useParams();
+  const navigate = useNavigate();
   const [leftWidth, setLeftWidth] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const [recipeMinimized, setRecipeMinimized] = useState(false);
   const containerRef = useRef(null);
+
+  // Validate recipeId
+  useEffect(() => {
+    const id = parseInt(recipeId, 10);
+    if (isNaN(id) || id <= 0) {
+      console.error('Invalid recipe ID:', recipeId);
+      navigate('/app/recipe-library');
+    }
+  }, [recipeId, navigate]);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -72,7 +84,7 @@ const RecipeView = () => {
             <button onClick={handleToggleRecipe} className="absolute top-4 right-4 z-10 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center text-[#035035] hover:bg-[#FF9B7B] hover:text-white transition-all hover:scale-110">
               <PiX className="text-xl" />
             </button>
-            <Recipe />
+            <Recipe recipeId={parseInt(recipeId, 10)} />
           </div>
         )}
       </div>
@@ -92,7 +104,7 @@ const RecipeView = () => {
       {/* Instructions Panel (now permanent) */}
       <div className="relative flex-1 min-w-0">
         <div className="h-full">
-          <Instructions />
+          <Instructions recipeId={parseInt(recipeId, 10)} />
         </div>
       </div>
     </div>

@@ -27,6 +27,14 @@ export default function AboutPage() {
       email: 'luca@piatto.app',
       image: '/team/luca.jpg', // Placeholder
     },
+    {
+      name: 'Sebastian Rogg',
+      role: 'Frontend and Data Analytics',
+      description: 'Building responsive interfaces and analyzing data to drive insights.',
+      linkedin: 'https://linkedin.com/in/sebastian-rogg',
+      email: 'sebastian@piatto.app',
+      image: '/team/sebastian.jpg', // Placeholder
+    },
   ];
 
   return (
@@ -97,7 +105,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {teamMembers.map((member, index) => (
                 <div
                   key={index}

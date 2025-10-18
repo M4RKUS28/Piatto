@@ -4,8 +4,10 @@ from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 
-from ..db.database import get_engine, Base
+from ..db.database import get_engine, Base, get_async_db_context
 from ..db.bucket_session import get_bucket_engine
+from ..db.seed_data import seed_mock_data
+from ..config import settings
 
 
 scheduler = AsyncIOScheduler()
@@ -36,6 +38,12 @@ async def lifespan(_app: FastAPI):
             await conn.run_sync(db_recipe.Base.metadata.create_all)
 
         logger.info("✅ Database tables created/verified")
+        
+        # Seed mock data for local development
+        if settings.DATABASE_URL and settings.DATABASE_URL.startswith("sqlite"):
+            logger.info("🌱 Local development detected. Seeding mock data...")
+            async with get_async_db_context() as session:
+                await seed_mock_data(session)
         
         # Initialize bucket engine
         bucket_engine = await get_bucket_engine()

@@ -1,0 +1,31 @@
+/* Profile Settings Page Styles */
+
+.profile-settings-container {
+        animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+        from {
+                opacity: 0;
+                transform: translateY(10px);
+        }
+
+        to {
+                opacity: 1;
+                transform: translateY(0);
+        }
+}
+
+/* Form input focus animation */
+.profile-settings-container input:focus {
+        transform: scale(1.01);
+}
+
+/* Profile image hover effect */
+.profile-settings-container .profile-image-preview {
+        transition: transform 0.2s ease;
+}
+
+.profile-settings-container .profile-image-preview:hover {
+        transform: scale(1.05);
+}
