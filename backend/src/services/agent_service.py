@@ -37,7 +37,7 @@ class AgentService:
         async with get_async_bucket_session() as bs:
             image: bytes = await get_file(bs, image_key)
 
-        query = create_docs_query("Analyze this image for food items.", [], [image])
+        query = create_docs_query("Analyze this image for food items.", [image])
         response = await self.image_analyzer_agent.run(
             user_id=user_id,
             state={},
