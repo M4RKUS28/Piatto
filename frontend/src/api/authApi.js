@@ -45,6 +45,7 @@ export const logout = async () => {
  */
 export const getCurrentUser = async () => {
   try {
+    console.log('AuthAPI: Fetching current user...');
     const response = await apiWithCookies.get('/users/me');
     console.log("Current User:", response.data);
     return response.data;
