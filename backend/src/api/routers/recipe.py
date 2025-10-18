@@ -49,7 +49,7 @@ async def get_recipe(recipe_id: int,
         raise HTTPException(status_code=404, detail="Recipe not found")
     return _serialize_recipe(recipe)
 
-@router.post("/get_all", response_model=List[RecipeSchema])
+@router.get("/get_all", response_model=List[RecipeSchema])
 async def get_all_recipes(user_id: str = Depends(get_readonly_user_id),
                           db : AsyncSession = Depends(get_db)):
     """
