@@ -4,8 +4,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from backend.src.api.schemas.recipe import Ingredient
-from backend.src.db.models.db_recipe import Recipe, PreparingSession, RecipeIngredient
+from ...api.schemas.recipe import Ingredient
+from ..models.db_recipe import Recipe, PreparingSession, RecipeIngredient
 
 
 async def get_recipe_by_id(db: AsyncSession, recipe_id: int) -> Optional[Recipe]:

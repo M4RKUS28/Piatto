@@ -14,7 +14,7 @@ class Ingredient(BaseModel):
         Field(description="Quantity of the ingredient in the given unit"))
 
 class Recipe(BaseModel):
-    name: str = (
+    title: str = (
         Field(description="Name of the recipe, e.g. 'Spaghetti Bolognese'"))
     description: str = (
         Field(description="Short description of the recipe, e.g. 'A classic Italian ragu, simmered to perfection for a rich flavor.'"))

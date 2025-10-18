@@ -7,7 +7,7 @@ from google.genai import types
 from PIL import Image
 from io import BytesIO
 
-from backend.src.agents.utils import create_text_query, load_instruction_from_file
+from ..utils import create_text_query, load_instruction_from_file
 
 
 class ImageAgent:

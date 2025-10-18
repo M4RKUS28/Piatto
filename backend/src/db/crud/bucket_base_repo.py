@@ -1,6 +1,7 @@
 import os
 import logging
 import uuid
+import mimetypes
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
 
@@ -55,6 +56,18 @@ def _validate_upload_inputs(content_type: Optional[str], file_size: int) -> None
         raise HTTPException(status_code=413, detail=f"File too large. Max {MAX_FILE_BYTES // (1024*1024)} MB")
     if content_type and content_type not in ALLOWED_MIME:
         raise HTTPException(status_code=415, detail=f"Unsupported MIME type: {content_type}")
+
+
+def _resolve_content_type(original_filename: str, provided: Optional[str]) -> str:
+    if provided:
+        return provided
+
+    if original_filename:
+        guessed, _ = mimetypes.guess_type(original_filename)
+        if guessed:
+            return guessed
+
+    raise HTTPException(status_code=400, detail="content_type is required for image upload")
 
 # ============================================================
 # Public API (funktional, erwartet BucketSession als Parameter)
@@ -432,3 +445,68 @@ async def list_files(
     except Exception as e:
         logger.error("List files failed under gs://%s/%s: %s", sess.bucket.name, pre, e)
         raise HTTPException(status_code=500, detail="List files failed") from e
+
+
+async def save_image_bytes(
+    sess: BucketSession,
+    user_id: str,
+    category: str,
+    image_bytes: bytes,
+    original_filename: str,
+    content_type: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Speichert ein Bild direkt aus Bytes im Bucket.
+
+    Args:
+        sess: BucketSession
+        user_id: User ID, Teil des Storage-Key
+        category: Datei-Kategorie (z.B. "images")
+        image_bytes: Bilddaten als Bytes
+        original_filename: Originaler Dateiname zur Metadaten-Referenz
+        content_type: Optionaler MIME-Type (wird sonst aus Dateinamen abgeleitet)
+
+    Returns:
+        Dict mit Upload-Informationen analog zu upload_file
+    """
+    if not isinstance(image_bytes, (bytes, bytearray)):
+        raise HTTPException(status_code=400, detail="image_bytes must be bytes-like")
+
+    if not image_bytes:
+        raise HTTPException(status_code=400, detail="image_bytes is empty")
+
+    resolved_content_type = _resolve_content_type(original_filename, content_type)
+    size = len(image_bytes)
+    _validate_upload_inputs(resolved_content_type, size)
+
+    key = _generate_storage_key(user_id, category, original_filename)
+    blob: Blob = sess.bucket.blob(key)
+
+    blob.metadata = {
+        "original_filename": original_filename,
+        "category": category,
+        "uploaded_at": datetime.utcnow().isoformat(),
+    }
+
+    logger.info("GCS upload (bytes) -> gs://%s/%s (%d bytes, %s)", sess.bucket.name, key, size, resolved_content_type)
+
+    try:
+        await BucketEngine._retry(
+            blob.upload_from_string,
+            bytes(image_bytes),
+            content_type=resolved_content_type,
+            timeout=sess.timeout,
+        )
+    except Exception as e:
+        logger.exception("Upload (bytes) failed for gs://%s/%s: %s", sess.bucket.name, key, e)
+        raise HTTPException(status_code=500, detail="Upload failed") from e
+
+    return {
+        "key": key,
+        "original_filename": original_filename,
+        "content_type": resolved_content_type,
+        "size": size,
+        "category": category,
+        "uploaded_at": blob.metadata["uploaded_at"],
+        "status": "uploaded",
+    }
