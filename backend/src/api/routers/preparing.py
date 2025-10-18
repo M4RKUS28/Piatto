@@ -33,7 +33,7 @@ async def generate_recipe(request: GenerateRecipeRequest, user_id: str = Depends
     """
 
     # Ich würde hier nur prompt und preparing_session_id übergeben, alles andere müsste man im Service aus der db ziehen
-    return await agent_service.generate_recipe(request.prompt, request.preparing_session_id)
+    return await agent_service.generate_recipe(user_id, request.prompt, request.written_ingredients, image_key=request.image_key)
 
 @router.get("/{preparing_session_id}/get_options", response_model=List[RecipePreview])
 async def get_recipe_options(preparing_session_id: int,
