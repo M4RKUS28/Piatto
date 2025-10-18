@@ -9,6 +9,7 @@ import Dashboard from './pages/app/Dashboard.jsx'
 import RecipeLibrary from './pages/app/RecipeLibrary.jsx'
 import RecipeView from "./pages/app/RecipeView.jsx"
 import RecipeGeneration from './pages/app/RecipeGeneration.jsx'
+import ProfileSettings from './pages/app/ProfileSettings.jsx'
 import LoginPage from './pages/auth/LoginPage.jsx'
 import RegisterPage from './pages/auth/RegisterPage.jsx'
 import OAuthCallbackPage from './pages/auth/OAuthCallbackPage.jsx'
@@ -50,6 +51,7 @@ function App() {
           <Route path="generate" element={<RecipeGeneration />} />
           <Route path="recipes" element={<RecipeLibrary />} />
           <Route path="recipe/:recipeId" element={<RecipeView />} />
+          <Route path="settings" element={<ProfileSettings />} />
         </Route>
       </Routes>
     </AuthProvider>

@@ -72,3 +72,13 @@ export const refreshToken = async () => {
   const response = await apiWithCookies.post('/auth/refresh');
   return response.data;
 };
+
+/**
+ * Update user profile
+ * @param {string} userId - User ID
+ * @param {object} updateData - Data to update (username, email, profile_image_url, theme, language)
+ */
+export const updateUser = async (userId, updateData) => {
+  const response = await apiWithCookies.put(`/users/${userId}`, updateData);
+  return response.data;
+};
