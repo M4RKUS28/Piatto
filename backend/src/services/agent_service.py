@@ -1,6 +1,7 @@
 """
 This file defines the service that coordinates the interaction between all the agents
 """
+import asyncio
 import json
 from logging import getLogger
 from typing import Optional
@@ -71,23 +72,31 @@ class AgentService:
             state={},
             content=query,
         )
+        # Parallelize the image generation + upload step so agent calls do not block each other.
+        async def generate_recipe_assets(recipe_payload):
+            image = await self.image_agent.run(
+                user_id=user_id,
+                state={},
+                content=get_image_gen_query(recipe_payload),
+            )
+            async with get_async_bucket_session() as bs:
+                image_saved = await save_image_bytes(bs, user_id, "image", image, "recipe_image.png")
+            return recipe_payload, image_saved['key']
+
+        recipe_payloads = await asyncio.gather(
+            *(generate_recipe_assets(recipe) for recipe in recipes['recipes'])
+        )
+
         recipe_ids = []
         async with get_async_db_context() as db:
-            for recipe in recipes['recipes']:
-                image = await self.image_agent.run(
-                    user_id=user_id,
-                    state={},
-                    content=get_image_gen_query(recipe),
-                )
-                async with get_async_bucket_session() as bs:
-                    image_saved = await save_image_bytes(bs, user_id, "image", image, "recipe_image.png")
+            for recipe_payload, image_key in recipe_payloads:
                 recipe_db = await recipe_crud.create_recipe(
                     db=db,
                     user_id=user_id,
-                    title=recipe['title'],
-                    description=recipe['description'],
-                    ingredients=recipe['ingredients'],
-                    image_url=image_saved['key'],
+                    title=recipe_payload['title'],
+                    description=recipe_payload['description'],
+                    ingredients=recipe_payload['ingredients'],
+                    image_url=image_key,
                 )
                 recipe_ids.append(recipe_db.id)
 
