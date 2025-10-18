@@ -52,7 +52,7 @@ def health():
 app.include_router(users.router)
 app.include_router(auth_router.api_router)
 from .api.routers import files
-app.include_router(files_example_with_bucket.router)
+app.include_router(files.router)
 
 
 
