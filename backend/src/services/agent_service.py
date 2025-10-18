@@ -12,10 +12,9 @@ from .query_service import get_recipe_gen_query, get_image_gen_query
 from ..agents.image_agent.agent import ImageAgent
 from ..agents.image_analyzer_agent import ImageAnalyzerAgent
 from ..agents.recipe_agent import RecipeAgent
-from ..db.bucket_session import get_bucket_session
-from ..db.crud import images_crud, recipe_crud
-from ..db.crud.bucket_base_repo import get_file
-from ..db.models.db_file import Image
+from ..db.bucket_session import get_bucket_session, get_async_bucket_session
+from ..db.crud import recipe_crud
+from ..db.crud.bucket_base_repo import get_file, upload_file, save_image_bytes
 from google.adk.sessions import InMemorySessionService
 from ..agents.utils import create_text_query, create_docs_query
 from ..db.database import get_async_db_context, get_db
@@ -65,19 +64,18 @@ class AgentService:
             content=get_image_gen_query(recipe),
         )
         async with get_async_db_context() as db:
-            recipe_crud.create_recipe(
+            async with get_async_bucket_session() as bs:
+                image_saved = await save_image_bytes(bs, user_id, "image", image, "recipe_image.png")
+            recipe_db = await recipe_crud.create_recipe(
                 db=db,
                 user_id=user_id,
                 title=recipe['title'],
                 description=recipe['description'],
                 ingredients=recipe['ingredients'],
-            )
-            image_db = images_crud.create_image(
-                recipe_id=
+                image_url=image_saved['key'],
             )
 
-        #TODO create recipe in database
-        return recipe
+        return recipe_db.id
 
 
     async def change_recipe(self, change_prompt: str, recipe_id: int,db : AsyncSession = Depends(get_db)):

@@ -3,7 +3,7 @@ from typing import List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.src.db.models.db_recipe import CookingSession, PromptHistory
+from ..models.db_recipe import CookingSession, PromptHistory
 
 
 async def get_cooking_session_by_id(db: AsyncSession, cooking_session_id: int) -> Optional[CookingSession]:

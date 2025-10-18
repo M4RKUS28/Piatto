@@ -16,8 +16,6 @@ import os
 from typing import List
 
 from google.genai import types
-
-from ..db.models.db_file import Document, Image
 import logging
 
 logger = logging.getLogger(__name__)
@@ -28,14 +26,9 @@ def create_text_query(query: str) -> types.Content:
     return types.Content(role="user", parts=[types.Part(text=query)])
 
 
-def create_docs_query(query: str, docs: List[Document], images: List[bytes]) -> types.Content:
+def create_docs_query(query: str, images: List[bytes]) -> types.Content:
     """ Takes a string and fastapi UploadFile object and returns a user query that can be sent to an agent """
     parts = [types.Part(text=query)]
-    for doc in docs:
-        parts.append(types.Part.from_bytes(
-            data=doc.file_data,
-            mime_type=doc.content_type,
-        ))
     for image in images:
         parts.append(types.Part.from_bytes(
             data=image,

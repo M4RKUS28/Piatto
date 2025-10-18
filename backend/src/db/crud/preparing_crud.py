@@ -3,8 +3,8 @@ from typing import List, Optional
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.src.api.schemas.recipe import Ingredient
-from backend.src.db.models.db_recipe import Recipe, PreparingSession
+from ...api.schemas.recipe import Ingredient
+from ..models.db_recipe import Recipe, PreparingSession
 
 # TODO
 

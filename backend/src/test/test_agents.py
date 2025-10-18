@@ -1,7 +1,7 @@
 from google.adk.sessions import InMemorySessionService
 
-from backend.src.agents.utils import create_text_query
-from backend.src.agents.recipe_agent import RecipeAgent
+from ..agents.utils import create_text_query
+from ..agents.recipe_agent import RecipeAgent
 import pprint
 import dotenv
 import asyncio

@@ -10,6 +10,7 @@ from .core.lifespan import lifespan
 
 from .api.routers import auth as auth_router
 from .api.routers import users
+from .api.routers import files, cooking, preparing, recipe
 
 
 # Create the main app instance
@@ -52,8 +53,10 @@ def health():
 # Include your existing routers under this api_router
 app.include_router(users.router)
 app.include_router(auth_router.api_router)
-from .api.routers import files
 app.include_router(files.router)
+app.include_router(cooking.router)
+app.include_router(preparing.router)
+app.include_router(recipe.router)
 
 
 
