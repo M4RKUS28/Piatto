@@ -151,10 +151,10 @@ export default function MainLayout({ children }) {
           {/* Profile Dropdown */}
           {profileMenuOpen && (
             <div
-              className={`absolute bg-white rounded-2xl shadow-lg border border-[#F5F5F5] p-3 z-[60] min-w-[14rem] ${sidebarExpanded ? 'bottom-16 left-2 right-2' : 'bottom-16 left-full ml-3'
+              className={`absolute bg-white rounded-2xl shadow-lg border border-[#F5F5F5] p-3 z-[60] min-w-[14rem] ${sidebarExpanded ? 'bottom-16 left-2 right-2' : 'bottom-16 left-2'
                 }`}
               style={{
-                animation: 'scaleIn 200ms cubic-bezier(0.34, 1.56, 0.64, 1)'
+                animation: 'scaleIn 300ms cubic-bezier(0.34, 1.56, 0.64, 1)',
               }}
             >
               {/* User Info */}
