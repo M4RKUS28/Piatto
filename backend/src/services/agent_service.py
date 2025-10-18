@@ -13,7 +13,7 @@ from ..agents.image_agent.agent import ImageAgent
 from ..agents.image_analyzer_agent import ImageAnalyzerAgent
 from ..agents.recipe_agent import RecipeAgent
 from ..db.bucket_session import get_bucket_session, get_async_bucket_session
-from ..db.crud import recipe_crud
+from ..db.crud import recipe_crud, preparing_crud
 from ..db.crud.bucket_base_repo import get_file, upload_file, save_image_bytes
 from google.adk.sessions import InMemorySessionService
 from ..agents.utils import create_text_query, create_docs_query
@@ -74,8 +74,17 @@ class AgentService:
                 ingredients=recipe['ingredients'],
                 image_url=image_saved['key'],
             )
+            
+            # Create or update preparing session with the generated recipe
+            session = await preparing_crud.create_or_update_preparing_session(
+                db=db,
+                user_id=user_id,
+                prompt=prompt,
+                recipe_id=recipe_db.id,
+                preparing_session_id=preparing_session_id
+            )
 
-        return recipe_db.id
+        return session.id
 
 
     async def change_recipe(self, change_prompt: str, recipe_id: int,db : AsyncSession = Depends(get_db)):

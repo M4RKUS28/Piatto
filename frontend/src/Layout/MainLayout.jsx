@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom';
-import { Home, UtensilsCrossed, PanelLeft, Settings as SettingsIcon, LogOut } from 'lucide-react';
+import { Home, UtensilsCrossed, PanelLeft, Settings as SettingsIcon, LogOut, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function MainLayout({ children }) {
@@ -23,15 +23,25 @@ export default function MainLayout({ children }) {
   };
 
   // Fallback user data if user is not loaded yet
-  const displayUser = user || {
+  const displayUser = user ? {
+    username: user.username || 'User',
+    email: user.email || 'user@example.com',
+    profile_image_url: user.profile_image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username || 'User'}`,
+    id: user.id
+  } : {
     username: 'User',
     email: 'user@example.com',
     profile_image_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=User'
   };
 
+  // Debug log
+  console.log('MainLayout - User data:', user);
+  console.log('MainLayout - Display user:', displayUser);
+
   const navItems = [
     { label: 'Dashboard', to: '/app', icon: Home, end: true },
-    { label: 'RecipeLibrary', to: '/app/recipes', icon: UtensilsCrossed }
+    { label: 'Generate Recipe', to: '/app/generate', icon: Sparkles },
+    { label: 'Recipe Library', to: '/app/recipes', icon: UtensilsCrossed }
   ];
 
   const content = children ?? <Outlet />;
@@ -40,9 +50,8 @@ export default function MainLayout({ children }) {
     <div className="min-h-screen bg-white flex">
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-full bg-[#FFF8F0] border-r border-[#F5F5F5] z-50 transition-all duration-300 flex flex-col ${
-          sidebarExpanded ? 'w-64' : 'w-16'
-        }`}
+        className={`fixed left-0 top-0 h-full bg-[#FFF8F0] border-r border-[#F5F5F5] z-50 transition-all duration-300 flex flex-col ${sidebarExpanded ? 'w-64' : 'w-16'
+          }`}
         style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
       >
         {/* Logo / Toggle */}
@@ -120,11 +129,17 @@ export default function MainLayout({ children }) {
             className="w-full flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-white transition-all"
           >
             <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#A8C9B8]">
-              <img src={displayUser.profile_image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${displayUser.username}`} alt={displayUser.username} className="w-full h-full object-cover" />
+              <img
+                src={displayUser.profile_image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${displayUser.username}`}
+                alt={displayUser.username}
+                className="w-full h-full object-cover"
+              />
             </div>
             {sidebarExpanded && (
-              <div className="flex-1 text-left overflow-hidden">
-                <div className="text-sm font-medium text-[#2D2D2D] truncate">{displayUser.username}</div>
+              <div className="flex-1 text-left min-w-0">
+                <div className="text-sm font-medium text-[#2D2D2D] truncate">
+                  {displayUser.username || 'User'}
+                </div>
               </div>
             )}
           </button>
@@ -132,9 +147,8 @@ export default function MainLayout({ children }) {
           {/* Profile Dropdown */}
           {profileMenuOpen && (
             <div
-              className={`absolute bg-white rounded-2xl shadow-lg border border-[#F5F5F5] p-3 ${
-                sidebarExpanded ? 'bottom-16 left-2 right-2' : 'bottom-16 left-2 w-56'
-              }`}
+              className={`absolute bg-white rounded-2xl shadow-lg border border-[#F5F5F5] p-3 ${sidebarExpanded ? 'bottom-16 left-2 right-2' : 'bottom-16 left-2 w-56'
+                }`}
               style={{
                 animation: 'scaleIn 200ms cubic-bezier(0.34, 1.56, 0.64, 1)'
               }}
@@ -142,22 +156,38 @@ export default function MainLayout({ children }) {
               {/* User Info */}
               <div className="flex items-center gap-3 pb-3 border-b border-[#F5F5F5]">
                 <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#A8C9B8]">
-                  <img src={displayUser.profile_image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${displayUser.username}`} alt={displayUser.username} className="w-full h-full object-cover" />
+                  <img
+                    src={displayUser.profile_image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${displayUser.username}`}
+                    alt={displayUser.username}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-                <div className="flex-1 overflow-hidden">
-                  <div className="text-sm font-semibold text-[#2D2D2D] truncate">{displayUser.username}</div>
-                  <div className="text-xs text-[#2D2D2D] opacity-60 truncate">{displayUser.email}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-[#2D2D2D] truncate">
+                    {displayUser.username || 'User'}
+                  </div>
+                  <div className="text-xs text-[#2D2D2D] opacity-60 truncate">
+                    {displayUser.email || 'user@example.com'}
+                  </div>
                 </div>
               </div>
 
               {/* Menu Items */}
-              <div className="pt-2 space-y-1">
-                <button 
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[#2D2D2D] hover:bg-[#FFF8F0] transition-all text-left"
+              <div className="pt-3 space-y-2">
+                <Link
+                  to="/app/settings"
+                  onClick={() => setProfileMenuOpen(false)}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[#2D2D2D] hover:bg-[#FFF8F0] transition-all text-left"
                 >
-                  <LogOut className="w-4 h-4" />
-                  <span className="text-sm font-medium">Logout</span>
+                  <SettingsIcon className="w-5 h-5" />
+                  <span className="text-base font-medium">Settings</span>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[#2D2D2D] hover:bg-[#FFF8F0] transition-all text-left"
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span className="text-base font-medium">Logout</span>
                 </button>
               </div>
             </div>
@@ -167,9 +197,8 @@ export default function MainLayout({ children }) {
 
       {/* Main Content */}
       <div
-        className={`flex-1 flex flex-col transition-all duration-300 ${
-          sidebarExpanded ? 'ml-64' : 'ml-16'
-        }`}
+        className={`flex-1 flex flex-col transition-all duration-300 ${sidebarExpanded ? 'ml-64' : 'ml-16'
+          }`}
         style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
       >
         <main className="flex-1">{content}</main>

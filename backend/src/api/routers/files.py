@@ -54,6 +54,27 @@ async def upload(
         except OSError:
             pass
 
+@router.get("/serve/{key:path}")
+async def serve_file(key: str, sess: BucketSession = Depends(get_bucket_session)):
+    """Serve file content directly with proper content type."""
+    from fastapi.responses import Response
+    from ...db.crud.bucket_base_repo import get_file, get_file_info
+    
+    # Get file info to determine content type
+    file_info = await get_file_info(sess, key)
+    
+    # Get file bytes
+    file_bytes = await get_file(sess, key)
+    
+    # Return file with proper content type
+    return Response(
+        content=file_bytes,
+        media_type=file_info.get('content_type', 'application/octet-stream'),
+        headers={
+            'Cache-Control': 'public, max-age=3600',  # Cache for 1 hour
+        }
+    )
+
 @router.get("/info/{key:path}")
 async def get_info(key: str, sess: BucketSession = Depends(get_bucket_session)):
     """Get file information by key."""

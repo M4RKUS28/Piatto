@@ -1,0 +1,165 @@
+/* RecipePreviewCard Component Styles */
+/* Following Piattio Design System */
+/* Mobile-first responsive design with proper touch targets */
+
+/* ============================================
+   MOBILE STYLES (320px - 767px)
+   ============================================ */
+
+.recipe-preview-card {
+        background: #FFFFFF;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        transition: all 300ms ease-out;
+        position: relative;
+        /* Ensure minimum touch target height */
+        min-height: 200px;
+}
+
+/* Image Styling */
+.recipe-preview-card__image {
+        width: 100%;
+        aspect-ratio: 16/9;
+        object-fit: cover;
+        display: block;
+}
+
+/* Content Area - Mobile */
+.recipe-preview-card__content {
+        padding: 12px;
+        min-height: 80px;
+        /* Ensure adequate touch target */
+}
+
+/* Title Styling - Mobile */
+.recipe-preview-card__title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 18px;
+        color: #035035;
+        /* Forest Green */
+        margin: 0 0 8px 0;
+        line-height: 1.3;
+}
+
+/* Description Styling - Mobile */
+.recipe-preview-card__description {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #2D2D2D;
+        /* Charcoal */
+        opacity: 0.8;
+        line-height: 1.5;
+        margin: 0;
+}
+
+/* Focus Indicator for Accessibility - 2px Forest Green outline */
+.recipe-preview-card:focus {
+        outline: 2px solid #035035;
+        /* Forest Green */
+        outline-offset: 2px;
+}
+
+.recipe-preview-card:focus:not(:focus-visible) {
+        outline: none;
+}
+
+.recipe-preview-card:focus-visible {
+        outline: 2px solid #035035;
+        /* Forest Green */
+        outline-offset: 2px;
+        box-shadow: 0 0 0 2px #035035, 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* ============================================
+   TABLET STYLES (768px - 1023px)
+   ============================================ */
+
+@media (min-width: 768px) {
+        .recipe-preview-card__content {
+                padding: 14px;
+        }
+
+        .recipe-preview-card__title {
+                font-size: 19px;
+        }
+
+        .recipe-preview-card__description {
+                font-size: 14px;
+        }
+}
+
+/* ============================================
+   DESKTOP STYLES (1024px+)
+   ============================================ */
+
+@media (min-width: 1024px) {
+        .recipe-preview-card__content {
+                padding: 16px;
+        }
+
+        .recipe-preview-card__title {
+                font-size: 20px;
+        }
+
+        .recipe-preview-card__description {
+                font-size: 14px;
+        }
+
+        /* Hover Effects - Desktop only */
+        @media (hover: hover) and (pointer: fine) {
+                .recipe-preview-card:hover {
+                        transform: translateY(-4px);
+                        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+                }
+
+                .recipe-preview-card:active {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+                }
+        }
+}
+
+/* ============================================
+   TOUCH DEVICE OPTIMIZATIONS
+   ============================================ */
+
+/* Touch feedback for mobile/tablet */
+@media (hover: none) and (pointer: coarse) {
+
+        /* Disable hover effects on touch devices */
+        .recipe-preview-card:hover {
+                transform: none;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Add active state for touch feedback */
+        .recipe-preview-card:active {
+                transform: scale(0.98);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+                opacity: 0.95;
+        }
+
+        /* Ensure adequate spacing for touch */
+        .recipe-preview-card__content {
+                padding: 16px;
+        }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+        .recipe-preview-card {
+                transition: none;
+        }
+
+        .recipe-preview-card:hover,
+        .recipe-preview-card:active {
+                transform: none;
+        }
+}

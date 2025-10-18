@@ -5,6 +5,7 @@ import { getUserRecipes } from '../../api/recipeApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorMessage from '../../components/ErrorMessage';
 import EmptyState from '../../components/EmptyState';
+import { getImageUrl } from '../../utils/imageUtils';
 
 export default function RecipeLibrary() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,7 +25,7 @@ export default function RecipeLibrary() {
         id: recipe.id,
         name: recipe.title,
         description: recipe.description || '',
-        image: recipe.image_url || '🍽️',
+        image: recipe.image_url ? getImageUrl(recipe.image_url) : '🍽️',
         time: recipe.total_time ? `${recipe.total_time} min` : '30 min',
         servings: recipe.base_servings ? `${recipe.base_servings}` : '4',
         difficulty: recipe.difficulty || 'Medium',
@@ -144,7 +145,7 @@ export default function RecipeLibrary() {
                   >
                     {/* Image */}
                     <div className="bg-[#FFF8F0] h-48 sm:h-56 flex items-center justify-center overflow-hidden">
-                      {recipe.image.startsWith('http') ? (
+                      {recipe.image.startsWith('http') || recipe.image.startsWith('/') ? (
                         <img
                           src={recipe.image}
                           alt={recipe.name}
