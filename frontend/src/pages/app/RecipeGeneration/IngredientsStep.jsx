@@ -19,10 +19,8 @@ export default function IngredientsStep({
         const popupTimeoutRef = useRef(null);
 
         const validateIngredients = () => {
-                if (!ingredientsText || ingredientsText.trim().length === 0) {
-                        return 'Please enter your ingredients';
-                }
-                if (ingredientsText.trim().length < 3) {
+                // Allow empty textarea
+                if (ingredientsText && ingredientsText.trim().length > 0 && ingredientsText.trim().length < 3) {
                         return 'Please enter at least 3 characters';
                 }
                 return '';
@@ -125,7 +123,7 @@ export default function IngredientsStep({
                                                         type="button"
                                                         onClick={() => document.getElementById('image-upload')?.click()}
                                                         disabled={loading || analyzing}
-                                                        className="absolute bottom-2 left-2 bg-[#035035] rounded-full p-2 shadow-md hover:bg-[#046a47] focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                                                        className="absolute bottom-2 left-2 bg-[#035035] rounded-full px-3 py-2 shadow-md hover:bg-[#046a47] focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                                         aria-label="Analyze image to extract ingredients"
                                                 >
                                                         {analyzing ? (
@@ -133,7 +131,10 @@ export default function IngredientsStep({
                                                                         <circle cx="12" cy="12" r="10" stroke="#A8C9B8" strokeWidth="4" fill="none" />
                                                                 </svg>
                                                         ) : (
-                                                                <img src="/wired-outline-61-camera-in-reveal.gif" alt="Upload ingredients image" className="w-7 h-7" />
+                                                                <>
+                                                                        <img src="/wired-outline-61-camera-in-reveal.gif" alt="Upload ingredients image" className="w-7 h-7" />
+                                                                        <span className="text-white font-semibold text-sm">Analyze Image</span>
+                                                                </>
                                                         )}
                                                 </button>
                                                 {showPopup && (
