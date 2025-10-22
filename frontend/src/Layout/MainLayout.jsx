@@ -132,11 +132,11 @@ export default function MainLayout({ children }) {
             onClick={toggleProfileMenu}
             className="w-full flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-white transition-all"
           >
-            <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#A8C9B8]">
+            <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#A8C9B8] bg-white">
               <img
                 src={displayUser.profile_image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${displayUser.username}`}
                 alt={displayUser.username}
-                className="w-full h-full object-cover"
+                className="w-full h-full"
               />
             </div>
             {sidebarExpanded && (
@@ -159,11 +159,11 @@ export default function MainLayout({ children }) {
             >
               {/* User Info */}
               <div className="flex items-center gap-3 pb-3 border-b border-[#F5F5F5]">
-                <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#A8C9B8]">
+                <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#A8C9B8] bg-white">
                   <img
                     src={displayUser.profile_image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${displayUser.username}`}
                     alt={displayUser.username}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full"
                   />
                 </div>
                 <div className="flex-1 min-w-0">

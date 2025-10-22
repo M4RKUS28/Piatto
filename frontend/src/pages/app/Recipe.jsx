@@ -5,9 +5,12 @@ import {
   PiCookingPot, PiMinus, PiPlus, PiCow, PiTrash
 } from 'react-icons/pi';
 import { getRecipeById, saveRecipe, deleteRecipe } from '../../api/recipeApi';
+import { removeRecipeFromCurrent } from '../../api/preparingApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorMessage from '../../components/ErrorMessage';
 import { getImageUrl } from '../../utils/imageUtils';
+
+const SESSION_STORAGE_KEY = 'piatto_preparing_session_id';
 
 const recipeData = {
   baseServings: 4,
@@ -106,9 +109,30 @@ const Recipe = ({ recipeId }) => {
     setSaveSuccess(false);
 
     try {
+      // Save the recipe
       await saveRecipe(recipeId);
+
+      // Check if there's an active preparing session
+      const storedSessionId = localStorage.getItem(SESSION_STORAGE_KEY);
+
+      if (storedSessionId) {
+        const sessionId = Number(storedSessionId);
+        if (sessionId && !Number.isNaN(sessionId)) {
+          // Remove from current session and navigate back to recipe generation
+          try {
+            await removeRecipeFromCurrent(sessionId, recipeId);
+            // Navigate back to recipe generation page
+            navigate('/app/generate');
+            return;
+          } catch (removeError) {
+            console.error('Failed to remove recipe from current session:', removeError);
+            // Continue with showing success message if removal fails
+          }
+        }
+      }
+
+      // If no active session, just show success message
       setSaveSuccess(true);
-      // Hide success message after 3 seconds
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
       console.error('Failed to save recipe:', err);
@@ -131,8 +155,27 @@ const Recipe = ({ recipeId }) => {
 
     try {
       await deleteRecipe(recipeId);
-      // Show success message briefly before navigating
-      alert('Recipe deleted successfully!');
+
+      // Check if there's an active preparing session
+      const storedSessionId = localStorage.getItem(SESSION_STORAGE_KEY);
+
+      if (storedSessionId) {
+        const sessionId = Number(storedSessionId);
+        if (sessionId && !Number.isNaN(sessionId)) {
+          // Remove from current session and navigate back to recipe generation
+          try {
+            await removeRecipeFromCurrent(sessionId, recipeId);
+          } catch (removeError) {
+            console.error('Failed to remove recipe from current session:', removeError);
+            // Continue with navigation even if removal fails
+          }
+          // Navigate back to recipe generation page
+          navigate('/app/generate');
+          return;
+        }
+      }
+
+      // If no active session, navigate to library
       navigate('/app/library');
     } catch (err) {
       console.error('Failed to delete recipe:', err);
@@ -282,7 +325,7 @@ const Recipe = ({ recipeId }) => {
         </p>
 
         {/* Image */}
-        <div className="relative mt-4 sm:mt-6 rounded-2xl overflow-hidden shadow-sm aspect-video max-w-full">
+        <div className="relative mt-4 sm:mt-6 rounded-2xl overflow-hidden shadow-sm aspect-square max-w-full">
           <img
             src={getImageUrl(recipe.image_url)}
             alt={recipe.title}

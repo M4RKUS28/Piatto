@@ -8,7 +8,7 @@ import Instructions from './Instructions';
 const RecipeView = () => {
   const { recipeId } = useParams();
   const navigate = useNavigate();
-  const [leftWidth, setLeftWidth] = useState(50);
+  const [leftWidth, setLeftWidth] = useState(40);
   const [isDragging, setIsDragging] = useState(false);
   const [recipeMinimized, setRecipeMinimized] = useState(false);
   const containerRef = useRef(null);

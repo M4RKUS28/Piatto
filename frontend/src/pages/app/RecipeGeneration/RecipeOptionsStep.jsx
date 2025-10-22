@@ -1,4 +1,5 @@
 import { getImageUrl } from '../../../utils/imageUtils';
+import { PiBookmarkSimple } from 'react-icons/pi';
 
 export default function RecipeOptionsStep({
         recipeOptions,
@@ -101,9 +102,7 @@ export default function RecipeOptionsStep({
                                                                                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                                                                         </svg>
                                                                                 ) : (
-                                                                                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                                                <path d="M16 2H4C2.9 2 2 2.9 2 4V18L6 14H16C17.1 14 18 13.1 18 12V4C18 2.9 17.1 2 16 2Z" fill="currentColor" />
-                                                                                        </svg>
+                                                                                        <PiBookmarkSimple className="w-5 h-5" />
                                                                                 )}
                                                                         </button>
 
