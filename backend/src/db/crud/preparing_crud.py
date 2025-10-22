@@ -12,8 +12,6 @@ async def create_or_update_preparing_session(
     user_id: str,
     prompt: str,
     recipe_ids: List[int],
-    image_key: Optional[str] = None,
-    analyzed_ingredients: Optional[str] = None,
     preparing_session_id: Optional[int] = None,
 ) -> PreparingSession:
     """Create a new preparing session or update an existing one with recipe suggestions."""
@@ -41,15 +39,6 @@ async def create_or_update_preparing_session(
                 merged_current_ids = _merge_unique_ids(existing_current_ids, recipe_ids)
                 session.current_recipes = json.dumps(merged_current_ids)
 
-            prompts = _load_prompt_history(session.context_promts)
-            prompts.append(prompt)
-            session.context_promts = json.dumps(prompts)
-
-            if image_key is not None:
-                session.image_key = image_key
-            if analyzed_ingredients is not None:
-                session.analyzed_ingredients = analyzed_ingredients
-
             await db.commit()
             await db.refresh(session)
             return session
@@ -58,11 +47,8 @@ async def create_or_update_preparing_session(
     serialized_ids = json.dumps(recipe_ids)
     new_session = PreparingSession(
         user_id=user_id,
-        context_promts=json.dumps([prompt]),
         context_suggestions=serialized_ids,
-        current_recipes=serialized_ids,
-        image_key=image_key,
-        analyzed_ingredients=analyzed_ingredients,
+        current_recipes=serialized_ids
     )
     db.add(new_session)
     await db.commit()
@@ -87,24 +73,6 @@ async def delete_preparing_session(db: AsyncSession,
     await db.delete(preparing_session)
     await db.commit()
     return True
-
-
-async def get_image_analysis_by_session_id(
-    db: AsyncSession,
-    preparing_session_id: int,
-) -> Optional[dict]:
-    """Return the uploaded image key and analyzed ingredients for a preparing session."""
-    result = await db.execute(
-        select(PreparingSession).filter(PreparingSession.id == preparing_session_id)
-    )
-    session = result.scalar_one_or_none()
-    if not session:
-        return None
-
-    return {
-        "image_key": session.image_key,
-        "analyzed_ingredients": session.analyzed_ingredients,
-    }
 
 
 async def remove_recipe_from_current(

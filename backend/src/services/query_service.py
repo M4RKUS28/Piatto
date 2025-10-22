@@ -8,7 +8,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def get_recipe_gen_query(prompt: str, written_ingredients: str, analyzed_ingredients: str) -> types.Content:
+def get_recipe_gen_query(prompt: str, written_ingredients: str) -> types.Content:
     """ builds the query for the recipe generation agent """
     query = f"""
         System: What do you want to cook?
@@ -16,12 +16,6 @@ def get_recipe_gen_query(prompt: str, written_ingredients: str, analyzed_ingredi
         System: Any ingredients you want to use?
         User: {written_ingredients}
     """
-
-    if analyzed_ingredients:
-        query += f"""
-        System: Send me a picture of you pantry/fridge.
-        User: The picture included: {analyzed_ingredients}
-"""
 
     return create_text_query(query)
 

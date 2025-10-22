@@ -60,14 +60,9 @@ class AgentService:
         user_id: str,
         prompt: str,
         written_ingredients: str,
-        preparing_session_id: Optional[int] = None,
-        image_key: Optional[str] = None,
+        preparing_session_id: Optional[int] = None
     ):
-        analyzed_ingredients = None
-        if image_key:
-            analyzed_ingredients = await self.analyze_ingredients(user_id, image_key)
-
-        query = get_recipe_gen_query(prompt, written_ingredients, analyzed_ingredients)
+        query = get_recipe_gen_query(prompt, written_ingredients)
         recipes =  await self.recipe_agent.run(
             user_id=user_id,
             state={},
@@ -108,8 +103,6 @@ class AgentService:
                     user_id=user_id,
                     prompt=prompt,
                     recipe_ids=recipe_ids,
-                    image_key=image_key,
-                    analyzed_ingredients=analyzed_ingredients,
                     preparing_session_id=preparing_session_id,
                 )
             except PermissionError as error:
