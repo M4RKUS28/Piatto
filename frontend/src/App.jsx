@@ -49,7 +49,7 @@ function App() {
         <Route path="/app" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
           <Route index element={<Dashboard />} />
           <Route path="generate" element={<RecipeGeneration />} />
-          <Route path="recipes" element={<RecipeLibrary />} />
+          <Route path="library" element={<RecipeLibrary />} />
           <Route path="recipe/:recipeId" element={<RecipeView />} />
           <Route path="settings" element={<ProfileSettings />} />
         </Route>

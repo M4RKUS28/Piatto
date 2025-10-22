@@ -1,14 +1,12 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
         generateRecipes,
         getRecipeOptions,
         finishPreparingSession,
         getImageAnalysisBySessionId,
-        removeRecipeFromCurrent,
-        addRecipeToCurrent,
 } from '../../../api/preparingApi';
-import { saveRecipe, unsaveRecipe } from '../../../api/recipeApi';
+import { saveRecipe } from '../../../api/recipeApi';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import ErrorMessage from '../../../components/ErrorMessage';
 import PromptStep from './PromptStep';
@@ -32,46 +30,8 @@ export default function RecipeGeneration() {
         const [recipeOptions, setRecipeOptions] = useState([]);
         const [imageAnalysis, setImageAnalysis] = useState(null);
         const [isImagePanelOpen, setIsImagePanelOpen] = useState(true);
-        const [recipeStatuses, setRecipeStatuses] = useState({});
-        const [recipeActionInProgress, setRecipeActionInProgress] = useState({});
-        const [statusMessagesVisible, setStatusMessagesVisible] = useState({});
-        const statusMessageTimeoutsRef = useRef({});
         const [finishingSession, setFinishingSession] = useState(false);
 
-        const clearStatusMessageTimeout = useCallback((recipeId) => {
-                const timeoutId = statusMessageTimeoutsRef.current?.[recipeId];
-                if (timeoutId) {
-                        clearTimeout(timeoutId);
-                        delete statusMessageTimeoutsRef.current[recipeId];
-                }
-        }, []);
-
-        const clearAllStatusMessageTimeouts = useCallback(() => {
-                Object.values(statusMessageTimeoutsRef.current || {}).forEach((timeoutId) => {
-                        if (timeoutId) {
-                                clearTimeout(timeoutId);
-                        }
-                });
-                statusMessageTimeoutsRef.current = {};
-        }, []);
-
-        const triggerStatusMessage = useCallback((recipeId) => {
-                if (typeof window === 'undefined') {
-                        return;
-                }
-                clearStatusMessageTimeout(recipeId);
-                setStatusMessagesVisible((prev) => ({
-                        ...prev,
-                        [recipeId]: true,
-                }));
-                statusMessageTimeoutsRef.current[recipeId] = window.setTimeout(() => {
-                        setStatusMessagesVisible((prev) => ({
-                                ...prev,
-                                [recipeId]: false,
-                        }));
-                        delete statusMessageTimeoutsRef.current[recipeId];
-                }, 3000);
-        }, [clearStatusMessageTimeout]);
 
         const storeSessionId = useCallback((sessionId) => {
                 if (typeof window === 'undefined') {
@@ -95,26 +55,6 @@ export default function RecipeGeneration() {
                 }
         }, []);
 
-        const resetRecipeStateForOptions = useCallback((options) => {
-                clearAllStatusMessageTimeouts();
-                if (!Array.isArray(options)) {
-                        setRecipeStatuses({});
-                        setRecipeActionInProgress({});
-                        setStatusMessagesVisible({});
-                        return;
-                }
-                const initialStatuses = options.reduce((accumulator, recipe) => {
-                        accumulator[recipe.id] = 'pending';
-                        return accumulator;
-                }, {});
-                const initialVisibility = options.reduce((accumulator, recipe) => {
-                        accumulator[recipe.id] = false;
-                        return accumulator;
-                }, {});
-                setRecipeStatuses(initialStatuses);
-                setRecipeActionInProgress({});
-                setStatusMessagesVisible(initialVisibility);
-        }, [clearAllStatusMessageTimeouts]);
 
         const showTemporarySuccess = useCallback((message) => {
                 setSuccessMessage(message);
@@ -151,15 +91,12 @@ export default function RecipeGeneration() {
                         await finishPreparingSession(preparingSessionId);
                 } catch (finishError) {
                         console.error('Failed to finish preparing session:', finishError);
+                        throw finishError;
                 } finally {
                         setFinishingSession(false);
                         clearStoredSession();
-                        clearAllStatusMessageTimeouts();
                         setPreparingSessionId(null);
                         setRecipeOptions([]);
-                        setRecipeStatuses({});
-                        setRecipeActionInProgress({});
-                        setStatusMessagesVisible({});
                         setImageAnalysis(null);
                         setIsImagePanelOpen(true);
                         setError(null);
@@ -168,9 +105,8 @@ export default function RecipeGeneration() {
                         setImageKey('');
                         setInputMethod('text');
                         setCurrentStep(1);
-                        showTemporarySuccess('Session completed.');
                 }
-        }, [preparingSessionId, clearStoredSession, showTemporarySuccess, clearAllStatusMessageTimeouts]);
+        }, [preparingSessionId, clearStoredSession]);
 
         const handleFetchImageAnalysis = useCallback(async (sessionId) => {
                 try {
@@ -252,7 +188,6 @@ export default function RecipeGeneration() {
                 try {
                         const options = await getRecipeOptions(sessionId);
                         setRecipeOptions(options);
-                        resetRecipeStateForOptions(options);
                         goToStep(3);
                 } catch (optionsError) {
                         console.error('Failed to get recipe options:', optionsError);
@@ -271,116 +206,16 @@ export default function RecipeGeneration() {
                         setError(errorMessage);
                         setSuccessMessage(null);
                 }
-        }, [resetRecipeStateForOptions, goToStep]);
+        }, [goToStep]);
 
         const handleSaveRecipeOption = async (recipeId) => {
-                if (!preparingSessionId || recipeStatuses[recipeId] !== 'pending') {
-                        return;
-                }
-
                 setError(null);
-                setRecipeActionInProgress((prev) => ({
-                        ...prev,
-                        [recipeId]: 'save',
-                }));
-
-                let saveCompleted = false;
                 try {
                         await saveRecipe(recipeId);
-                        saveCompleted = true;
-                        await removeRecipeFromCurrent(preparingSessionId, recipeId);
-                        setRecipeStatuses((prev) => ({
-                                ...prev,
-                                [recipeId]: 'saved',
-                        }));
-                        triggerStatusMessage(recipeId);
-                        showTemporarySuccess('Recipe saved to your library.');
                 } catch (saveError) {
                         console.error('Failed to save recipe option:', saveError);
-                        if (saveCompleted) {
-                                try {
-                                        await unsaveRecipe(recipeId);
-                                } catch (undoError) {
-                                        console.error('Failed to revert recipe save after error:', undoError);
-                                }
-                        }
-                        try {
-                                await addRecipeToCurrent(preparingSessionId, recipeId);
-                        } catch (restoreError) {
-                                console.error('Failed to restore recipe to current list after save error:', restoreError);
-                        }
                         setError('Failed to save recipe. Please try again.');
-                } finally {
-                        setRecipeActionInProgress((prev) => ({
-                                ...prev,
-                                [recipeId]: null,
-                        }));
-                }
-        };
-
-        const handleDiscardRecipeOption = async (recipeId) => {
-                if (!preparingSessionId || recipeStatuses[recipeId] !== 'pending') {
-                        return;
-                }
-
-                setError(null);
-                setRecipeActionInProgress((prev) => ({
-                        ...prev,
-                        [recipeId]: 'discard',
-                }));
-                try {
-                        await removeRecipeFromCurrent(preparingSessionId, recipeId);
-                        setRecipeStatuses((prev) => ({
-                                ...prev,
-                                [recipeId]: 'discarded',
-                        }));
-                        triggerStatusMessage(recipeId);
-                } catch (discardError) {
-                        console.error('Failed to discard recipe option:', discardError);
-                        setError('Failed to discard recipe. Please try again.');
-                } finally {
-                        setRecipeActionInProgress((prev) => ({
-                                ...prev,
-                                [recipeId]: null,
-                        }));
-                }
-        };
-
-        const handleUndoRecipeStatus = async (recipeId) => {
-                const currentStatus = recipeStatuses[recipeId];
-                if (!preparingSessionId || !currentStatus || currentStatus === 'pending') {
-                        return;
-                }
-
-                clearStatusMessageTimeout(recipeId);
-                setError(null);
-                setRecipeActionInProgress((prev) => ({
-                        ...prev,
-                        [recipeId]: 'undo',
-                }));
-
-                try {
-                        if (currentStatus === 'saved') {
-                                await unsaveRecipe(recipeId);
-                        }
-                        await addRecipeToCurrent(preparingSessionId, recipeId);
-                        setRecipeStatuses((prev) => ({
-                                ...prev,
-                                [recipeId]: 'pending',
-                        }));
-                        setStatusMessagesVisible((prev) => ({
-                                ...prev,
-                                [recipeId]: false,
-                        }));
-                } catch (undoError) {
-                        console.error(`Failed to undo ${currentStatus} recipe:`, undoError);
-                        setError(`Failed to undo ${currentStatus === 'saved' ? 'save' : 'discard'}. Please try again.`);
-                        triggerStatusMessage(recipeId);
-                } finally {
-                        setRecipeActionInProgress((prev) => ({
-                                ...prev,
-                                [recipeId]: null,
-                        }));
+                        throw saveError;
                 }
         };
 
@@ -401,10 +236,6 @@ export default function RecipeGeneration() {
         useEffect(() => {
                 ensureFadeInStyles();
         }, []);
-
-        useEffect(() => () => {
-                clearAllStatusMessageTimeouts();
-        }, [clearAllStatusMessageTimeouts]);
 
         useEffect(() => {
                 if (typeof window === 'undefined') {
@@ -440,25 +271,6 @@ export default function RecipeGeneration() {
                 })();
         }, [clearStoredSession, handleGetRecipeOptions, handleFetchImageAnalysis]);
 
-        useEffect(() => {
-                if (!preparingSessionId || finishingSession) {
-                        return;
-                }
-
-                const statusValues = Object.values(recipeStatuses);
-                if (!statusValues.length) {
-                        return;
-                }
-
-                const allProcessed = statusValues.every((status) => status !== 'pending');
-                if (!allProcessed) {
-                        return;
-                }
-
-                (async () => {
-                        await handleFinishCurrentSession();
-                })();
-        }, [recipeStatuses, preparingSessionId, finishingSession, handleFinishCurrentSession]);
 
         const analysisLines = imageAnalysis?.analyzedIngredients
                 ? imageAnalysis.analyzedIngredients
@@ -554,56 +366,14 @@ export default function RecipeGeneration() {
                                         )}
 
                                         {currentStep === 3 && !loading && !error && (
-                                                <>
-                                                        <RecipeOptionsStep
-                                                                recipeOptions={recipeOptions}
-                                                                onRecipeSelect={handleRecipeSelect}
-                                                                onRegenerate={handleRegenerateRecipes}
-                                                                loading={loading}
-                                                                onSaveRecipe={handleSaveRecipeOption}
-                                                                onDiscardRecipe={handleDiscardRecipeOption}
-                                                                recipeStatuses={recipeStatuses}
-                                                                recipeActionInProgress={recipeActionInProgress}
-                                                                statusMessagesVisible={statusMessagesVisible}
-                                                                onUndoStatus={handleUndoRecipeStatus}
-                                                                sessionCompleting={finishingSession}
-                                                        />
-                                                        {imageAnalysis?.imageKey && (
-                                                                <div className="mt-8 border border-[#F5F5F5] rounded-2xl bg-[#FFF8F0] overflow-hidden">
-                                                                        <button
-                                                                                type="button"
-                                                                                className="w-full flex justify-between items-center bg-transparent border-none p-5 font-semibold text-base text-[#035035] cursor-pointer text-left hover:bg-[#FFF8F0]/50 transition-colors"
-                                                                                onClick={() => setIsImagePanelOpen((prev) => !prev)}
-                                                                                aria-expanded={isImagePanelOpen}
-                                                                                aria-controls="image-analysis-panel"
-                                                                        >
-                                                                                <span>Uploaded Image Analysis</span>
-                                                                                <svg className={`transition-transform duration-200 ${isImagePanelOpen ? 'rotate-180' : ''}`} width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                                                        <path d="M5 8L10 13L15 8" stroke="#035035" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                                                                </svg>
-                                                                        </button>
-                                                                        {isImagePanelOpen && (
-                                                                                <div id="image-analysis-panel" className="flex flex-col md:flex-row gap-6 p-5 pt-0 border-t border-[#F0E6D8]">
-                                                                                        <div className="flex-1">
-                                                                                                <img src={getImageUrl(imageAnalysis.imageKey)} alt="Uploaded ingredients" className="w-full max-h-80 object-cover rounded-xl" loading="lazy" />
-                                                                                        </div>
-                                                                                        <div className="flex-1">
-                                                                                                <h3 className="text-lg font-semibold text-[#035035] mb-3">Analyzed ingredients</h3>
-                                                                                                {analysisLines.length > 1 ? (
-                                                                                                        <ul className="list-disc pl-5 space-y-1 text-[#2D2D2D]">
-                                                                                                                {analysisLines.map((line, index) => (
-                                                                                                                        <li key={`${line}-${index}`}>{line}</li>
-                                                                                                                ))}
-                                                                                                        </ul>
-                                                                                                ) : (
-                                                                                                        <p className="text-[#2D2D2D]">{imageAnalysis.analyzedIngredients || 'No analyzed ingredients available.'}</p>
-                                                                                                )}
-                                                                                        </div>
-                                                                                </div>
-                                                                        )}
-                                                                </div>
-                                                        )}
-                                                </>
+                                                <RecipeOptionsStep
+                                                        recipeOptions={recipeOptions}
+                                                        onRegenerate={handleRegenerateRecipes}
+                                                        loading={loading}
+                                                        onSaveRecipe={handleSaveRecipeOption}
+                                                        onFinishSession={handleFinishCurrentSession}
+                                                        sessionCompleting={finishingSession}
+                                                />
                                         )}
 
                                         {currentStep === 3 && loading && (
@@ -638,7 +408,6 @@ export default function RecipeGeneration() {
                                                 <div>Current Step: {currentStep}</div>
                                                 <div>Prompt: {prompt || '(empty)'}</div>
                                                 <div>Ingredients: {ingredients || '(empty)'}</div>
-                                                <div>Image Key: {imageKey || '(empty)'}</div>
                                                 <div>Input Method: {inputMethod}</div>
                                                 <div>Session ID: {preparingSessionId || '(none)'}</div>
                                                 <div>Recipe Options: {recipeOptions.length} items</div>
