@@ -1,12 +1,15 @@
+import os
+import tempfile
 from typing import List
 
 from ...db.database import get_db
 from ...services.agent_service import AgentService
-from fastapi import APIRouter, HTTPException, Depends
-from ..schemas.recipe import GenerateRecipeRequest, RecipePreview, ImageAnalysisResponse
-from ...utils.auth import get_read_write_user_id
+from fastapi import APIRouter, File, HTTPException, Depends, UploadFile
+from ..schemas.recipe import GenerateRecipeRequest, RecipePreview
+from ...utils.auth import get_read_write_user_id, get_read_only_user_id
 from ...db.crud import recipe_crud, preparing_crud
 from sqlalchemy.ext.asyncio import AsyncSession
+from ...services.agent_service import AgentService
 
 agent_service = AgentService()
 
@@ -31,8 +34,7 @@ async def generate_recipes(request: GenerateRecipeRequest, user_id: str = Depend
         user_id, 
         request.prompt, 
         request.written_ingredients, 
-        preparing_session_id=request.preparing_session_id,
-        image_key=request.image_key
+        preparing_session_id=request.preparing_session_id
     )
 
 @router.get("/{preparing_session_id}/get_options", response_model=List[RecipePreview])
@@ -78,10 +80,13 @@ async def finish_session(preparing_session_id: int, db: AsyncSession = Depends(g
     return
 
 
-@router.get("/{preparing_session_id}/image-analysis", response_model=ImageAnalysisResponse)
-async def get_image_analysis_by_session_id(preparing_session_id: int, db: AsyncSession = Depends(get_db)):
-    """Return the uploaded image key and analyzed ingredients for a preparing session."""
-    analysis = await preparing_crud.get_image_analysis_by_session_id(db, preparing_session_id)
+@router.post("/image-analysis")
+async def get_image_analysis_by_session_id(file: UploadFile = File(...),
+                                             user_id: str = Depends(get_read_only_user_id)):
+    """Analyze an uploaded image for ingredients and associate the analysis with a preparing session."""
+    
+    body = await file.read()
+    analysis = await agent_service.analyze_ingredients(user_id, body)
     if analysis is None:
         raise HTTPException(status_code=404, detail="Preparing session not found")
     return analysis

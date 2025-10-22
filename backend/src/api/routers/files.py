@@ -10,7 +10,7 @@ from ...db.crud.bucket_base_repo import (
     generate_signed_put_url, delete_file, file_exists, list_files, verify_user_access,
 )
 from ...db.database import get_db
-from ...utils.auth import get_read_write_user_id, get_readonly_user_id
+from ...utils.auth import get_read_write_user_id, get_read_only_user_id
 from ...db.crud.bucket_base_repo import get_file_info
 
 from fastapi.responses import Response
@@ -42,6 +42,8 @@ async def upload(
         raise HTTPException(status_code=403, detail="Forbidden: Cannot upload files for other users.")
 
     # tempfile.gettempdir() works cross-platform (Windows: C:\Users\...\AppData\Local\Temp, Linux: /tmp)
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Filename is required")
     suffix = os.path.splitext(file.filename)[1]
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         body = await file.read()
@@ -133,7 +135,7 @@ async def serve_file(key: str,
 
 @router.get("/info/{key:path}")
 async def get_info(key: str, sess: BucketSession = Depends(get_bucket_session),
-        user_id: str = Depends(get_readonly_user_id)):
+        user_id: str = Depends(get_read_only_user_id)):
     """Get file information by key."""
     # Verify user access
     verify_user_access(key, user_id)
@@ -155,7 +157,7 @@ async def public_url(key: str,
 @router.post("/signed-url")
 async def signed_get(key: str, minutes: int = 60,
     sess: BucketSession = Depends(get_bucket_session),
-    user_id: str = Depends(get_readonly_user_id)):
+    user_id: str = Depends(get_read_only_user_id)):
     """Generate signed GET URL for private file access."""
 
     # Verify user access
@@ -180,7 +182,7 @@ async def signed_put(
 @router.get("/exists/{key:path}")
 async def exists(key: str,
     sess: BucketSession = Depends(get_bucket_session),
-    user_id: str = Depends(get_readonly_user_id)):
+    user_id: str = Depends(get_read_only_user_id)):
     """Check if file exists and get info."""
 
     # Verify user access

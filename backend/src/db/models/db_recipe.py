@@ -36,18 +36,20 @@ class RecipeIngredient(Base):
 
     recipe = relationship("Recipe", back_populates="ingredients")
 
+
 class PreparingSession(Base):
     """Database model for a preparing session."""
     __tablename__ = "preparing_sessions"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(String(50), ForeignKey("users.id"), nullable=False)
-    context_promts = Column(Text, nullable=False)  # Store context promts as JSON string
+
     context_suggestions = Column(Text, nullable=True)  # Store suggestions as JSON string
     current_recipes = Column(Text, nullable=True)  # Track active recipes for the session
     image_key = Column(Text, nullable=True)
     analyzed_ingredients = Column(Text, nullable=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
+
 
 class CookingSession(Base):
     """Database model for a cooking session."""

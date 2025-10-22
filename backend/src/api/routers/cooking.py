@@ -8,7 +8,7 @@ from ..schemas.recipe import (
     GenerateRecipeRequest, ChangeRecipeAIRequest, ChangeRecipeManualRequest, ChangeStateRequest,
     AskQuestionRequest, Recipe, RecipePreview, PromptHistory, CookingSession
 )
-from ...utils.auth import get_read_write_user_id, get_readonly_user_id, get_user_id_optional, get_read_write_user_token_data
+from ...utils.auth import get_read_write_user_id, get_read_only_user_id, get_user_id_optional, get_read_write_user_token_data
 from ...db.crud import cooking_crud
 from sqlalchemy.ext.asyncio import AsyncSession
 

@@ -36,11 +36,12 @@ class AgentService:
         self.image_agent = ImageAgent(self.app_name, self.session_service)
         self.chat_agent = ChatAgent(self.app_name, self.session_service)
 
-    async def analyze_ingredients(self, user_id: str, image_key: str):
-        async with get_async_bucket_session() as bs:
-            image: bytes = await get_file(bs, image_key)
+    async def analyze_ingredients(self, user_id: str, file: bytes) -> str:
+        """
+        Analyze the ingredients in the uploaded image file.
+        """
 
-        query = create_docs_query("Analyze this image for food items.", [image])
+        query = create_docs_query("Analyze this image for food items.", [file])
         response = await self.image_analyzer_agent.run(
             user_id=user_id,
             state={},
@@ -164,3 +165,5 @@ class AgentService:
             response,
         )
         return response
+
+
