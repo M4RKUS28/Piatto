@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional
 from contextlib import asynccontextmanager
 from urllib.parse import quote_plus
 
@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import text
 from sqlalchemy.pool import NullPool
-
+from sqlalchemy.exc import SQLAlchemyError
 from ..config import settings
 
 logger = logging.getLogger(__name__)
@@ -34,12 +34,12 @@ async def _create_cloud_engine_with_retry(max_retries=5, wait_seconds=2):
         f"mysql+aiomysql://{settings.DB_USER}:{safe_password}"
         f"@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
     )
-    logger.info(f"Connecting to Cloud SQL: {mysql_url}")
+    logger.info("Connecting to Cloud SQL: %s", mysql_url)
 
-    last_exc = None
+    last_exc: Optional[Exception] = None
     for attempt in range(1, max_retries + 1):
         try:
-            engine = create_async_engine(
+            new_engine = create_async_engine(
                 mysql_url,
                 pool_recycle=settings.DB_POOL_RECYCLE,
                 pool_pre_ping=settings.DB_POOL_PRE_PING,
@@ -47,18 +47,19 @@ async def _create_cloud_engine_with_retry(max_retries=5, wait_seconds=2):
                 max_overflow=settings.DB_MAX_OVERFLOW,
                 connect_args={"connect_timeout": settings.DB_CONNECT_TIMEOUT},
             )
-            async with engine.connect() as conn:
+            async with new_engine.connect() as conn:
                 await conn.execute(text("SELECT 1"))
-            logger.info(f"✅ Cloud SQL connected on attempt {attempt}")
-            return engine
-        except Exception as e:
+            logger.info("✅ Cloud SQL connected on attempt %d", attempt)
+            return new_engine
+        except SQLAlchemyError as e:
             last_exc = e
-            logger.warning(f"Retry {attempt}/{max_retries} failed: {e}")
+            logger.warning("Retry %d/%d failed: %s", attempt, max_retries, e)
             await asyncio.sleep(wait_seconds)
-    raise last_exc
+    raise last_exc if last_exc else Exception("Failed to connect to Cloud SQL")
 
 # ✅ Select engine based on DATABASE_URL
 async def get_engine():
+    """Get or create the global database engine based on configuration."""
     global engine
     if engine is None:
         if settings.DATABASE_URL and settings.DATABASE_URL.startswith("sqlite"):
@@ -76,6 +77,7 @@ async_session_factory = sessionmaker(
     autoflush=False,
     autocommit=False,
 )
+
 
 # ✅ FastAPI dependency
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
