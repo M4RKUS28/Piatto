@@ -2,15 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   PiHeart, PiShareNetwork, PiPrinter, PiClock,
-  PiCookingPot, PiMinus, PiPlus, PiCow, PiTrash
+  PiCookingPot, PiMinus, PiPlus, PiCow
 } from 'react-icons/pi';
-import { getRecipeById, saveRecipe, deleteRecipe } from '../../api/recipeApi';
-import { removeRecipeFromCurrent } from '../../api/preparingApi';
+import { getRecipeById } from '../../api/recipeApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorMessage from '../../components/ErrorMessage';
 import { getImageUrl } from '../../utils/imageUtils';
-
-const SESSION_STORAGE_KEY = 'piatto_preparing_session_id';
 
 const recipeData = {
   baseServings: 4,
@@ -56,12 +53,6 @@ const Recipe = ({ recipeId }) => {
   const [error, setError] = useState(null);
   const [servings, setServings] = useState(4);
   const [activeTab, setActiveTab] = useState('ingredients');
-  const [saveLoading, setSaveLoading] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const [saveError, setSaveError] = useState(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  const [deleteError, setDeleteError] = useState(null);
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -101,96 +92,6 @@ const Recipe = ({ recipeId }) => {
 
   const handleServingChange = (increment) => {
     setServings(prev => Math.max(1, prev + increment));
-  };
-
-  const handleSaveRecipe = async () => {
-    setSaveLoading(true);
-    setSaveError(null);
-    setSaveSuccess(false);
-
-    try {
-      // Save the recipe
-      await saveRecipe(recipeId);
-
-      // Check if there's an active preparing session
-      const storedSessionId = localStorage.getItem(SESSION_STORAGE_KEY);
-
-      if (storedSessionId) {
-        const sessionId = Number(storedSessionId);
-        if (sessionId && !Number.isNaN(sessionId)) {
-          // Remove from current session and navigate back to recipe generation
-          try {
-            await removeRecipeFromCurrent(sessionId, recipeId);
-            // Navigate back to recipe generation page
-            navigate('/app/generate');
-            return;
-          } catch (removeError) {
-            console.error('Failed to remove recipe from current session:', removeError);
-            // Continue with showing success message if removal fails
-          }
-        }
-      }
-
-      // If no active session, just show success message
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (err) {
-      console.error('Failed to save recipe:', err);
-
-      if (err.response?.status >= 500) {
-        setSaveError('Server error. Please try again later.');
-      } else if (!err.response) {
-        setSaveError('Network error. Please check your connection.');
-      } else {
-        setSaveError('Failed to save recipe. Please try again.');
-      }
-    } finally {
-      setSaveLoading(false);
-    }
-  };
-
-  const handleDeleteRecipe = async () => {
-    setDeleteLoading(true);
-    setDeleteError(null);
-
-    try {
-      await deleteRecipe(recipeId);
-
-      // Check if there's an active preparing session
-      const storedSessionId = localStorage.getItem(SESSION_STORAGE_KEY);
-
-      if (storedSessionId) {
-        const sessionId = Number(storedSessionId);
-        if (sessionId && !Number.isNaN(sessionId)) {
-          // Remove from current session and navigate back to recipe generation
-          try {
-            await removeRecipeFromCurrent(sessionId, recipeId);
-          } catch (removeError) {
-            console.error('Failed to remove recipe from current session:', removeError);
-            // Continue with navigation even if removal fails
-          }
-          // Navigate back to recipe generation page
-          navigate('/app/generate');
-          return;
-        }
-      }
-
-      // If no active session, navigate to library
-      navigate('/app/library');
-    } catch (err) {
-      console.error('Failed to delete recipe:', err);
-
-      if (err.response?.status >= 500) {
-        setDeleteError('Server error. Please try again later.');
-      } else if (!err.response) {
-        setDeleteError('Network error. Please check your connection.');
-      } else {
-        setDeleteError('Failed to delete recipe. Please try again.');
-      }
-      setShowDeleteConfirm(false);
-    } finally {
-      setDeleteLoading(false);
-    }
   };
 
   const NutritionLabel = ({ servingCount }) => (
@@ -316,13 +217,25 @@ const Recipe = ({ recipeId }) => {
   return (
     <div className="h-full overflow-y-auto no-scrollbar">
       <div className="p-4 sm:p-6 md:p-8">
-        {/* Header */}
-        <h1 className="font-poppins font-bold text-2xl sm:text-3xl md:text-4xl text-[#035035] break-words">
-          {recipe.title}
-        </h1>
-        <p className="mt-2 text-base sm:text-lg text-[#2D2D2D]/80 break-words">
-          {recipe.description}
-        </p>
+        {/* Header with Share and Print buttons */}
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex-1">
+            <h1 className="font-poppins font-bold text-xl sm:text-2xl text-[#035035] break-words">
+              {recipe.title}
+            </h1>
+            <p className="mt-1 text-sm sm:text-base text-[#2D2D2D]/80 break-words">
+              {recipe.description}
+            </p>
+          </div>
+          <div className="flex gap-2 flex-shrink-0">
+            <button className="p-3 border-2 border-[#A8C9B8] rounded-full text-[#035035] hover:bg-[#A8C9B8]/30 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
+              <PiShareNetwork className="h-5 w-5" />
+            </button>
+            <button className="p-3 border-2 border-[#A8C9B8] rounded-full text-[#035035] hover:bg-[#A8C9B8]/30 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
+              <PiPrinter className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
 
         {/* Image */}
         <div className="relative mt-4 sm:mt-6 rounded-2xl overflow-hidden shadow-sm aspect-square max-w-full">
@@ -334,94 +247,6 @@ const Recipe = ({ recipeId }) => {
           />
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2 sm:gap-3 mt-4 sm:mt-6 flex-wrap">
-          <button
-            onClick={handleSaveRecipe}
-            disabled={saveLoading || saveSuccess}
-            className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 bg-[#FF9B7B] text-white font-poppins font-semibold rounded-full shadow-lg shadow-[#FF9B7B]/30 hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 min-h-[44px] text-sm sm:text-base"
-          >
-            <PiHeart className="w-5 h-5" />
-            <span className="hidden xs:inline">{saveLoading ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save Recipe'}</span>
-            <span className="xs:hidden">{saveLoading ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save'}</span>
-          </button>
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 border-2 border-red-500 text-red-500 font-poppins font-semibold rounded-full hover:bg-red-50 transition-colors min-h-[44px] text-sm sm:text-base"
-          >
-            <PiTrash className="w-5 h-5" />
-            <span>Delete</span>
-          </button>
-          <button className="p-3 sm:p-4 border-2 border-[#A8C9B8] rounded-full text-[#035035] hover:bg-[#A8C9B8]/30 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
-            <PiShareNetwork className="h-5 w-5" />
-          </button>
-          <button className="p-3 sm:p-4 border-2 border-[#A8C9B8] rounded-full text-[#035035] hover:bg-[#A8C9B8]/30 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
-            <PiPrinter className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Save Success Message */}
-        {saveSuccess && (
-          <div className="mt-4 p-4 bg-[#A8C9B8]/20 border border-[#A8C9B8] rounded-lg text-[#035035] font-medium">
-            Recipe saved successfully!
-          </div>
-        )}
-
-        {/* Save Error Message */}
-        {saveError && (
-          <div className="mt-4 p-4 bg-[#FF9B7B]/20 border border-[#FF9B7B] rounded-lg text-[#035035]">
-            <p className="font-medium">{saveError}</p>
-            <button
-              onClick={handleSaveRecipe}
-              className="mt-2 text-sm underline hover:no-underline"
-            >
-              Try again
-            </button>
-          </div>
-        )}
-
-        {/* Delete Error Message */}
-        {deleteError && (
-          <div className="mt-4 p-4 bg-[#FF9B7B]/20 border border-[#FF9B7B] rounded-lg text-[#035035]">
-            <p className="font-medium">{deleteError}</p>
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="mt-2 text-sm underline hover:no-underline"
-            >
-              Try again
-            </button>
-          </div>
-        )}
-
-        {/* Delete Confirmation Dialog */}
-        {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl p-5 sm:p-6 max-w-md w-full shadow-2xl mx-4">
-              <h3 className="font-poppins font-bold text-xl sm:text-2xl text-[#035035] mb-3 sm:mb-4 break-words">
-                Delete Recipe?
-              </h3>
-              <p className="text-sm sm:text-base text-[#2D2D2D]/80 mb-5 sm:mb-6 break-words">
-                Are you sure you want to delete "{recipe.title}"? This action cannot be undone.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
-                <button
-                  onClick={() => setShowDeleteConfirm(false)}
-                  disabled={deleteLoading}
-                  className="px-6 py-3 border-2 border-[#A8C9B8] text-[#035035] font-poppins font-semibold rounded-full hover:bg-[#A8C9B8]/30 transition-colors disabled:opacity-50 min-h-[44px] order-2 sm:order-1"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDeleteRecipe}
-                  disabled={deleteLoading}
-                  className="px-6 py-3 bg-red-500 text-white font-poppins font-semibold rounded-full hover:bg-red-600 transition-colors disabled:opacity-50 min-h-[44px] order-1 sm:order-2"
-                >
-                  {deleteLoading ? 'Deleting...' : 'Delete'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Recipe Info */}
         <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center mt-6 sm:mt-8 py-4 border-y border-[#F5F5F5]">
