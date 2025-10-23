@@ -15,7 +15,7 @@ export default function OAuthLoginFailedPage() {
     <div className="flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-md min-w-[400px] relative z-10 mx-auto">
         {/* Error Card */}
-        <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#F5F5F5]">
+        <div className="w-full bg-white rounded-3xl shadow-xl p-8 border border-[#F5F5F5]">
           <div className="text-center mb-6">
             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="w-12 h-12 text-red-600" />

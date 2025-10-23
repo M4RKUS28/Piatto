@@ -87,7 +87,7 @@ export default function RegisterPage() {
           <p className="text-[#2D2D2D]">Start your culinary adventure today</p>
         </div>
         {/* Registration Form Card */}
-        <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#F5F5F5]">
+        <div className="w-full bg-white rounded-3xl shadow-xl p-8 border border-[#F5F5F5]">
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Error Message */}
             {error && (

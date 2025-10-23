@@ -42,14 +42,14 @@ export default function LoginPage() {
 
   return (
     <div className="py-12 min-h-full flex items-center justify-center px-6">
-      <div className="w-full max-w-md min-w-[400px] mx-auto relative z-10">
+      <div className="w-full max-w-md min-w-[600px] mx-auto relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-[#035035] mb-2">Welcome Back!</h1>
           <p className="text-[#2D2D2D]">Sign in to continue your culinary journey</p>
         </div>
         {/* Login Form Card */}
-        <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#F5F5F5]">
+        <div className="w-full bg-white rounded-3xl shadow-xl p-8 border border-[#F5F5F5]">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Error Message */}
             {error && (

@@ -66,7 +66,7 @@ export default function OAuthCallbackPage() {
   return (
     <div className="flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-md min-w-[400px] relative z-10 mx-auto">
-        <div className="bg-white rounded-3xl shadow-xl p-12 border border-[#F5F5F5] text-center">
+        <div className="w-full bg-white rounded-3xl shadow-xl p-12 border border-[#F5F5F5] text-center">
           {status === 'processing' && (
             <>
               <div className="w-16 h-16 border-4 border-[#A8C9B8] border-t-[#035035] rounded-full animate-spin mx-auto mb-6"></div>
