@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Search, Plus, Trash2 } from 'lucide-react';
-import { getUserCollections, getCollectionsForRecipe, updateCollectionRecipes, createCollection } from '../api/collectionApi';
+import { getUserCollections, getCollectionsForRecipe, getCollectionById, updateCollectionRecipes, createCollection } from '../api/collectionApi';
 import { deleteRecipe } from '../api/recipeApi';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
@@ -71,20 +71,20 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
     setError(null);
 
     try {
-      // Update each collection that changed
-      const collectionsToUpdate = new Map();
+      // Process each collection that changed
+      const updatePromises = [];
 
       // Find collections to add recipe to
       for (const collectionId of selectedCollectionIds) {
         if (!initialCollectionIds.has(collectionId)) {
           // Need to add recipe to this collection
-          const collection = collections.find(c => c.id === collectionId);
-          if (collection) {
-            if (!collectionsToUpdate.has(collectionId)) {
-              collectionsToUpdate.set(collectionId, new Set(collection.recipe_ids || []));
-            }
-            collectionsToUpdate.get(collectionId).add(recipeId);
-          }
+          // Get the current collection with all recipe_ids
+          const collection = await getCollectionById(collectionId);
+          const currentRecipeIds = collection.recipe_ids || [];
+
+          // Add this recipe if not already included
+          const updatedRecipeIds = [...new Set([...currentRecipeIds, recipeId])];
+          updatePromises.push(updateCollectionRecipes(collectionId, updatedRecipeIds));
         }
       }
 
@@ -92,20 +92,12 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
       for (const collectionId of initialCollectionIds) {
         if (!selectedCollectionIds.has(collectionId)) {
           // Need to remove recipe from this collection
-          const collection = collections.find(c => c.id === collectionId);
-          if (collection) {
-            if (!collectionsToUpdate.has(collectionId)) {
-              collectionsToUpdate.set(collectionId, new Set(collection.recipe_ids || []));
-            }
-            collectionsToUpdate.get(collectionId).delete(recipeId);
-          }
+          const collection = await getCollectionById(collectionId);
+          const currentRecipeIds = collection.recipe_ids || [];
+          const updatedRecipeIds = currentRecipeIds.filter(id => id !== recipeId);
+          updatePromises.push(updateCollectionRecipes(collectionId, updatedRecipeIds));
         }
       }
-
-      // Execute updates
-      const updatePromises = Array.from(collectionsToUpdate.entries()).map(([collectionId, recipeIds]) =>
-        updateCollectionRecipes(collectionId, Array.from(recipeIds))
-      );
 
       await Promise.all(updatePromises);
 

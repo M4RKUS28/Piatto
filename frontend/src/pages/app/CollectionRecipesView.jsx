@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Search, Clock, Users, Filter, ArrowLeft, FolderOpen } from 'lucide-react';
+import { Search, Clock, Users, Filter, ArrowLeft } from 'lucide-react';
 import { getCollectionById } from '../../api/collectionApi';
 import { deleteRecipe } from '../../api/recipeApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -8,6 +8,7 @@ import ErrorMessage from '../../components/ErrorMessage';
 import EmptyState from '../../components/EmptyState';
 import RecipeCardMenu from '../../components/RecipeCardMenu';
 import EditCollectionsModal from '../../components/EditCollectionsModal';
+import CollectionImageCollage from '../../components/CollectionImageCollage';
 import { getImageUrl } from '../../utils/imageUtils';
 
 export default function CollectionRecipesView() {
@@ -113,11 +114,16 @@ export default function CollectionRecipesView() {
           </button>
 
           {collection && (
-            <div className="flex items-start gap-4 mb-4">
-              <div className="bg-[#035035]/10 p-4 rounded-2xl">
-                <FolderOpen className="w-8 h-8 text-[#035035]" />
+            <div className="flex flex-col md:flex-row items-start gap-4 mb-4">
+              {/* Collection Image Collage */}
+              <div className="w-full md:w-48 h-48 flex-shrink-0">
+                <CollectionImageCollage
+                  imageUrls={recipes.slice(0, 4).map(r => r.image).filter(img => img.startsWith('http') || img.startsWith('/'))}
+                />
               </div>
-              <div>
+
+              {/* Collection Info */}
+              <div className="flex-1">
                 <h1 className="text-3xl sm:text-4xl font-bold text-[#035035] mb-2">{collection.name}</h1>
                 {collection.description && (
                   <p className="text-base text-[#2D2D2D] opacity-60">{collection.description}</p>

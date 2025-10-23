@@ -28,6 +28,7 @@ class CollectionPreview(BaseModel):
     owner_id: str
     created_at: datetime
     recipe_count: int = 0
+    preview_image_urls: List[str] = []
 
     class Config:
         from_attributes = True

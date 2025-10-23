@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Clock, Users, FolderOpen, Plus } from 'lucide-react';
-import { getRecipeById, getUserRecipes, deleteRecipe } from '../../api/recipeApi';
+import { getUserRecipes, deleteRecipe } from '../../api/recipeApi';
 import { getUserCollections, createCollection } from '../../api/collectionApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorMessage from '../../components/ErrorMessage';
 import RecipeCardMenu from '../../components/RecipeCardMenu';
 import EditCollectionsModal from '../../components/EditCollectionsModal';
+import CollectionImageCollage from '../../components/CollectionImageCollage';
 import { getImageUrl } from '../../utils/imageUtils';
 
 export default function RecipeLibrary() {
@@ -22,7 +23,6 @@ export default function RecipeLibrary() {
   const [newCollectionName, setNewCollectionName] = useState('');
   const [newCollectionDescription, setNewCollectionDescription] = useState('');
   const [creatingCollection, setCreatingCollection] = useState(false);
-  const navigate = useNavigate();
 
   const fetchRecipes = async () => {
     setLoading(true);
@@ -266,21 +266,22 @@ export default function RecipeLibrary() {
                     <Link
                       to={`/app/collection/${collection.id}`}
                       key={collection.id}
-                      className="bg-white rounded-2xl border border-[#F5F5F5] p-6 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer min-h-[44px]"
+                      className="bg-white rounded-2xl border border-[#F5F5F5] overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer"
                     >
-                      <div className="flex items-start gap-4">
-                        <div className="bg-[#035035]/10 p-3 rounded-xl">
-                          <FolderOpen className="w-6 h-6 text-[#035035]" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="text-lg font-bold text-[#2D2D2D] mb-1">{collection.name}</h3>
-                          {collection.description && (
-                            <p className="text-sm text-[#2D2D2D] opacity-60 mb-2 line-clamp-2">{collection.description}</p>
-                          )}
-                          <p className="text-xs text-[#035035] font-semibold">
-                            {collection.recipe_count} {collection.recipe_count === 1 ? 'Rezept' : 'Rezepte'}
-                          </p>
-                        </div>
+                      {/* Image Collage */}
+                      <div className="h-48 bg-[#FFF8F0]">
+                        <CollectionImageCollage imageUrls={collection.preview_image_urls || []} />
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-6">
+                        <h3 className="text-lg font-bold text-[#2D2D2D] mb-1">{collection.name}</h3>
+                        {collection.description && (
+                          <p className="text-sm text-[#2D2D2D] opacity-60 mb-2 line-clamp-2">{collection.description}</p>
+                        )}
+                        <p className="text-xs text-[#035035] font-semibold">
+                          {collection.recipe_count} {collection.recipe_count === 1 ? 'Rezept' : 'Rezepte'}
+                        </p>
                       </div>
                     </Link>
                   ))}
