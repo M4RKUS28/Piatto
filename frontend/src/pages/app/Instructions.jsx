@@ -1,502 +1,344 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from 'react';
 import Lottie from 'lottie-react';
+import { useTimer } from 'react-timer-hook';
 
-// ============================================================================
-// SAMPLE DATA - Replace this with your actual recipe instructions
-// ============================================================================
-const sampleInstructions = [
+// --- Mock Data ---
+const mockInstructions = [
   {
-    id: 1,
-    title: "Boil the Water",
-    instruction: "Bring a large pot of salted water to a rolling boil. Use plenty of water to give the pasta room to move freely.",
-    duration: 300, // 5 minutes in seconds
-    animation: "boil_water",
-    tips: "Use about 4-5 quarts of water and 2 tablespoons of salt",
-    heatLevel: "high",
-    needsTimer: true
+    heading: 'Chop your vegetables',
+    description: 'Wash and dry your vegetables, then chop them into bite-sized pieces using a big knife. Aim for even sizes so they cook uniformly.',
+    animationFile: 'big_knife.json'
   },
   {
-    id: 2,
-    title: "Prepare the Meat",
-    instruction: "Heat olive oil in a large pan over medium-high heat. Add the ground beef and break it up with a wooden spoon. Cook until browned all over.",
-    duration: 480,
-    animation: "fry_in_pan",
-    tips: "Don't move the meat too much at first - let it develop a nice crust",
-    heatLevel: "medium",
-    needsTimer: true
+    heading: 'Start the pan and heat some oil',
+    description: 'Place a large pan on medium-high heat and add a drizzle of olive oil. Wait until it shimmers — this means it’s hot enough to start cooking.',
+    animationFile: 'fire_in_pan.json'
   },
   {
-    id: 3,
-    title: "Add Aromatics",
-    instruction: "Add the chopped onions and minced garlic to the pan. Sauté until the onions become translucent and fragrant.",
-    duration: 240,
-    animation: "let_cook_and_stirr",
-    tips: "If the garlic browns too quickly, reduce the heat",
-    heatLevel: "medium",
-    needsTimer: true
+    heading: 'Fry the vegetables',
+    description: 'Add your chopped vegetables to the hot pan. Fry them for a few minutes until they start to soften and get a light golden color.',
+    animationFile: 'fry_in_pan.json'
   },
   {
-    id: 4,
-    title: "Build the Sauce",
-    instruction: "Stir in the tomato paste and cook for 2 minutes. Then add crushed tomatoes, beef broth, oregano, and basil. Season with salt and pepper.",
-    duration: 180,
-    animation: "let_cook_and_stirr",
-    tips: "Cooking the tomato paste removes the raw taste",
-    heatLevel: "medium",
-    needsTimer: false
+    heading: 'Let it cook and stir occasionally',
+    description: 'Lower the heat slightly, cover partially, and let the veggies cook through while stirring every couple of minutes to prevent sticking.',
+    animationFile: 'let_cook_and_stirr.json',
+    timer: 300
   },
   {
-    id: 5,
-    title: "Simmer the Sauce",
-    instruction: "Reduce heat to low and let the sauce simmer gently, stirring occasionally. This allows the flavors to meld together beautifully.",
-    duration: 900,
-    animation: "steaming_with_lid",
-    tips: "The longer you simmer, the richer the sauce becomes",
-    heatLevel: "low",
-    needsTimer: true
+    heading: 'Steam for tenderness',
+    description: 'Add a splash of water and cover the pan fully with a lid to trap steam. Let it steam for 3–5 minutes until everything is tender and fragrant.',
+    animationFile: 'steaming_with_lid.json',
+    timer: 240
   },
   {
-    id: 6,
-    title: "Cook the Pasta",
-    instruction: "Add the spaghetti to the boiling water and cook according to package directions until al dente. Reserve 1 cup of pasta water before draining.",
-    duration: 540,
-    animation: "boil_water",
-    tips: "Test pasta 1-2 minutes before package time",
-    heatLevel: "high",
-    needsTimer: true
+    heading: 'Combine with cooked pasta and bake',
+    description: 'Mix your cooked pasta with the veggies, toss everything with a bit of cheese or sauce, and transfer to a baking dish. Bake in a preheated oven until bubbling and golden.',
+    animationFile: 'oven_convect.json'
   },
   {
-    id: 7,
-    title: "Combine & Serve",
-    instruction: "Drain the pasta and add it to the sauce. Toss well to coat every strand. Add pasta water if needed. Serve immediately with fresh basil and Parmesan.",
-    duration: 120,
-    animation: "let_cook_and_stirr",
-    tips: "The starchy pasta water helps the sauce cling to the noodles",
-    heatLevel: "off",
-    needsTimer: false
+    heading: 'Reheat leftovers easily',
+    description: 'If you have leftovers, place a portion in the microwave and heat until warm throughout. Perfect for an easy next-day meal!',
+    animationFile: 'microwave.json'
   }
 ];
 
-// ============================================================================
-// COOKING INSTRUCTIONS COMPONENT
-// ============================================================================
-const CookingInstructions = ({ instructions = sampleInstructions }) => {
-  const [activeStep, setActiveStep] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState(new Set());
-  const [timerActive, setTimerActive] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(0);
-  const [animations, setAnimations] = useState({});
-  const timerIntervalRef = useRef(null);
-  const stepRefs = useRef([]);
+// --- Configuration ---
+const CURVE_AMOUNT = 180;
 
-  const progressPercentage = (completedSteps.size / instructions.length) * 100;
+// Calculate responsive circle radius based on viewport width
+const getCircleRadius = () => {
+  const width = window.innerWidth;
+  // Base size: 36px for mobile (320px), scales up to 60px for large screens (1920px)
+  const minRadius = 36;
+  const maxRadius = 60;
+  const minWidth = 320;
+  const maxWidth = 1920;
 
-  // Load animations
-  useEffect(() => {
-    const loadAnimations = async () => {
-      const animFiles = [
-        'boil_water',
-        'fire_in_pan',
-        'fry_in_pan',
-        'let_cook_and_stirr',
-        'microwave',
-        'oven_convect',
-        'steaming_with_lid'
-      ];
+  const radius = minRadius + ((width - minWidth) / (maxWidth - minWidth)) * (maxRadius - minRadius);
+  return Math.max(minRadius, Math.min(maxRadius, radius));
+};
 
-      const loaded = {};
-      for (const file of animFiles) {
-        try {
-          const response = await fetch(`/lottie-animations/${file}.json`);
-          loaded[file] = await response.json();
-        } catch (error) {
-          console.error(`Failed to load ${file}:`, error);
-        }
-      }
-      setAnimations(loaded);
-    };
+// --- StepCircle Component ---
+const StepCircle = ({ animationFile, circleRadius }) => {
+  const [animationData, setAnimationData] = React.useState(null);
 
-    loadAnimations();
-  }, []);
-
-  // Timer logic
-  useEffect(() => {
-    if (timerActive && timeRemaining > 0) {
-      timerIntervalRef.current = setInterval(() => {
-        setTimeRemaining(prev => {
-          if (prev <= 1) {
-            setTimerActive(false);
-            playTimerComplete();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else {
-      clearInterval(timerIntervalRef.current);
-    }
-
-    return () => clearInterval(timerIntervalRef.current);
-  }, [timerActive, timeRemaining]);
-
-  const playTimerComplete = () => {
-    if ('vibrate' in navigator) {
-      navigator.vibrate([200, 100, 200]);
-    }
-  };
-
-  const handleStepClick = (index) => {
-    setActiveStep(index);
-    setTimerActive(false);
-    setTimeRemaining(0);
-
-    // Scroll to step
-    stepRefs.current[index]?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'center'
-    });
-  };
-
-  const startTimer = () => {
-    const step = instructions[activeStep];
-    if (step.duration) {
-      setTimeRemaining(step.duration);
-      setTimerActive(true);
-    }
-  };
-
-  const completeStep = () => {
-    const newCompleted = new Set(completedSteps);
-    newCompleted.add(activeStep);
-    setCompletedSteps(newCompleted);
-    setTimerActive(false);
-    setTimeRemaining(0);
-
-    // Move to next step if available
-    if (activeStep < instructions.length - 1) {
-      setTimeout(() => {
-        setActiveStep(activeStep + 1);
-        stepRefs.current[activeStep + 1]?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-      }, 500);
-    }
-  };
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const getStepStatus = (index) => {
-    if (completedSteps.has(index)) return 'completed';
-    if (index === activeStep) return 'active';
-    if (index < activeStep) return 'available';
-    return 'locked';
-  };
-
-  const heatIcons = {
-    high: '🔥',
-    medium: '🔶',
-    low: '✨',
-    off: '⭕'
-  };
+  React.useEffect(() => {
+    fetch(`/lottie-animations/${animationFile}`)
+      .then((response) => response.json())
+      .then((data) => setAnimationData(data))
+      .catch((error) => console.error("Error loading Lottie animation:", error));
+  }, [animationFile]);
 
   return (
-    <div className="h-full overflow-y-auto bg-[#FFF8F0] relative">
-      {/* Fixed Header with Progress */}
-      <div className="sticky top-0 z-20 bg-gradient-to-br from-[#035035] to-[#024a2f] text-white px-6 py-6 shadow-lg">
-        <div className="max-w-3xl mx-auto">
-          <div className="flex items-center justify-between mb-3">
-            <h1 className="font-poppins font-bold text-2xl">Cooking Path</h1>
-            <div className="flex items-center gap-2">
-              <span className="text-sm opacity-90">
-                {completedSteps.size}/{instructions.length}
-              </span>
-              <div className="w-12 h-12 rounded-full bg-[#FF9B7B] flex items-center justify-center font-bold text-lg shadow-lg">
-                {completedSteps.size}
-              </div>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="w-full h-4 bg-white/20 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-[#FF9B7B] rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPercentage}%` }}
-              transition={{ type: "spring", stiffness: 100, damping: 20 }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Duolingo-style Path */}
-      <div className="max-w-3xl mx-auto px-6 py-8 relative">
-        {/* Vertical Dashed Line */}
-        <div className="absolute left-[calc(50%-1px)] top-0 bottom-0 w-0.5 border-l-4 border-dashed border-[#A8C9B8]"
-             style={{ zIndex: 0 }} />
-
-        {/* Steps */}
-        <div className="relative space-y-12" style={{ zIndex: 1 }}>
-          {instructions.map((step, index) => {
-            const status = getStepStatus(index);
-            const isActive = index === activeStep;
-            const isCompleted = completedSteps.has(index);
-            const isLocked = status === 'locked';
-
-            return (
-              <motion.div
-                key={step.id}
-                ref={el => stepRefs.current[index] = el}
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="relative"
-              >
-                {/* Step Card */}
-                <motion.div
-                  onClick={() => !isLocked && handleStepClick(index)}
-                  whileHover={{ scale: isLocked ? 1 : 1.02 }}
-                  whileTap={{ scale: isLocked ? 1 : 0.98 }}
-                  className={`relative ${
-                    isLocked ? 'cursor-not-allowed' : 'cursor-pointer'
-                  }`}
-                >
-                  {/* Card Container */}
-                  <div className={`relative bg-white rounded-3xl shadow-xl overflow-hidden transition-all duration-500 ${
-                    isActive 
-                      ? 'ring-4 ring-[#FF9B7B] shadow-2xl' 
-                      : isCompleted
-                      ? 'ring-2 ring-[#035035]'
-                      : isLocked
-                      ? 'opacity-40 grayscale'
-                      : 'hover:shadow-2xl'
-                  }`}>
-
-                    {/* Step Number Circle - Positioned on the left edge */}
-                    <div className="absolute -left-6 top-8 z-10">
-                      <motion.div
-                        animate={isActive ? { scale: [1, 1.1, 1] } : {}}
-                        transition={{ repeat: isActive ? Infinity : 0, duration: 2 }}
-                        className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg ${
-                          isCompleted
-                            ? 'bg-[#035035] text-white'
-                            : isActive
-                            ? 'bg-[#FF9B7B] text-white'
-                            : isLocked
-                            ? 'bg-[#F5F5F5] text-gray-400'
-                            : 'bg-white text-[#035035] border-4 border-[#035035]'
-                        }`}
-                      >
-                        {isCompleted ? '✓' : isLocked ? '🔒' : index + 1}
-                      </motion.div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex gap-4 p-6">
-                      {/* Left: Small Lottie Animation */}
-                      {step.animation && animations[step.animation] && !isLocked && (
-                        <div className="flex-shrink-0 w-20 h-20">
-                          <Lottie
-                            animationData={animations[step.animation]}
-                            loop={isActive}
-                            autoplay={isActive}
-                            style={{ width: '100%', height: '100%' }}
-                          />
-                        </div>
-                      )}
-
-                      {/* Right: Text Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-4 mb-2">
-                          <h3 className={`font-poppins font-bold text-xl ${
-                            isActive ? 'text-[#035035]' : 'text-[#2D2D2D]'
-                          }`}>
-                            {step.title}
-                          </h3>
-
-                          {step.heatLevel && !isLocked && (
-                            <span className="text-2xl flex-shrink-0">
-                              {heatIcons[step.heatLevel]}
-                            </span>
-                          )}
-                        </div>
-
-                        <p className={`text-base leading-relaxed mb-3 ${
-                          isActive ? 'text-[#2D2D2D]' : 'text-[#2D2D2D]/70'
-                        }`}>
-                          {step.instruction}
-                        </p>
-
-                        {/* Pro Tip */}
-                        {step.tips && isActive && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            className="bg-[#FFF8F0] border-l-4 border-[#FF9B7B] p-3 rounded-r-xl mb-3"
-                          >
-                            <p className="text-sm">
-                              <span className="font-semibold text-[#035035]">💡 </span>
-                              {step.tips}
-                            </p>
-                          </motion.div>
-                        )}
-
-                        {/* Timer - Only for active step with needsTimer */}
-                        {isActive && step.needsTimer && step.duration && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className={`mt-4 p-4 rounded-2xl ${
-                              timerActive 
-                                ? 'bg-gradient-to-br from-[#FF9B7B] to-[#ff8a64] text-white' 
-                                : 'bg-[#F5F5F5] text-[#2D2D2D]'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xl">⏱️</span>
-                                <span className="font-semibold text-sm">
-                                  {timerActive ? 'Timer Running' : `${Math.floor(step.duration / 60)} min timer`}
-                                </span>
-                              </div>
-
-                              {timerActive && (
-                                <div className="text-2xl font-bold">
-                                  {formatTime(timeRemaining)}
-                                </div>
-                              )}
-                            </div>
-
-                            {!timerActive && (
-                              <motion.button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  startTimer();
-                                }}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="w-full py-2 bg-[#035035] text-white rounded-xl font-semibold hover:shadow-lg transition-all"
-                              >
-                                Start Timer
-                              </motion.button>
-                            )}
-
-                            {timerActive && (
-                              <div className="flex gap-2">
-                                <motion.button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setTimerActive(false);
-                                  }}
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  className="flex-1 py-2 bg-white/20 rounded-xl font-semibold hover:bg-white/30 transition-all"
-                                >
-                                  Pause
-                                </motion.button>
-                              </div>
-                            )}
-                          </motion.div>
-                        )}
-
-                        {/* Complete Button - Only for active step */}
-                        {isActive && !isCompleted && (
-                          <motion.button
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              completeStep();
-                            }}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="mt-4 w-full py-3 bg-[#035035] text-white rounded-2xl font-bold hover:shadow-xl transition-all"
-                          >
-                            Complete Step
-                          </motion.button>
-                        )}
-
-                        {/* Completed Badge */}
-                        {isCompleted && (
-                          <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                            className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-[#035035] text-white rounded-full font-semibold text-sm"
-                          >
-                            ✓ Completed
-                          </motion.div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </motion.div>
-            );
-          })}
-        </div>
-
-        {/* Completion Celebration */}
-        {completedSteps.size === instructions.length && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: 50 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ type: "spring", stiffness: 200, damping: 20 }}
-            className="mt-12 bg-gradient-to-br from-[#035035] to-[#024a2f] text-white rounded-3xl p-8 text-center shadow-2xl"
-          >
-            <motion.div
-              animate={{
-                rotate: [0, 10, -10, 10, 0],
-                scale: [1, 1.1, 1]
-              }}
-              transition={{
-                rotate: { repeat: Infinity, duration: 2 },
-                scale: { repeat: Infinity, duration: 1.5 }
-              }}
-              className="text-8xl mb-4"
-            >
-              🎉
-            </motion.div>
-            <h2 className="font-poppins text-3xl font-bold mb-2">
-              Amazing Work!
-            </h2>
-            <p className="text-lg opacity-90 mb-6">
-              You've completed all the cooking steps. Time to enjoy your delicious creation!
-            </p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                setCompletedSteps(new Set());
-                setActiveStep(0);
-                stepRefs.current[0]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              }}
-              className="px-8 py-3 bg-[#FF9B7B] text-white rounded-full font-bold hover:shadow-xl transition-all"
-            >
-              Start Over
-            </motion.button>
-          </motion.div>
+    <div
+      className="relative flex-shrink-0 rounded-full border-[0px] border-[#035035] bg-[#FFF8F0]"
+      style={{
+        width: `${circleRadius * 2}px`,
+        height: `${circleRadius * 2}px`
+      }}
+    >
+      <div className="absolute inset-2">
+        {animationData && (
+          <Lottie
+            animationData={animationData}
+            loop={true}
+            style={{ width: '100%', height: '100%' }}
+          />
         )}
       </div>
+    </div>
+  );
+};
 
-      {/* Floating Action Button - Quick Complete */}
-      {activeStep < instructions.length && !completedSteps.has(activeStep) && (
-        <motion.button
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          onClick={completeStep}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className="fixed bottom-8 right-8 w-16 h-16 bg-[#035035] text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30 hover:bg-[#024a2f] transition-colors"
+// --- Timer Component ---
+const Timer = ({ expiryTimestamp, timerSeconds }) => {
+  const {
+    seconds,
+    minutes,
+    hours,
+    isRunning,
+    pause,
+    resume,
+    restart,
+  } = useTimer({
+    expiryTimestamp,
+    onExpire: () => console.warn('Timer expired'),
+  });
+
+  const handleReset = () => {
+    const time = new Date();
+    time.setSeconds(time.getSeconds() + timerSeconds);
+    restart(time, false);
+  };
+
+  const handleStart = () => {
+    if (!isRunning) {
+      resume();
+    }
+  };
+
+  const handlePause = () => {
+    pause();
+  };
+
+  // Format time with leading zeros
+  const formatTime = (value) => String(value).padStart(2, '0');
+
+  return (
+    <div className="mt-4 bg-white p-4 sm:p-5 rounded-xl border-2 border-[#FF9B7B] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+      {/* Time Display - Left Side (or Top on mobile) */}
+      <div className="flex flex-col">
+        <div className="text-xl sm:text-2xl md:text-3xl font-bold text-[#2D2D2D] font-mono tracking-wide">
+          {hours > 0 && <span>{formatTime(hours)}:</span>}
+          <span>{formatTime(minutes)}</span>
+          <span>:</span>
+          <span>{formatTime(seconds)}</span>
+        </div>
+        <div className="mt-1 text-xs text-[#FF9B7B] font-medium uppercase tracking-wide">
+          {isRunning ? '⏱ Running' : '⏸ Paused'}
+        </div>
+      </div>
+
+      {/* Buttons - Right Side (or Bottom on mobile) */}
+      <div className="flex gap-2 flex-wrap">
+        <button
+          onClick={handleStart}
+          disabled={isRunning}
+          className={`
+            px-3 sm:px-4 py-2 rounded-lg font-medium text-xs uppercase tracking-wide
+            transition-all duration-200 flex-1 sm:flex-none
+            ${isRunning
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-[#035035] text-white hover:bg-[#024028] hover:scale-105 active:scale-95'
+            }
+          `}
         >
-          ✓
-        </motion.button>
+          ▶ Start
+        </button>
+
+        <button
+          onClick={handlePause}
+          disabled={!isRunning}
+          className={`
+            px-3 sm:px-4 py-2 rounded-lg font-medium text-xs uppercase tracking-wide
+            transition-all duration-200 flex-1 sm:flex-none
+            ${!isRunning
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-[#FF9B7B] text-white hover:bg-[#FF8B6B] hover:scale-105 active:scale-95'
+            }
+          `}
+        >
+          ⏸ Pause
+        </button>
+
+        <button
+          onClick={handleReset}
+          className="
+            px-3 sm:px-4 py-2 rounded-lg font-medium text-xs uppercase tracking-wide
+            transition-all duration-200 flex-1 sm:flex-none
+            bg-white text-[#FF9B7B] hover:bg-[#FFF8F0] hover:scale-105 active:scale-95
+            border-2 border-[#FF9B7B]
+          "
+        >
+          ↺ Reset
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// --- Build Instruction Content ---
+const buildInstructionContent = (instruction) => {
+  const { heading, description, timer } = instruction;
+
+  // Create timer expiry timestamp if timer is provided
+  let timerExpiryTimestamp = null;
+  if (timer) {
+    const time = new Date();
+    time.setSeconds(time.getSeconds() + timer);
+    timerExpiryTimestamp = time;
+  }
+
+  return (
+    <div className="p-4 sm:p-5 md:p-6 bg-white rounded-2xl shadow-md">
+      <h3 className="text-lg sm:text-xl md:text-xl font-semibold text-[#2D2D2D] mb-2">{heading}</h3>
+      <p className="text-sm sm:text-base text-[#2D2D2D] mb-4">{description}</p>
+      {timer && (
+        <Timer expiryTimestamp={timerExpiryTimestamp} timerSeconds={timer} />
       )}
+    </div>
+  );
+};
+
+// --- StepDiv Component ---
+const StepDiv = React.forwardRef(({ instruction, content, index, circleRef, circleRadius }, ref) => {
+  // Alternate positioning: even steps at 0px, odd steps vary by screen size
+  const marginLeftClass = index % 2 === 0 ? 'ml-0' : 'ml-0 sm:ml-12 md:ml-20 lg:ml-24';
+
+  return (
+    <div
+      ref={ref}
+      className={`flex items-center gap-3 sm:gap-4 md:gap-6 p-2 sm:p-3 md:p-4 ${marginLeftClass}`}
+    >
+      <div ref={circleRef}>
+        <StepCircle animationFile={instruction.animationFile} circleRadius={circleRadius} />
+      </div>
+      <div className="flex-1">
+        {content}
+      </div>
+    </div>
+  );
+});
+
+// --- Main Component ---
+const CookingInstructions = ({
+  instructions = mockInstructions
+}) => {
+  const [stepPositions, setStepPositions] = React.useState([]);
+  const [circleRadius, setCircleRadius] = React.useState(getCircleRadius());
+  const stepRefs = React.useRef([]);
+  const circleRefs = React.useRef([]);
+  const containerRef = React.useRef(null);
+
+  // Calculate circle positions for the SVG paths
+  React.useEffect(() => {
+    const calculatePositions = () => {
+      if (!containerRef.current) return;
+
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const positions = [];
+      const currentRadius = getCircleRadius();
+      setCircleRadius(currentRadius);
+
+      circleRefs.current.forEach((ref, index) => {
+        if (ref) {
+          const rect = ref.getBoundingClientRect();
+          const relativeTop = rect.top - containerRect.top;
+          const relativeLeft = rect.left - containerRect.left;
+
+          // Center of the circle
+          const centerX = relativeLeft + currentRadius;
+          const centerY = relativeTop + currentRadius;
+
+          positions.push({
+            id: index + 1,
+            x: centerX,
+            y: centerY
+          });
+        }
+      });
+
+      setStepPositions(positions);
+    };
+
+    calculatePositions();
+    window.addEventListener('resize', calculatePositions);
+
+    // Use setTimeout to ensure DOM is fully rendered
+    setTimeout(calculatePositions, 100);
+
+    return () => window.removeEventListener('resize', calculatePositions);
+  }, [instructions]);
+
+  return (
+    <div className="bg-[#FFF8F0] min-h-screen w-full flex flex-col items-center p-3 sm:p-4 md:p-6">
+      {/* Header */}
+      <div className="p-3 sm:p-4 md:p-8 text-center">
+        <h1 className="font-['Poppins',_sans-serif] font-bold text-[#2D2D2D] text-2xl sm:text-3xl md:text-4xl lg:text-[2.5rem]">
+          Cooking Instructions
+        </h1>
+        <p className="text-[#2D2D2D] mt-3 sm:mt-4 max-w-lg text-sm sm:text-base">
+          Follow the steps along the path to complete your recipe.
+        </p>
+      </div>
+
+      {/* Main Content Area */}
+      <div
+        ref={containerRef}
+        className="w-full max-w-4xl relative"
+      >
+        {/* SVG Layer for connecting paths */}
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          style={{ zIndex: 0 }}
+        >
+          {stepPositions.map((step, index) => {
+            const nextStep = stepPositions[index + 1];
+            if (!nextStep) return null;
+
+            return (
+              <path
+                key={step.id}
+                d={`M ${step.x} ${step.y} C ${step.x} ${step.y + CURVE_AMOUNT}, ${nextStep.x} ${nextStep.y - CURVE_AMOUNT}, ${nextStep.x} ${nextStep.y}`}
+                stroke="#A8C9B8"
+                fill="none"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeDasharray="10 12"
+              />
+            );
+          })}
+        </svg>
+
+        {/* StepDivs */}
+        <div
+          className="relative flex flex-col gap-6 sm:gap-8 md:gap-10"
+          style={{ zIndex: 1 }}
+        >
+          {instructions.map((instruction, index) => (
+            <StepDiv
+              key={index}
+              ref={(el) => (stepRefs.current[index] = el)}
+              circleRef={(el) => (circleRefs.current[index] = el)}
+              instruction={instruction}
+              content={buildInstructionContent(instruction)}
+              index={index}
+              circleRadius={circleRadius}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
