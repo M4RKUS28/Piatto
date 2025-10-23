@@ -8,6 +8,7 @@ import MainLayout from './Layout/MainLayout.jsx'
 import Dashboard from './pages/app/Dashboard.jsx'
 import RecipeLibrary from './pages/app/RecipeLibrary.jsx'
 import RecipeView from "./pages/app/RecipeView.jsx"
+import CollectionRecipesView from './pages/app/CollectionRecipesView.jsx'
 import RecipeGeneration from './pages/app/RecipeGeneration/index.jsx'
 import ProfileSettings from './pages/app/ProfileSettings.jsx'
 import LoginPage from './pages/auth/LoginPage.jsx'
@@ -50,7 +51,9 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="generate" element={<RecipeGeneration />} />
           <Route path="library" element={<RecipeLibrary />} />
+          <Route path="recipes" element={<RecipeLibrary />} />
           <Route path="recipe/:recipeId" element={<RecipeView />} />
+          <Route path="collection/:collectionId" element={<CollectionRecipesView />} />
           <Route path="settings" element={<ProfileSettings />} />
         </Route>
       </Routes>
