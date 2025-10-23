@@ -6,10 +6,14 @@ export default function RegisterFailedPage() {
   const reason = searchParams.get('reason') || 'An unknown error occurred during registration';
 
   return (
-    <div className="flex items-center justify-center px-6 py-12">
-      <div className="w-full max-w-md min-w-[400px] relative z-10 mx-auto">
+    <div className="bg-gradient-to-br from-[#FFF8F0] via-white to-[#F5F5F5] flex items-center justify-center px-6 py-12 relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute top-20 right-20 w-64 h-64 rounded-full bg-[#A8C9B8] opacity-10 blur-3xl"></div>
+      <div className="absolute bottom-40 left-10 w-80 h-80 rounded-full bg-[#FF9B7B] opacity-10 blur-3xl"></div>
+
+      <div className="w-full max-w-lg relative z-10 mx-auto">
         {/* Error Card */}
-        <div className="w-full bg-white rounded-3xl shadow-xl p-8 border border-[#F5F5F5]">
+        <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#F5F5F5]">
           <div className="text-center mb-6">
             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="w-12 h-12 text-red-600" />

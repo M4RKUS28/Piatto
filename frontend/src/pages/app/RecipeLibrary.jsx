@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Clock, Users, FolderOpen, Plus } from 'lucide-react';
-import { getRecipeById } from '../../api/recipeApi';
+import { getRecipeById, getUserRecipes } from '../../api/recipeApi';
 import { getUserCollections, createCollection } from '../../api/collectionApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorMessage from '../../components/ErrorMessage';
@@ -11,6 +11,7 @@ export default function RecipeLibrary() {
   const [searchParams] = useSearchParams();
   const [collections, setCollections] = useState([]);
   const [newRecipes, setNewRecipes] = useState([]);
+  const [latestRecipes, setLatestRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -48,6 +49,23 @@ export default function RecipeLibrary() {
             category: recipe.category || 'General'
           }));
         setNewRecipes(validNewRecipes);
+      } else {
+        // Fetch latest 3 recipes if no last_recipe parameter
+        const allRecipes = await getUserRecipes();
+        const latest3 = allRecipes
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .slice(0, 3)
+          .map(recipe => ({
+            id: recipe.id,
+            name: recipe.title,
+            description: recipe.description || '',
+            image: recipe.image_url ? getImageUrl(recipe.image_url) : '🍽️',
+            time: recipe.total_time ? `${recipe.total_time} min` : '30 min',
+            servings: recipe.base_servings ? `${recipe.base_servings}` : '4',
+            difficulty: recipe.difficulty || 'Medium',
+            category: recipe.category || 'General'
+          }));
+        setLatestRecipes(latest3);
       }
     } catch (err) {
       console.error('Failed to fetch collections:', err);
@@ -120,12 +138,65 @@ export default function RecipeLibrary() {
         {/* Recipes Content */}
         {!loading && !error && (
           <>
-            {/* New Recipes Section */}
+            {/* New Recipes Section (when last_recipe param exists) */}
             {newRecipes.length > 0 && (
               <div className="mb-8 md:mb-10">
                 <h2 className="text-2xl sm:text-3xl font-bold text-[#035035] mb-4">Neue Rezepte</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {newRecipes.map((recipe) => (
+                    <Link
+                      to={`/app/recipe/${recipe.id}`}
+                      key={recipe.id}
+                      className="bg-white rounded-2xl border border-[#F5F5F5] overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer min-h-[44px]"
+                    >
+                      {/* Image */}
+                      <div className="bg-[#FFF8F0] h-48 sm:h-56 flex items-center justify-center overflow-hidden">
+                        {recipe.image.startsWith('http') || recipe.image.startsWith('/') ? (
+                          <img
+                            src={recipe.image}
+                            alt={recipe.name}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <span className="text-6xl sm:text-7xl">{recipe.image}</span>
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-4 sm:p-5">
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                          <span className="text-xs font-semibold text-[#035035] bg-[#035035]/10 px-3 py-1 rounded-full whitespace-nowrap">
+                            {recipe.category}
+                          </span>
+                          <span className="text-xs font-semibold text-[#FF9B7B] bg-[#FF9B7B]/10 px-3 py-1 rounded-full whitespace-nowrap">
+                            {recipe.difficulty}
+                          </span>
+                        </div>
+                        <h3 className="text-lg sm:text-xl font-bold text-[#2D2D2D] mb-3 line-clamp-2">{recipe.name}</h3>
+                        <div className="flex items-center gap-3 sm:gap-4 text-sm text-[#2D2D2D] opacity-60 flex-wrap">
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-4 h-4 flex-shrink-0" />
+                            <span className="whitespace-nowrap">{recipe.time}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Users className="w-4 h-4 flex-shrink-0" />
+                            <span className="whitespace-nowrap">{recipe.servings} servings</span>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Latest Recipes Section (when no last_recipe param) */}
+            {latestRecipes.length > 0 && newRecipes.length === 0 && (
+              <div className="mb-8 md:mb-10">
+                <h2 className="text-2xl sm:text-3xl font-bold text-[#035035] mb-4">Letzte Rezepte</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {latestRecipes.map((recipe) => (
                     <Link
                       to={`/app/recipe/${recipe.id}`}
                       key={recipe.id}
