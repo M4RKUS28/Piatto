@@ -42,7 +42,7 @@ export default function LoginPage() {
 
   return (
     <div className="py-12 min-h-full flex items-center justify-center px-6">
-      <div className="w-full max-w-md min-w-[600px] mx-auto relative z-10">
+      <div className="w-full max-w-md min-w-[400px] mx-auto relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-[#035035] mb-2">Welcome Back!</h1>
