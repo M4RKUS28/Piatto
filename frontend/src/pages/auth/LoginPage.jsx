@@ -36,26 +36,20 @@ export default function LoginPage() {
     
     setIsLoading(false);
   };
-
   const handleGoogleLogin = () => {
     loginWithGoogle();
   };
 
   return (
-    <div className="bg-gradient-to-br from-[#FFF8F0] via-white to-[#F5F5F5] flex items-center justify-center px-6 py-12 relative overflow-hidden">
-      {/* Decorative background elements */}
-      <div className="absolute top-20 right-20 w-64 h-64 rounded-full bg-[#A8C9B8] opacity-10 blur-3xl"></div>
-      <div className="absolute bottom-40 left-10 w-80 h-80 rounded-full bg-[#FF9B7B] opacity-10 blur-3xl"></div>
-
-      <div className="w-full max-w-md relative z-10 mx-auto">
+    <div className="py-12 min-h-full flex items-center justify-center px-6">
+      <div className="w-full max-w-md min-w-[400px] mx-auto relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-[#035035] mb-2">Welcome Back!</h1>
           <p className="text-[#2D2D2D]">Sign in to continue your culinary journey</p>
         </div>
-
         {/* Login Form Card */}
-        <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#F5F5F5]">
+        <div className="w-full bg-white rounded-3xl shadow-xl p-8 border border-[#F5F5F5]">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Error Message */}
             {error && (

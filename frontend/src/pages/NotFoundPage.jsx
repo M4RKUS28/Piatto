@@ -59,7 +59,7 @@ export default function NotFoundPage() {
             </Link>
             
             <Link
-              to="/app/recipes"
+              to="/app/library"
               className="bg-transparent border-2 border-[#FF9B7B] text-[#FF9B7B] px-8 py-4 rounded-full font-semibold text-lg hover:bg-[#FF9B7B] hover:text-white transition-all flex items-center justify-center gap-2"
             >
               <Search className="w-5 h-5" />

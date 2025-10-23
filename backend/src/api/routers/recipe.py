@@ -17,7 +17,7 @@ from ..schemas.recipe import (
     Ingredient as IngredientSchema,
     Instruction as InstructionSchema,
 )
-from ...utils.auth import get_read_write_user_id, get_readonly_user_id, get_user_id_optional, get_read_write_user_token_data
+from ...utils.auth import get_read_write_user_id, get_read_only_user_id, get_user_id_optional, get_read_write_user_token_data
 from ...db.crud import recipe_crud
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -50,7 +50,7 @@ async def get_recipe(recipe_id: int,
     return _serialize_recipe(recipe)
 
 @router.get("/get_all", response_model=List[RecipeSchema])
-async def get_all_recipes(user_id: str = Depends(get_readonly_user_id),
+async def get_all_recipes(user_id: str = Depends(get_read_only_user_id),
                           db : AsyncSession = Depends(get_db)):
     """
     Retrieve all recipes for a given user ID.

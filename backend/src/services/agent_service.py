@@ -36,11 +36,12 @@ class AgentService:
         self.image_agent = ImageAgent(self.app_name, self.session_service)
         self.chat_agent = ChatAgent(self.app_name, self.session_service)
 
-    async def analyze_ingredients(self, user_id: str, image_key: str):
-        async with get_async_bucket_session() as bs:
-            image: bytes = await get_file(bs, image_key)
+    async def analyze_ingredients(self, user_id: str, file: bytes) -> str:
+        """
+        Analyze the ingredients in the uploaded image file.
+        """
 
-        query = create_docs_query("Analyze this image for food items.", [image])
+        query = create_docs_query("Analyze this image for food items.", [file])
         response = await self.image_analyzer_agent.run(
             user_id=user_id,
             state={},
@@ -59,14 +60,9 @@ class AgentService:
         user_id: str,
         prompt: str,
         written_ingredients: str,
-        preparing_session_id: Optional[int] = None,
-        image_key: Optional[str] = None,
+        preparing_session_id: Optional[int] = None
     ):
-        analyzed_ingredients = None
-        if image_key:
-            analyzed_ingredients = await self.analyze_ingredients(user_id, image_key)
-
-        query = get_recipe_gen_query(prompt, written_ingredients, analyzed_ingredients)
+        query = get_recipe_gen_query(prompt, written_ingredients)
         recipes =  await self.recipe_agent.run(
             user_id=user_id,
             state={},
@@ -107,8 +103,6 @@ class AgentService:
                     user_id=user_id,
                     prompt=prompt,
                     recipe_ids=recipe_ids,
-                    image_key=image_key,
-                    analyzed_ingredients=analyzed_ingredients,
                     preparing_session_id=preparing_session_id,
                 )
             except PermissionError as error:
@@ -164,3 +158,5 @@ class AgentService:
             response,
         )
         return response
+
+

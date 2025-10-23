@@ -15,12 +15,19 @@ class Recipe(Base):
     image_url = Column(String(255), nullable=True)
     is_permanent = Column(Boolean, default=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    
 
     ingredients = relationship(
         "RecipeIngredient",
         back_populates="recipe",
         cascade="all, delete-orphan",
         order_by="RecipeIngredient.id",
+    )
+
+    collections = relationship(
+        "Collection",
+        secondary="collection_recipes",
+        back_populates="recipes"
     )
 
 
@@ -36,18 +43,17 @@ class RecipeIngredient(Base):
 
     recipe = relationship("Recipe", back_populates="ingredients")
 
+
 class PreparingSession(Base):
     """Database model for a preparing session."""
     __tablename__ = "preparing_sessions"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(String(50), ForeignKey("users.id"), nullable=False)
-    context_promts = Column(Text, nullable=False)  # Store context promts as JSON string
     context_suggestions = Column(Text, nullable=True)  # Store suggestions as JSON string
     current_recipes = Column(Text, nullable=True)  # Track active recipes for the session
-    image_key = Column(Text, nullable=True)
-    analyzed_ingredients = Column(Text, nullable=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
+
 
 class CookingSession(Base):
     """Database model for a cooking session."""
@@ -73,3 +79,30 @@ class PromptHistory(Base):
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
     cooking_session = relationship("CookingSession", back_populates="prompt_histories")
+
+
+class Collection(Base):
+    """Database model for a recipe collection."""
+    __tablename__ = "collections"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    owner_id = Column(String(50), ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+
+    recipes = relationship(
+        "Recipe",
+        secondary="collection_recipes",
+        back_populates="collections"
+    )
+
+
+class CollectionRecipe(Base):
+    """Database model for the many-to-many relationship between collections and recipes."""
+    __tablename__ = "collection_recipes"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    collection_id = Column(Integer, ForeignKey("collections.id", ondelete="CASCADE"), nullable=False)
+    recipe_id = Column(Integer, ForeignKey("recipes.id", ondelete="CASCADE"), nullable=False)
+    added_at = Column(DateTime, server_default=func.now(), nullable=False)
