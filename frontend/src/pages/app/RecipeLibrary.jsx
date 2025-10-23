@@ -261,29 +261,35 @@ export default function RecipeLibrary() {
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5">
                   {collections.map((collection) => (
-                    <Link
-                      to={`/app/collection/${collection.id}`}
-                      key={collection.id}
-                      className="bg-white rounded-2xl border border-[#F5F5F5] overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer"
-                    >
-                      {/* Image Collage */}
-                      <div className="h-48 bg-[#FFF8F0]">
-                        <CollectionImageCollage imageUrls={collection.preview_image_urls || []} />
-                      </div>
+                    <div key={collection.id} className="relative">
+                      <Link
+                        to={`/app/collection/${collection.id}`}
+                        className="block bg-white rounded-xl border-2 border-[#035035]/30 overflow-hidden hover:shadow-lg hover:border-[#035035] hover:-translate-y-1 transition-all cursor-pointer"
+                      >
+                        {/* Image Collage */}
+                        <div className="bg-[#FFF8F0] h-36 sm:h-44 flex items-center justify-center overflow-hidden relative">
+                          <CollectionImageCollage imageUrls={collection.preview_image_urls || []} />
+                        </div>
 
-                      {/* Content */}
-                      <div className="p-6">
-                        <h3 className="text-lg font-bold text-[#2D2D2D] mb-1">{collection.name}</h3>
-                        {collection.description && (
-                          <p className="text-sm text-[#2D2D2D] opacity-60 mb-2 line-clamp-2">{collection.description}</p>
-                        )}
-                        <p className="text-xs text-[#035035] font-semibold">
-                          {collection.recipe_count} {collection.recipe_count === 1 ? 'Rezept' : 'Rezepte'}
-                        </p>
-                      </div>
-                    </Link>
+                        {/* Content */}
+                        <div className="p-3">
+                          <div className="flex items-center gap-1 mb-2 flex-wrap">
+                            <span className="text-[10px] font-semibold text-[#035035] bg-[#035035]/10 px-2 py-0.5 rounded-full whitespace-nowrap">
+                              <FolderOpen className="w-3 h-3 inline mr-0.5 -mt-0.5" />
+                              Sammlung
+                            </span>
+                          </div>
+                          <h3 className="text-sm font-bold text-[#2D2D2D] mb-2 line-clamp-2">{collection.name}</h3>
+                          <div className="flex items-center gap-2 text-xs text-[#2D2D2D] opacity-60 flex-wrap">
+                            <span className="whitespace-nowrap">
+                              {collection.recipe_count} {collection.recipe_count === 1 ? 'Rezept' : 'Rezepte'}
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    </div>
                   ))}
                 </div>
               )}
