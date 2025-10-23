@@ -282,7 +282,7 @@ const CookingInstructions = ({
   }, [instructions]);
 
   return (
-    <div className="bg-[#FFF8F0] min-h-screen w-full flex flex-col items-center p-3 sm:p-4 md:p-6">
+    <div className="bg-[#FFF8F0] min-h-full w-full flex flex-col items-center p-3 sm:p-4 md:p-6">
       {/* Header */}
       <div className="p-3 sm:p-4 md:p-8 text-center">
         <h1 className="font-['Poppins',_sans-serif] font-bold text-[#2D2D2D] text-2xl sm:text-3xl md:text-4xl lg:text-[2.5rem]">
