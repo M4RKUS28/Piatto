@@ -13,11 +13,6 @@ const mockInstructions = [
 const mockDivs = [
   // Step 1: Long detailed instruction with image
   <div className="p-6 bg-white rounded-2xl shadow-md">
-    <img
-      src="https://images.unsplash.com/photo-1547558840-8ad6c8e662a4?w=400&h=200&fit=crop"
-      alt="Boiling water"
-      className="w-full h-48 object-cover rounded-xl mb-4"
-    />
     <h3 className="text-xl font-semibold text-[#2D2D2D] mb-2">Bring Water to Boil</h3>
     <p className="text-[#2D2D2D] mb-4">
       Fill a large pot with 4-6 quarts of water. Add 1 tablespoon of salt to enhance the flavor of your pasta.
@@ -58,16 +53,7 @@ const mockDivs = [
   <div className="p-6 bg-white rounded-2xl shadow-md">
     <h3 className="text-xl font-semibold text-[#2D2D2D] mb-3">Test for Doneness</h3>
     <div className="grid grid-cols-2 gap-3 mb-4">
-      <img
-        src="https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=200&h=150&fit=crop"
-        alt="Testing pasta"
-        className="w-full h-32 object-cover rounded-lg"
-      />
-      <img
-        src="https://images.unsplash.com/photo-1611171711912-e0f8b0e08be4?w=200&h=150&fit=crop"
-        alt="Perfect pasta texture"
-        className="w-full h-32 object-cover rounded-lg"
-      />
+
     </div>
     <p className="text-[#2D2D2D] mb-4">
       The best way to test pasta is to taste it. Remove a piece, let it cool slightly, then bite into it.
@@ -79,12 +65,7 @@ const mockDivs = [
   </div>,
 
   // Step 4: Complex instruction with warnings
-  <div className="p-6 bg-white rounded-2xl shadow-md">
-    <img
-      src="https://images.unsplash.com/photo-1551218808-94e220e084d2?w=400&h=200&fit=crop"
-      alt="Draining pasta"
-      className="w-full h-48 object-cover rounded-xl mb-4"
-    />
+  <div className="p-6 bg-white rounded-2xl shadow-md">can
     <h3 className="text-xl font-semibold text-[#2D2D2D] mb-2">Drain and Reserve Pasta Water</h3>
     <div className="bg-[#FF9B7B] bg-opacity-20 p-3 rounded-lg mb-4 border-l-4 border-[#FF9B7B]">
       <p className="text-sm text-[#2D2D2D] font-semibold">⚠️ Caution: Steam and hot water - handle carefully!</p>
@@ -125,12 +106,24 @@ const mockDivs = [
 ];
 
 // --- Configuration ---
-const CIRCLE_RADIUS = 36;
-const CURVE_AMOUNT = 100;
+const CURVE_AMOUNT = 180;
 const VERTICAL_PADDING = 40;
 
+// Calculate responsive circle radius based on viewport width
+const getCircleRadius = () => {
+  const width = window.innerWidth;
+  // Base size: 36px for mobile (320px), scales up to 60px for large screens (1920px)
+  const minRadius = 36;
+  const maxRadius = 70;
+  const minWidth = 320;
+  const maxWidth = 1920;
+
+  const radius = minRadius + ((width - minWidth) / (maxWidth - minWidth)) * (maxRadius - minRadius);
+  return Math.max(minRadius, Math.min(maxRadius, radius));
+};
+
 // --- StepCircle Component ---
-const StepCircle = ({ animationFile }) => {
+const StepCircle = ({ animationFile, circleRadius }) => {
   const [animationData, setAnimationData] = React.useState(null);
 
   React.useEffect(() => {
@@ -142,10 +135,10 @@ const StepCircle = ({ animationFile }) => {
 
   return (
     <div
-      className="relative flex-shrink-0 rounded-full border-[3px] border-[#035035] bg-[#FFF8F0]"
+      className="relative flex-shrink-0 rounded-full border-[0px] border-[#035035] bg-[#FFF8F0]"
       style={{
-        width: `${CIRCLE_RADIUS * 2}px`,
-        height: `${CIRCLE_RADIUS * 2}px`
+        width: `${circleRadius * 2}px`,
+        height: `${circleRadius * 2}px`
       }}
     >
       <div className="absolute inset-2">
@@ -162,7 +155,7 @@ const StepCircle = ({ animationFile }) => {
 };
 
 // --- StepDiv Component ---
-const StepDiv = React.forwardRef(({ instruction, content, index, circleRef }, ref) => {
+const StepDiv = React.forwardRef(({ instruction, content, index, circleRef, circleRadius }, ref) => {
   // Alternate positioning: even steps at 0px, odd steps at 100px
   const marginLeft = index % 2 === 0 ? '0px' : '100px';
 
@@ -173,7 +166,7 @@ const StepDiv = React.forwardRef(({ instruction, content, index, circleRef }, re
       style={{ marginLeft }}
     >
       <div ref={circleRef}>
-        <StepCircle animationFile={instruction.animationFile} />
+        <StepCircle animationFile={instruction.animationFile} circleRadius={circleRadius} />
       </div>
       <div className="flex-1">
         {content}
@@ -188,6 +181,7 @@ const CookingInstructions = ({
   contentDivs = mockDivs
 }) => {
   const [stepPositions, setStepPositions] = React.useState([]);
+  const [circleRadius, setCircleRadius] = React.useState(getCircleRadius());
   const stepRefs = React.useRef([]);
   const circleRefs = React.useRef([]);
   const containerRef = React.useRef(null);
@@ -199,6 +193,8 @@ const CookingInstructions = ({
 
       const containerRect = containerRef.current.getBoundingClientRect();
       const positions = [];
+      const currentRadius = getCircleRadius();
+      setCircleRadius(currentRadius);
 
       circleRefs.current.forEach((ref, index) => {
         if (ref) {
@@ -207,8 +203,8 @@ const CookingInstructions = ({
           const relativeLeft = rect.left - containerRect.left;
 
           // Center of the circle
-          const centerX = relativeLeft + CIRCLE_RADIUS;
-          const centerY = relativeTop + CIRCLE_RADIUS;
+          const centerX = relativeLeft + currentRadius;
+          const centerY = relativeTop + currentRadius;
 
           positions.push({
             id: index + 1,
@@ -283,6 +279,7 @@ const CookingInstructions = ({
               instruction={instruction}
               content={contentDivs[index]}
               index={index}
+              circleRadius={circleRadius}
             />
           ))}
         </div>
