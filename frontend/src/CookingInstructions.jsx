@@ -1,113 +1,50 @@
 import React from 'react';
 import Lottie from 'lottie-react';
+import { useTimer } from 'react-timer-hook';
 
 // --- Mock Data ---
 const mockInstructions = [
-  { animationFile: 'boil_water.json' },
-  { animationFile: 'fry_in_pan.json' },
-  { animationFile: 'steaming_with_lid.json' },
-  { animationFile: 'boil_water.json' },
-  { animationFile: 'steaming_with_lid.json' },
-];
-
-const mockDivs = [
-  // Step 1: Long detailed instruction with image
-  <div className="p-6 bg-white rounded-2xl shadow-md">
-    <h3 className="text-xl font-semibold text-[#2D2D2D] mb-2">Bring Water to Boil</h3>
-    <p className="text-[#2D2D2D] mb-4">
-      Fill a large pot with 4-6 quarts of water. Add 1 tablespoon of salt to enhance the flavor of your pasta.
-      Place the pot on high heat and cover with a lid to speed up the boiling process. You'll know the water is
-      ready when you see large, rolling bubbles breaking the surface consistently.
-    </p>
-    <div className="flex items-center gap-3 bg-[#FFF8F0] p-4 rounded-xl">
-      <div className="text-3xl">⏱️</div>
-      <div>
-        <div className="text-sm text-[#035035] font-semibold">Timer</div>
-        <div className="text-2xl font-bold text-[#2D2D2D]">8-10 min</div>
-      </div>
-    </div>
-  </div>,
-
-  // Step 2: Medium instruction with bullet points
-  <div className="p-6 bg-white rounded-2xl shadow-md">
-    <h3 className="text-xl font-semibold text-[#2D2D2D] mb-3">Add Pasta and Stir</h3>
-    <p className="text-[#2D2D2D] mb-3">
-      Once the water is at a rolling boil, carefully add your pasta. Follow these important steps:
-    </p>
-    <ul className="list-disc list-inside space-y-2 text-[#2D2D2D] mb-4 ml-2">
-      <li>Add pasta gradually to prevent clumping</li>
-      <li>Stir immediately after adding</li>
-      <li>Continue stirring occasionally during cooking</li>
-      <li>Do not add oil to the water</li>
-    </ul>
-    <div className="flex items-center gap-3 bg-[#FFF8F0] p-4 rounded-xl">
-      <div className="text-3xl">⏱️</div>
-      <div>
-        <div className="text-sm text-[#035035] font-semibold">Cook Time</div>
-        <div className="text-2xl font-bold text-[#2D2D2D]">11-13 min</div>
-      </div>
-    </div>
-  </div>,
-
-  // Step 3: Short instruction with multiple images
-  <div className="p-6 bg-white rounded-2xl shadow-md">
-    <h3 className="text-xl font-semibold text-[#2D2D2D] mb-3">Test for Doneness</h3>
-    <div className="grid grid-cols-2 gap-3 mb-4">
-
-    </div>
-    <p className="text-[#2D2D2D] mb-4">
-      The best way to test pasta is to taste it. Remove a piece, let it cool slightly, then bite into it.
-      It should be tender but still firm to the bite (al dente). There should be no white, chalky center.
-    </p>
-    <div className="bg-[#A8C9B8] bg-opacity-30 p-3 rounded-lg border-l-4 border-[#035035]">
-      <p className="text-sm text-[#2D2D2D] font-medium">💡 Pro Tip: Start testing 2 minutes before the package time</p>
-    </div>
-  </div>,
-
-  // Step 4: Complex instruction with warnings
-  <div className="p-6 bg-white rounded-2xl shadow-md">can
-    <h3 className="text-xl font-semibold text-[#2D2D2D] mb-2">Drain and Reserve Pasta Water</h3>
-    <div className="bg-[#FF9B7B] bg-opacity-20 p-3 rounded-lg mb-4 border-l-4 border-[#FF9B7B]">
-      <p className="text-sm text-[#2D2D2D] font-semibold">⚠️ Caution: Steam and hot water - handle carefully!</p>
-    </div>
-    <p className="text-[#2D2D2D] mb-3">
-      Before draining, use a measuring cup to scoop out about 1-2 cups of the starchy pasta cooking water.
-      This liquid gold will help create a silky sauce later. Place a colander in the sink and carefully pour
-      the pasta through it. Give it a gentle shake to remove excess water, but don't rinse unless making a cold pasta salad.
-    </p>
-    <div className="grid grid-cols-2 gap-3">
-      <div className="bg-[#FFF8F0] p-3 rounded-lg text-center">
-        <div className="text-2xl mb-1">🌡️</div>
-        <div className="text-xs text-[#035035] font-semibold">Temp Check</div>
-        <div className="text-lg font-bold text-[#2D2D2D]">Steaming Hot</div>
-      </div>
-      <div className="bg-[#FFF8F0] p-3 rounded-lg text-center">
-        <div className="text-2xl mb-1">💧</div>
-        <div className="text-xs text-[#035035] font-semibold">Reserve</div>
-        <div className="text-lg font-bold text-[#2D2D2D]">1-2 cups</div>
-      </div>
-    </div>
-  </div>,
-
-  // Step 5: Simple final step
-  <div className="p-6 bg-white rounded-2xl shadow-md">
-    <h3 className="text-xl font-semibold text-[#2D2D2D] mb-3">Serve Immediately</h3>
-    <p className="text-[#2D2D2D] mb-4">
-      Transfer the drained pasta to your serving dish or back into the pot if adding sauce.
-      Pasta is best enjoyed immediately while hot. Top with your favorite sauce, garnish with
-      fresh herbs and grated cheese, and serve!
-    </p>
-    <div className="bg-gradient-to-r from-[#035035] to-[#A8C9B8] p-4 rounded-xl text-white text-center">
-      <div className="text-3xl mb-2">🍝</div>
-      <div className="font-bold text-lg">Buon Appetito!</div>
-      <div className="text-sm opacity-90">Enjoy your perfectly cooked pasta</div>
-    </div>
-  </div>,
+  {
+    heading: 'Chop your vegetables',
+    description: 'Wash and dry your vegetables, then chop them into bite-sized pieces using a big knife. Aim for even sizes so they cook uniformly.',
+    animationFile: 'big_knife.json'
+  },
+  {
+    heading: 'Start the pan and heat some oil',
+    description: 'Place a large pan on medium-high heat and add a drizzle of olive oil. Wait until it shimmers — this means it’s hot enough to start cooking.',
+    animationFile: 'fire_in_pan.json'
+  },
+  {
+    heading: 'Fry the vegetables',
+    description: 'Add your chopped vegetables to the hot pan. Fry them for a few minutes until they start to soften and get a light golden color.',
+    animationFile: 'fry_in_pan.json'
+  },
+  {
+    heading: 'Let it cook and stir occasionally',
+    description: 'Lower the heat slightly, cover partially, and let the veggies cook through while stirring every couple of minutes to prevent sticking.',
+    animationFile: 'let_cook_and_stirr.json',
+    timer: 300
+  },
+  {
+    heading: 'Steam for tenderness',
+    description: 'Add a splash of water and cover the pan fully with a lid to trap steam. Let it steam for 3–5 minutes until everything is tender and fragrant.',
+    animationFile: 'steaming_with_lid.json',
+    timer: 240
+  },
+  {
+    heading: 'Combine with cooked pasta and bake',
+    description: 'Mix your cooked pasta with the veggies, toss everything with a bit of cheese or sauce, and transfer to a baking dish. Bake in a preheated oven until bubbling and golden.',
+    animationFile: 'oven_convect.json'
+  },
+  {
+    heading: 'Reheat leftovers easily',
+    description: 'If you have leftovers, place a portion in the microwave and heat until warm throughout. Perfect for an easy next-day meal!',
+    animationFile: 'microwave.json'
+  }
 ];
 
 // --- Configuration ---
 const CURVE_AMOUNT = 180;
-const VERTICAL_PADDING = 40;
 
 // Calculate responsive circle radius based on viewport width
 const getCircleRadius = () => {
@@ -154,16 +91,135 @@ const StepCircle = ({ animationFile, circleRadius }) => {
   );
 };
 
+// --- Timer Component ---
+const Timer = ({ expiryTimestamp, timerSeconds }) => {
+  const {
+    seconds,
+    minutes,
+    hours,
+    isRunning,
+    pause,
+    resume,
+    restart,
+  } = useTimer({
+    expiryTimestamp,
+    onExpire: () => console.warn('Timer expired'),
+  });
+
+  const handleReset = () => {
+    const time = new Date();
+    time.setSeconds(time.getSeconds() + timerSeconds);
+    restart(time, false);
+  };
+
+  const handleStart = () => {
+    if (!isRunning) {
+      resume();
+    }
+  };
+
+  const handlePause = () => {
+    pause();
+  };
+
+  // Format time with leading zeros
+  const formatTime = (value) => String(value).padStart(2, '0');
+
+  return (
+    <div className="mt-4 bg-white p-4 sm:p-5 rounded-xl border-2 border-[#FF9B7B] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+      {/* Time Display - Left Side (or Top on mobile) */}
+      <div className="flex flex-col">
+        <div className="text-xl sm:text-2xl md:text-3xl font-bold text-[#2D2D2D] font-mono tracking-wide">
+          {hours > 0 && <span>{formatTime(hours)}:</span>}
+          <span>{formatTime(minutes)}</span>
+          <span>:</span>
+          <span>{formatTime(seconds)}</span>
+        </div>
+        <div className="mt-1 text-xs text-[#FF9B7B] font-medium uppercase tracking-wide">
+          {isRunning ? '⏱ Running' : '⏸ Paused'}
+        </div>
+      </div>
+
+      {/* Buttons - Right Side (or Bottom on mobile) */}
+      <div className="flex gap-2 flex-wrap">
+        <button
+          onClick={handleStart}
+          disabled={isRunning}
+          className={`
+            px-3 sm:px-4 py-2 rounded-lg font-medium text-xs uppercase tracking-wide
+            transition-all duration-200 flex-1 sm:flex-none
+            ${isRunning
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-[#035035] text-white hover:bg-[#024028] hover:scale-105 active:scale-95'
+            }
+          `}
+        >
+          ▶ Start
+        </button>
+
+        <button
+          onClick={handlePause}
+          disabled={!isRunning}
+          className={`
+            px-3 sm:px-4 py-2 rounded-lg font-medium text-xs uppercase tracking-wide
+            transition-all duration-200 flex-1 sm:flex-none
+            ${!isRunning
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-[#FF9B7B] text-white hover:bg-[#FF8B6B] hover:scale-105 active:scale-95'
+            }
+          `}
+        >
+          ⏸ Pause
+        </button>
+
+        <button
+          onClick={handleReset}
+          className="
+            px-3 sm:px-4 py-2 rounded-lg font-medium text-xs uppercase tracking-wide
+            transition-all duration-200 flex-1 sm:flex-none
+            bg-white text-[#FF9B7B] hover:bg-[#FFF8F0] hover:scale-105 active:scale-95
+            border-2 border-[#FF9B7B]
+          "
+        >
+          ↺ Reset
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// --- Build Instruction Content ---
+const buildInstructionContent = (instruction) => {
+  const { heading, description, timer } = instruction;
+
+  // Create timer expiry timestamp if timer is provided
+  let timerExpiryTimestamp = null;
+  if (timer) {
+    const time = new Date();
+    time.setSeconds(time.getSeconds() + timer);
+    timerExpiryTimestamp = time;
+  }
+
+  return (
+    <div className="p-4 sm:p-5 md:p-6 bg-white rounded-2xl shadow-md">
+      <h3 className="text-lg sm:text-xl md:text-xl font-semibold text-[#2D2D2D] mb-2">{heading}</h3>
+      <p className="text-sm sm:text-base text-[#2D2D2D] mb-4">{description}</p>
+      {timer && (
+        <Timer expiryTimestamp={timerExpiryTimestamp} timerSeconds={timer} />
+      )}
+    </div>
+  );
+};
+
 // --- StepDiv Component ---
 const StepDiv = React.forwardRef(({ instruction, content, index, circleRef, circleRadius }, ref) => {
-  // Alternate positioning: even steps at 0px, odd steps at 100px
-  const marginLeft = index % 2 === 0 ? '0px' : '100px';
+  // Alternate positioning: even steps at 0px, odd steps vary by screen size
+  const marginLeftClass = index % 2 === 0 ? 'ml-0' : 'ml-0 sm:ml-12 md:ml-20 lg:ml-24';
 
   return (
     <div
       ref={ref}
-      className="flex items-center gap-6 p-4"
-      style={{ marginLeft }}
+      className={`flex items-center gap-3 sm:gap-4 md:gap-6 p-2 sm:p-3 md:p-4 ${marginLeftClass}`}
     >
       <div ref={circleRef}>
         <StepCircle animationFile={instruction.animationFile} circleRadius={circleRadius} />
@@ -177,8 +233,7 @@ const StepDiv = React.forwardRef(({ instruction, content, index, circleRef, circ
 
 // --- Main Component ---
 const CookingInstructions = ({
-  instructions = mockInstructions,
-  contentDivs = mockDivs
+  instructions = mockInstructions
 }) => {
   const [stepPositions, setStepPositions] = React.useState([]);
   const [circleRadius, setCircleRadius] = React.useState(getCircleRadius());
@@ -227,13 +282,13 @@ const CookingInstructions = ({
   }, [instructions]);
 
   return (
-    <div className="bg-[#FFF8F0] min-h-screen w-full flex flex-col items-center p-4">
+    <div className="bg-[#FFF8F0] min-h-screen w-full flex flex-col items-center p-3 sm:p-4 md:p-6">
       {/* Header */}
-      <div className="p-4 md:p-8 text-center">
-        <h1 className="font-['Poppins',_sans-serif] font-bold text-[#2D2D2D] text-[clamp(1.75rem,4vw,2.5rem)]">
+      <div className="p-3 sm:p-4 md:p-8 text-center">
+        <h1 className="font-['Poppins',_sans-serif] font-bold text-[#2D2D2D] text-2xl sm:text-3xl md:text-4xl lg:text-[2.5rem]">
           Cooking Instructions
         </h1>
-        <p className="text-[#2D2D2D] mt-4 max-w-lg">
+        <p className="text-[#2D2D2D] mt-3 sm:mt-4 max-w-lg text-sm sm:text-base">
           Follow the steps along the path to complete your recipe.
         </p>
       </div>
@@ -268,8 +323,8 @@ const CookingInstructions = ({
 
         {/* StepDivs */}
         <div
-          className="relative flex flex-col"
-          style={{ gap: `${VERTICAL_PADDING}px`, zIndex: 1 }}
+          className="relative flex flex-col gap-6 sm:gap-8 md:gap-10"
+          style={{ zIndex: 1 }}
         >
           {instructions.map((instruction, index) => (
             <StepDiv
@@ -277,7 +332,7 @@ const CookingInstructions = ({
               ref={(el) => (stepRefs.current[index] = el)}
               circleRef={(el) => (circleRefs.current[index] = el)}
               instruction={instruction}
-              content={contentDivs[index]}
+              content={buildInstructionContent(instruction)}
               index={index}
               circleRadius={circleRadius}
             />
