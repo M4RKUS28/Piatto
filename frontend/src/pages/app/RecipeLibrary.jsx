@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Clock, Users, FolderOpen, Plus } from 'lucide-react';
-import { getRecipeById, getUserRecipes } from '../../api/recipeApi';
+import { getRecipeById, getUserRecipes, deleteRecipe } from '../../api/recipeApi';
 import { getUserCollections, createCollection } from '../../api/collectionApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorMessage from '../../components/ErrorMessage';
+import RecipeCardMenu from '../../components/RecipeCardMenu';
+import EditCollectionsModal from '../../components/EditCollectionsModal';
 import { getImageUrl } from '../../utils/imageUtils';
 
 export default function RecipeLibrary() {
@@ -15,6 +17,8 @@ export default function RecipeLibrary() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showCollectionsModal, setShowCollectionsModal] = useState(false);
+  const [selectedRecipeId, setSelectedRecipeId] = useState(null);
   const [newCollectionName, setNewCollectionName] = useState('');
   const [newCollectionDescription, setNewCollectionDescription] = useState('');
   const [creatingCollection, setCreatingCollection] = useState(false);
@@ -29,11 +33,11 @@ export default function RecipeLibrary() {
       const collectionsData = await getUserCollections();
       setCollections(collectionsData);
 
-      // Always fetch latest 3 recipes
+      // Always fetch latest 6 recipes
       const allRecipes = await getUserRecipes();
-      const latest3 = allRecipes
+      const latest6 = allRecipes
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-        .slice(0, 3)
+        .slice(0, 6)
         .map(recipe => ({
           id: recipe.id,
           name: recipe.title,
@@ -44,7 +48,7 @@ export default function RecipeLibrary() {
           difficulty: recipe.difficulty || 'Medium',
           category: recipe.category || 'General'
         }));
-      setLatestRecipes(latest3);
+      setLatestRecipes(latest6);
 
       // Check if there are highlighted new recipes from URL parameter
       const lastRecipeParam = searchParams.get('last_recipe');
@@ -89,6 +93,32 @@ export default function RecipeLibrary() {
     }
   };
 
+  const handleEditCollections = (recipeId) => {
+    setSelectedRecipeId(recipeId);
+    setShowCollectionsModal(true);
+  };
+
+  const handleDeleteRecipe = async (recipeId) => {
+    if (!window.confirm('Möchtest du dieses Rezept wirklich löschen?')) {
+      return;
+    }
+
+    try {
+      await deleteRecipe(recipeId);
+      // Refresh recipes
+      await fetchRecipes();
+    } catch (err) {
+      console.error('Failed to delete recipe:', err);
+      alert('Fehler beim Löschen des Rezepts');
+    }
+  };
+
+  const handleRecipeDeleted = () => {
+    // Refresh recipes after recipe is deleted
+    fetchRecipes();
+    setShowCollectionsModal(false);
+  };
+
   useEffect(() => {
     fetchRecipes();
   }, []);
@@ -125,70 +155,82 @@ export default function RecipeLibrary() {
         {/* Recipes Content */}
         {!loading && !error && (
           <>
-            {/* Latest Recipes Section - Always show latest 3 recipes */}
+            {/* Latest Recipes Section - Horizontal scroll with 6 recipes */}
             {latestRecipes.length > 0 && (
               <div className="mb-8 md:mb-10">
                 <h2 className="text-2xl sm:text-3xl font-bold text-[#035035] mb-4">Letzte Rezepte</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  {latestRecipes.map((recipe) => {
-                    const isNew = newRecipeIds.has(recipe.id);
+                <div className="overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
+                  <div className="flex gap-4 min-w-min">
+                    {latestRecipes.map((recipe) => {
+                      const isNew = newRecipeIds.has(recipe.id);
 
-                    return (
-                      <Link
-                        to={`/app/recipe/${recipe.id}`}
-                        key={recipe.id}
-                        className={`bg-white rounded-2xl overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer min-h-[44px] relative ${
-                          isNew
-                            ? 'border-4 border-[#4CAF50] shadow-[0_0_20px_rgba(76,175,80,0.3)]'
-                            : 'border border-[#F5F5F5]'
-                        }`}
-                      >
-                        {/* NEW Badge */}
-                        {isNew && (
-                          <div className="absolute top-4 right-4 z-10 bg-[#4CAF50] text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-lg">
-                            NEU
-                          </div>
-                        )}
+                      return (
+                        <div key={recipe.id} className="flex-shrink-0 w-[180px] sm:w-[200px]">
+                          <Link
+                            to={`/app/recipe/${recipe.id}`}
+                            className={`block bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-300 ${
+                              isNew
+                                ? 'border-[5px] border-[#FF9B7B] shadow-[0_0_30px_rgba(255,155,123,0.6)] hover:shadow-[0_0_40px_rgba(255,155,123,0.8)] hover:scale-[1.02]'
+                                : 'border border-[#F5F5F5] hover:shadow-lg hover:-translate-y-1'
+                            }`}
+                          >
+                            {/* Image */}
+                            <div className="bg-[#FFF8F0] h-36 sm:h-44 flex items-center justify-center overflow-hidden relative">
+                              {recipe.image.startsWith('http') || recipe.image.startsWith('/') ? (
+                                <img
+                                  src={recipe.image}
+                                  alt={recipe.name}
+                                  className="w-full h-full object-cover"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                <span className="text-4xl sm:text-5xl">{recipe.image}</span>
+                              )}
 
-                        {/* Image */}
-                        <div className="bg-[#FFF8F0] h-48 sm:h-56 flex items-center justify-center overflow-hidden">
-                          {recipe.image.startsWith('http') || recipe.image.startsWith('/') ? (
-                            <img
-                              src={recipe.image}
-                              alt={recipe.name}
-                              className="w-full h-full object-cover"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <span className="text-6xl sm:text-7xl">{recipe.image}</span>
-                          )}
-                        </div>
+                              {/* NEW Badge - top left */}
+                              {isNew && (
+                                <div className="absolute top-2 left-2 z-10 bg-gradient-to-r from-[#FF9B7B] to-[#ff8a61] text-white px-2 py-1 rounded-full text-[10px] font-bold shadow-lg animate-pulse">
+                                  ✨ NEU
+                                </div>
+                              )}
 
-                        {/* Content */}
-                        <div className="p-4 sm:p-5">
-                          <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            <span className="text-xs font-semibold text-[#035035] bg-[#035035]/10 px-3 py-1 rounded-full whitespace-nowrap">
-                              {recipe.category}
-                            </span>
-                            <span className="text-xs font-semibold text-[#FF9B7B] bg-[#FF9B7B]/10 px-3 py-1 rounded-full whitespace-nowrap">
-                              {recipe.difficulty}
-                            </span>
-                          </div>
-                          <h3 className="text-lg sm:text-xl font-bold text-[#2D2D2D] mb-3 line-clamp-2">{recipe.name}</h3>
-                          <div className="flex items-center gap-3 sm:gap-4 text-sm text-[#2D2D2D] opacity-60 flex-wrap">
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-4 h-4 flex-shrink-0" />
-                              <span className="whitespace-nowrap">{recipe.time}</span>
+                              {/* Menu Button - top right inside image */}
+                              <div className="absolute top-2 right-2 z-10">
+                                <RecipeCardMenu
+                                  recipeId={recipe.id}
+                                  onEditCollections={handleEditCollections}
+                                  onDelete={handleDeleteRecipe}
+                                />
+                              </div>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <Users className="w-4 h-4 flex-shrink-0" />
-                              <span className="whitespace-nowrap">{recipe.servings} servings</span>
+
+                            {/* Content */}
+                            <div className="p-3">
+                              <div className="flex items-center gap-1 mb-2 flex-wrap">
+                                <span className="text-[10px] font-semibold text-[#035035] bg-[#035035]/10 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                  {recipe.category}
+                                </span>
+                                <span className="text-[10px] font-semibold text-[#FF9B7B] bg-[#FF9B7B]/10 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                  {recipe.difficulty}
+                                </span>
+                              </div>
+                              <h3 className="text-sm font-bold text-[#2D2D2D] mb-2 line-clamp-2">{recipe.name}</h3>
+                              <div className="flex items-center gap-2 text-xs text-[#2D2D2D] opacity-60 flex-wrap">
+                                <div className="flex items-center gap-1">
+                                  <Clock className="w-3 h-3 flex-shrink-0" />
+                                  <span className="whitespace-nowrap">{recipe.time}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Users className="w-3 h-3 flex-shrink-0" />
+                                  <span className="whitespace-nowrap">{recipe.servings}</span>
+                                </div>
+                              </div>
                             </div>
-                          </div>
+                          </Link>
                         </div>
-                      </Link>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             )}
@@ -298,6 +340,19 @@ export default function RecipeLibrary() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Edit Collections Modal */}
+      {selectedRecipeId && (
+        <EditCollectionsModal
+          recipeId={selectedRecipeId}
+          isOpen={showCollectionsModal}
+          onClose={() => {
+            setShowCollectionsModal(false);
+            setSelectedRecipeId(null);
+          }}
+          onRecipeDeleted={handleRecipeDeleted}
+        />
       )}
     </div>
   );

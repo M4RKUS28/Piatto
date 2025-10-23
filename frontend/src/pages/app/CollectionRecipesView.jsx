@@ -185,15 +185,15 @@ export default function CollectionRecipesView() {
 
             {/* Recipe Grid */}
             {filteredRecipes.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5">
                 {filteredRecipes.map((recipe) => (
                   <div key={recipe.id} className="relative">
                     <Link
                       to={`/app/recipe/${recipe.id}`}
-                      className="block bg-white rounded-2xl border border-[#F5F5F5] overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer min-h-[44px]"
+                      className="block bg-white rounded-xl border border-[#F5F5F5] overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer"
                     >
                       {/* Image */}
-                      <div className="bg-[#FFF8F0] h-48 sm:h-56 flex items-center justify-center overflow-hidden relative">
+                      <div className="bg-[#FFF8F0] h-36 sm:h-44 flex items-center justify-center overflow-hidden relative">
                         {recipe.image.startsWith('http') || recipe.image.startsWith('/') ? (
                           <img
                             src={recipe.image}
@@ -202,35 +202,37 @@ export default function CollectionRecipesView() {
                             loading="lazy"
                           />
                         ) : (
-                          <span className="text-6xl sm:text-7xl">{recipe.image}</span>
+                          <span className="text-4xl sm:text-5xl">{recipe.image}</span>
                         )}
 
-                        {/* Menu Button */}
-                        <RecipeCardMenu
-                          recipeId={recipe.id}
-                          onEditCollections={handleEditCollections}
-                          onDelete={handleDeleteRecipe}
-                        />
+                        {/* Menu Button - top right inside image */}
+                        <div className="absolute top-2 right-2 z-10">
+                          <RecipeCardMenu
+                            recipeId={recipe.id}
+                            onEditCollections={handleEditCollections}
+                            onDelete={handleDeleteRecipe}
+                          />
+                        </div>
                       </div>
 
                       {/* Content */}
-                      <div className="p-4 sm:p-5">
-                        <div className="flex items-center gap-2 mb-2 flex-wrap">
-                          <span className="text-xs font-semibold text-[#035035] bg-[#035035]/10 px-3 py-1 rounded-full whitespace-nowrap">
+                      <div className="p-3">
+                        <div className="flex items-center gap-1 mb-2 flex-wrap">
+                          <span className="text-[10px] font-semibold text-[#035035] bg-[#035035]/10 px-2 py-0.5 rounded-full whitespace-nowrap">
                             {recipe.category}
                           </span>
-                          <span className="text-xs font-semibold text-[#FF9B7B] bg-[#FF9B7B]/10 px-3 py-1 rounded-full whitespace-nowrap">
+                          <span className="text-[10px] font-semibold text-[#FF9B7B] bg-[#FF9B7B]/10 px-2 py-0.5 rounded-full whitespace-nowrap">
                             {recipe.difficulty}
                           </span>
                         </div>
-                        <h3 className="text-lg sm:text-xl font-bold text-[#2D2D2D] mb-3 line-clamp-2">{recipe.name}</h3>
-                        <div className="flex items-center gap-3 sm:gap-4 text-sm text-[#2D2D2D] opacity-60 flex-wrap">
+                        <h3 className="text-sm font-bold text-[#2D2D2D] mb-2 line-clamp-2">{recipe.name}</h3>
+                        <div className="flex items-center gap-2 text-xs text-[#2D2D2D] opacity-60 flex-wrap">
                           <div className="flex items-center gap-1">
-                            <Clock className="w-4 h-4 flex-shrink-0" />
+                            <Clock className="w-3 h-3 flex-shrink-0" />
                             <span className="whitespace-nowrap">{recipe.time}</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <Users className="w-4 h-4 flex-shrink-0" />
+                            <Users className="w-3 h-3 flex-shrink-0" />
                             <span className="whitespace-nowrap">{recipe.servings} servings</span>
                           </div>
                         </div>

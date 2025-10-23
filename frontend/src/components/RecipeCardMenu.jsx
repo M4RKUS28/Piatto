@@ -3,7 +3,7 @@ import { MoreVertical, FolderOpen, Trash2 } from 'lucide-react';
 
 /**
  * RecipeCardMenu component displays a three-dot menu button for recipe cards
- * Positioned at the bottom right of the card
+ * Positioned where parent decides (usually top-right now)
  */
 export default function RecipeCardMenu({ recipeId, onEditCollections, onDelete }) {
   const [showMenu, setShowMenu] = useState(false);
@@ -47,31 +47,31 @@ export default function RecipeCardMenu({ recipeId, onEditCollections, onDelete }
   };
 
   return (
-    <div className="absolute bottom-4 right-4 z-10" ref={menuRef}>
+    <div className="relative" ref={menuRef}>
       <button
         onClick={toggleMenu}
-        className="p-2 bg-white/90 backdrop-blur-sm rounded-full border border-[#F5F5F5] hover:bg-[#035035] hover:text-white transition-all shadow-sm min-h-[36px] min-w-[36px] flex items-center justify-center"
+        className="p-1.5 bg-white/95 backdrop-blur-sm rounded-full border border-[#F5F5F5] hover:bg-[#035035] hover:text-white transition-all shadow-md min-h-[28px] min-w-[28px] flex items-center justify-center"
         aria-label="Recipe options"
       >
-        <MoreVertical className="w-5 h-5" />
+        <MoreVertical className="w-4 h-4" />
       </button>
 
       {/* Dropdown Menu */}
       {showMenu && (
-        <div className="absolute bottom-full right-0 mb-2 w-56 bg-white rounded-xl shadow-lg border border-[#F5F5F5] py-2">
+        <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-[#F5F5F5] py-1.5 z-50">
           <button
             onClick={handleEditCollections}
-            className="w-full px-4 py-3 text-left hover:bg-[#F5F5F5] transition-colors flex items-center gap-3"
+            className="w-full px-3 py-2 text-left hover:bg-[#F5F5F5] transition-colors flex items-center gap-2"
           >
-            <FolderOpen className="w-5 h-5 text-[#035035]" />
-            <span className="text-[#2D2D2D] font-medium">Sammlung bearbeiten</span>
+            <FolderOpen className="w-4 h-4 text-[#035035]" />
+            <span className="text-[#2D2D2D] font-medium text-sm">Sammlung bearbeiten</span>
           </button>
           <button
             onClick={handleDelete}
-            className="w-full px-4 py-3 text-left hover:bg-red-50 transition-colors flex items-center gap-3"
+            className="w-full px-3 py-2 text-left hover:bg-red-50 transition-colors flex items-center gap-2"
           >
-            <Trash2 className="w-5 h-5 text-red-500" />
-            <span className="text-red-500 font-medium">Rezept löschen</span>
+            <Trash2 className="w-4 h-4 text-red-500" />
+            <span className="text-red-500 font-medium text-sm">Rezept löschen</span>
           </button>
         </div>
       )}
