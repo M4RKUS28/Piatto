@@ -16,7 +16,7 @@ pathMatchers:
     - /logo_no_P.svg
     - /logo_P.svg
     - /logo_P_test.png
-    - /social-aspekt/invite/a73ky284nd
+    - /social-aspekt/invite/a73ky284nd.html
     - /rage-ragebait.gif
     - /logo_no_P.png
     service: https://www.googleapis.com/compute/v1/projects/cloud-run-hackathon-475303/global/backendBuckets/frontend-bucket
