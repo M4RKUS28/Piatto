@@ -137,11 +137,15 @@ export default function RecipeLibrary() {
                       <Link
                         to={`/app/recipe/${recipe.id}`}
                         key={recipe.id}
-                        className="bg-white rounded-2xl border border-[#F5F5F5] overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer min-h-[44px] relative"
+                        className={`bg-white rounded-2xl overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer min-h-[44px] relative ${
+                          isNew
+                            ? 'border-4 border-[#4CAF50] shadow-[0_0_20px_rgba(76,175,80,0.3)]'
+                            : 'border border-[#F5F5F5]'
+                        }`}
                       >
                         {/* NEW Badge */}
                         {isNew && (
-                          <div className="absolute top-4 right-4 z-10 bg-[#4CAF50] text-white px-3 py-1 rounded-full text-xs font-bold shadow-md">
+                          <div className="absolute top-4 right-4 z-10 bg-[#4CAF50] text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-lg">
                             NEU
                           </div>
                         )}
