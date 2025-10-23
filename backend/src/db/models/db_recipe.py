@@ -15,6 +15,7 @@ class Recipe(Base):
     image_url = Column(String(255), nullable=True)
     is_permanent = Column(Boolean, default=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    
 
     ingredients = relationship(
         "RecipeIngredient",
