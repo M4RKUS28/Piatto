@@ -12,6 +12,8 @@ class InstructionStep(BaseModel):
         Field(description="The actual instructions in plain text"))
     timer: Optional[int] = (
         Field(description="If a timer is needed for this step, specify its duration in seconds."))
+    animation: Optional[str] = (
+        Field(description="If an animation is needed for this step, specify its name."))
 
 class Instructions(BaseModel):
     """Schema representing a list of instruction steps."""

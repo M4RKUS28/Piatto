@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { PiX, PiCaretRight } from 'react-icons/pi';
 import Recipe from './Recipe';
-import Instructions from './Instructions';
+import CookingInstructions from "./Instructions";
 
 // Main RecipeView component
 const RecipeView = () => {
@@ -104,7 +104,7 @@ const RecipeView = () => {
       {/* Instructions Panel (now permanent) */}
       <div className="relative flex-1 min-w-0">
         <div className="h-full">
-          <Instructions recipeId={parseInt(recipeId, 10)} />
+          <CookingInstructions recipeId={parseInt(recipeId, 10)} />
         </div>
       </div>
     </div>
