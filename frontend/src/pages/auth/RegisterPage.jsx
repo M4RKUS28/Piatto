@@ -74,24 +74,18 @@ export default function RegisterPage() {
   const handleGoogleSignup = () => {
     if (!acceptedPrivacy) {
       setError('Please accept the Privacy Policy to continue');
-      return;
     }
     loginWithGoogle();
   };
 
   return (
-    <div className="bg-gradient-to-br from-[#FFF8F0] via-white to-[#F5F5F5] flex items-center justify-center px-6 py-12 relative overflow-hidden">
-      {/* Decorative background elements */}
-      <div className="absolute top-20 right-20 w-64 h-64 rounded-full bg-[#A8C9B8] opacity-10 blur-3xl"></div>
-      <div className="absolute bottom-40 left-10 w-80 h-80 rounded-full bg-[#FF9B7B] opacity-10 blur-3xl"></div>
-
-      <div className="w-full max-w-md relative z-10 mx-auto">
+    <div className="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md min-w-[400px] relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-[#035035] mb-2">Create Your Account</h1>
           <p className="text-[#2D2D2D]">Start your culinary adventure today</p>
         </div>
-
         {/* Registration Form Card */}
         <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#F5F5F5]">
           <form onSubmit={handleSubmit} className="space-y-5">
