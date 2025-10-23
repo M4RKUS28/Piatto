@@ -56,6 +56,7 @@ async def get_all_recipes_by_user_id(db: AsyncSession, user_id: str) -> List[Rec
         select(Recipe)
         .options(selectinload(Recipe.ingredients))
         .filter(Recipe.user_id == user_id)
+        .order_by(Recipe.created_at.desc())
     )
     return result.scalars().all()
 
