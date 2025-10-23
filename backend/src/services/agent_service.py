@@ -9,14 +9,15 @@ from typing import Optional
 from fastapi import Depends, HTTPException
 
 from ..agents.chat_agent.agent import ChatAgent
+from ..agents.instruction_agent.agent import InstructionAgent
 from ..api.schemas.recipe import Recipe
 
-from .query_service import get_recipe_gen_query, get_image_gen_query, get_chat_agent_query
+from .query_service import get_recipe_gen_query, get_image_gen_query, get_chat_agent_query, get_instruction_query
 from ..agents.image_agent.agent import ImageAgent
 from ..agents.image_analyzer_agent import ImageAnalyzerAgent
 from ..agents.recipe_agent import RecipeAgent
 from ..db.bucket_session import get_bucket_session, get_async_bucket_session
-from ..db.crud import recipe_crud, preparing_crud, cooking_crud
+from ..db.crud import recipe_crud, preparing_crud, cooking_crud, instruction_crud
 from ..db.crud.bucket_base_repo import get_file, upload_file, save_image_bytes
 from google.adk.sessions import InMemorySessionService
 from ..agents.utils import create_text_query, create_docs_query
@@ -35,6 +36,7 @@ class AgentService:
         self.recipe_agent = RecipeAgent(self.app_name, self.session_service)
         self.image_agent = ImageAgent(self.app_name, self.session_service)
         self.chat_agent = ChatAgent(self.app_name, self.session_service)
+        self.instruction_agent = InstructionAgent(self.app_name, self.session_service)
 
     async def analyze_ingredients(self, user_id: str, file: bytes) -> str:
         """
@@ -91,6 +93,7 @@ class AgentService:
                     user_id=user_id,
                     title=recipe_payload['title'],
                     description=recipe_payload['description'],
+                    prompt=prompt,
                     ingredients=recipe_payload['ingredients'],
                     image_url=image_key,
                 )
@@ -110,6 +113,59 @@ class AgentService:
                 raise HTTPException(status_code=403, detail="Preparing session does not belong to the authenticated user") from error
 
         return session.id
+
+    async def generate_instruction(self, user_id: str, preparing_session_id: int, recipe_id: int) -> int:
+        """
+        Generate instructions for a recipe using the instruction agent.
+
+        Args:
+            user_id: The user ID
+            preparing_session_id: The preparing session ID (unused but kept for API compatibility)
+            recipe_id: The recipe ID to generate instructions for
+
+        Returns:
+            The recipe ID
+        """
+        async with get_async_db_context() as db:
+            recipe = await recipe_crud.get_recipe_by_id(db, recipe_id)
+            if not recipe:
+                raise HTTPException(status_code=404, detail="Recipe not found")
+
+        query = get_instruction_query(recipe)
+        instructions_response = await self.instruction_agent.run(
+            user_id=user_id,
+            state={},
+            content=query,
+        )
+
+        # Extract steps from the agent response
+        # The agent returns an Instructions object with a 'steps' field
+        if isinstance(instructions_response, dict):
+            steps_data = instructions_response.get('steps', [])
+        elif hasattr(instructions_response, 'steps'):
+            steps_data = instructions_response.steps
+        else:
+            steps_data = []
+
+        # Convert steps to list of dicts
+        steps_list = []
+        for step in steps_data:
+            if isinstance(step, dict):
+                steps_list.append(step)
+            elif hasattr(step, 'model_dump'):
+                steps_list.append(step.model_dump())
+            elif hasattr(step, 'dict'):
+                steps_list.append(step.dict())
+
+        # Save instruction steps to database
+        async with get_async_db_context() as db:
+            await instruction_crud.create_instruction_steps(
+                db=db,
+                recipe_id=recipe_id,
+                steps=steps_list
+            )
+
+        return recipe_id
 
 
     async def change_recipe(self, change_prompt: str, recipe_id: int,db : AsyncSession = Depends(get_db)):
@@ -133,6 +189,7 @@ class AgentService:
             id=recipe.id,
             title=recipe.title,
             description=recipe.description,
+            prompt=recipe.prompt,
             ingredients=json.loads(recipe.ingredients),
             instructions=json.loads(recipe.instructions),
             image_url=recipe.image_url,

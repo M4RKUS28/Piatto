@@ -10,7 +10,7 @@ from .core.lifespan import lifespan
 
 from .api.routers import auth as auth_router
 from .api.routers import users
-from .api.routers import files, cooking, preparing, recipe, collection
+from .api.routers import files, cooking, preparing, recipe, collection, instruction
 
 
 # Create the main app instance
@@ -58,6 +58,7 @@ app.include_router(cooking.router)
 app.include_router(preparing.router)
 app.include_router(recipe.router)
 app.include_router(collection.router)
+app.include_router(instruction.router)
 
 
 

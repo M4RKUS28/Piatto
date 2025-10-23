@@ -11,6 +11,7 @@ class Recipe(Base):
     user_id = Column(String(50), ForeignKey("users.id"), nullable=False)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=False)
+    prompt = Column(Text, nullable=False)
     instructions = Column(Text, nullable=True)  # Store as JSON string
     image_url = Column(String(255), nullable=True)
     is_permanent = Column(Boolean, default=False)
@@ -22,6 +23,13 @@ class Recipe(Base):
         back_populates="recipe",
         cascade="all, delete-orphan",
         order_by="RecipeIngredient.id",
+    )
+
+    instruction_steps = relationship(
+        "InstructionStep",
+        back_populates="recipe",
+        cascade="all, delete-orphan",
+        order_by="InstructionStep.step_number",
     )
 
     collections = relationship(
@@ -42,6 +50,21 @@ class RecipeIngredient(Base):
     unit = Column(String(50), nullable=True)
 
     recipe = relationship("Recipe", back_populates="ingredients")
+
+
+class InstructionStep(Base):
+    """Database model for a recipe instruction step."""
+    __tablename__ = "instruction_steps"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    recipe_id = Column(Integer, ForeignKey("recipes.id", ondelete="CASCADE"), nullable=False)
+    step_number = Column(Integer, nullable=False)  # Order of the step (0-indexed)
+    heading = Column(String(255), nullable=False)
+    description = Column(Text, nullable=False)
+    animation = Column(String(100), nullable=False)  # Animation file name
+    timer = Column(Integer, nullable=True)  # Timer duration in seconds
+
+    recipe = relationship("Recipe", back_populates="instruction_steps")
 
 
 class PreparingSession(Base):

@@ -10,14 +10,18 @@ class Ingredient(BaseModel):
 
 class Instruction(BaseModel):
     """Schema representing a cooking instruction step."""
-    Instruction: str
-    timer: Optional[int] = None  # in Sekunden
+    id: Optional[int] = None
+    heading: str
+    description: str
+    animation: str
+    timer: Optional[int] = None  # in seconds
 
 class Recipe(BaseModel):
     """Schema representing a generated recipe."""
     id: int
     title: str
     description: str
+    prompt: str
     ingredients: List[Ingredient]
     instructions: List[Instruction]
     image_url: Optional[str] = None
