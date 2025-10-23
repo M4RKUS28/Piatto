@@ -36,6 +36,7 @@ export default function CollectionRecipesView() {
         name: recipe.title,
         description: recipe.description || '',
         image: recipe.image_url ? getImageUrl(recipe.image_url) : '🍽️',
+        originalImageUrl: recipe.image_url || '', // Keep original URL for collage
         time: '30 min',
         servings: '4',
         difficulty: 'Medium',
@@ -116,9 +117,9 @@ export default function CollectionRecipesView() {
           {collection && (
             <div className="flex flex-col md:flex-row items-start gap-4 mb-4">
               {/* Collection Image Collage */}
-              <div className="w-full md:w-48 h-48 flex-shrink-0">
+              <div className="w-full md:w-32 h-32 flex-shrink-0">
                 <CollectionImageCollage
-                  imageUrls={recipes.slice(0, 4).map(r => r.image).filter(img => img.startsWith('http') || img.startsWith('/'))}
+                  imageUrls={recipes.slice(0, 4).map(r => r.originalImageUrl).filter(url => url)}
                 />
               </div>
 
