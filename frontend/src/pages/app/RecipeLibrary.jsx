@@ -8,6 +8,9 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorMessage from '../../components/ErrorMessage';
 import RecipeCardMenu from '../../components/RecipeCardMenu';
 import EditCollectionsModal from '../../components/EditCollectionsModal';
+import CollectionCardMenu from '../../components/CollectionCardMenu';
+import EditCollectionNameModal from '../../components/EditCollectionNameModal';
+import DeleteCollectionModal from '../../components/DeleteCollectionModal';
 import CollectionImageCollage from '../../components/CollectionImageCollage';
 import { getImageUrl } from '../../utils/imageUtils';
 
@@ -84,6 +87,9 @@ export default function RecipeLibrary() {
   const [newCollectionName, setNewCollectionName] = useState('');
   const [newCollectionDescription, setNewCollectionDescription] = useState('');
   const [creatingCollection, setCreatingCollection] = useState(false);
+  const [showEditCollectionModal, setShowEditCollectionModal] = useState(false);
+  const [showDeleteCollectionModal, setShowDeleteCollectionModal] = useState(false);
+  const [selectedCollection, setSelectedCollection] = useState(null);
 
   const fetchRecipes = async () => {
     setLoading(true);
@@ -177,6 +183,28 @@ export default function RecipeLibrary() {
     // Refresh recipes after recipe is deleted
     fetchRecipes();
     setShowCollectionsModal(false);
+  };
+
+  const handleEditCollection = (collectionId) => {
+    const collection = collections.find(c => c.id === collectionId);
+    setSelectedCollection(collection);
+    setShowEditCollectionModal(true);
+  };
+
+  const handleDeleteCollection = (collectionId) => {
+    const collection = collections.find(c => c.id === collectionId);
+    setSelectedCollection(collection);
+    setShowDeleteCollectionModal(true);
+  };
+
+  const handleCollectionUpdated = () => {
+    // Refresh collections after collection is updated
+    fetchRecipes();
+  };
+
+  const handleCollectionDeleted = () => {
+    // Refresh collections after collection is deleted
+    fetchRecipes();
   };
 
   useEffect(() => {
@@ -335,6 +363,15 @@ export default function RecipeLibrary() {
                         {/* Image Collage */}
                         <div className="bg-[#FFF8F0] h-36 sm:h-44 flex items-center justify-center overflow-hidden relative">
                           <CollectionImageCollage imageUrls={collection.preview_image_urls || []} />
+
+                          {/* Menu Button - top right inside image */}
+                          <div className="absolute top-2 right-2 z-10">
+                            <CollectionCardMenu
+                              collectionId={collection.id}
+                              onEdit={handleEditCollection}
+                              onDelete={handleDeleteCollection}
+                            />
+                          </div>
                         </div>
 
                         {/* Content */}
@@ -425,6 +462,28 @@ export default function RecipeLibrary() {
           onRecipeDeleted={handleRecipeDeleted}
         />
       )}
+
+      {/* Edit Collection Name Modal */}
+      <EditCollectionNameModal
+        collection={selectedCollection}
+        isOpen={showEditCollectionModal}
+        onClose={() => {
+          setShowEditCollectionModal(false);
+          setSelectedCollection(null);
+        }}
+        onUpdated={handleCollectionUpdated}
+      />
+
+      {/* Delete Collection Modal */}
+      <DeleteCollectionModal
+        collection={selectedCollection}
+        isOpen={showDeleteCollectionModal}
+        onClose={() => {
+          setShowDeleteCollectionModal(false);
+          setSelectedCollection(null);
+        }}
+        onDeleted={handleCollectionDeleted}
+      />
     </div>
   );
 }
