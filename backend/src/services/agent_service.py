@@ -93,6 +93,9 @@ class AgentService:
                     description=recipe_payload['description'],
                     ingredients=recipe_payload['ingredients'],
                     image_url=image_key,
+                    total_time_minutes=recipe_payload.get('total_time_minutes'),
+                    difficulty=recipe_payload.get('difficulty'),
+                    food_category=recipe_payload.get('food_category'),
                 )
                 recipe_ids.append(recipe_db.id)
 

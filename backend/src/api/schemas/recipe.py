@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Literal
 
 class Ingredient(BaseModel):
     """Schema representing an ingredient."""
@@ -21,6 +21,9 @@ class Recipe(BaseModel):
     ingredients: List[Ingredient]
     instructions: List[Instruction]
     image_url: Optional[str] = None
+    total_time_minutes: Optional[int] = None
+    difficulty: Optional[Literal["easy", "medium", "hard"]] = None
+    food_category: Optional[Literal["vegan", "vegetarian", "beef", "pork", "chicken", "lamb", "fish", "seafood", "mixed-meat"]] = None
 
     class Config:
         from_attributes = True  # wichtig, wenn du ORM-Objekte nutzt
@@ -73,6 +76,9 @@ class ChangeRecipeManualRequest(BaseModel):
     ingredients: Optional[List[Ingredient]] = None
     instructions: Optional[List[Instruction]] = None
     image_url: Optional[str] = None
+    total_time_minutes: Optional[int] = None
+    difficulty: Optional[Literal["easy", "medium", "hard"]] = None
+    food_category: Optional[Literal["vegan", "vegetarian", "beef", "pork", "chicken", "lamb", "fish", "seafood", "mixed-meat"]] = None
 
 class ChangeStateRequest(BaseModel):
     """Schema for changing the cooking state."""

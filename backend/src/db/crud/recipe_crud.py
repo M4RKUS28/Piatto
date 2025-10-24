@@ -67,7 +67,10 @@ async def create_recipe(db: AsyncSession,
                 ingredients: Optional[List[Ingredient]] = None,
                 instructions: str = "[]",
                 image_url: Optional[str] = None,
-                is_permanent: bool = False) -> Recipe:
+                is_permanent: bool = False,
+                total_time_minutes: Optional[int] = None,
+                difficulty: Optional[str] = None,
+                food_category: Optional[str] = None) -> Recipe:
     """Create a new recipe in the database."""
     recipe = Recipe(
         user_id=user_id,
@@ -76,6 +79,9 @@ async def create_recipe(db: AsyncSession,
         instructions=instructions,
         image_url=image_url,
         is_permanent=is_permanent,
+        total_time_minutes=total_time_minutes,
+        difficulty=difficulty,
+        food_category=food_category,
     )
 
     for ingredient in ingredients or []:
@@ -100,7 +106,10 @@ async def update_recipe(db: AsyncSession,
                 ingredients: Optional[List[Ingredient]] = None,
                 instructions: Optional[str] = None,
                 image_url: Optional[str] = None,
-                is_permanent: Optional[bool] = None) -> Optional[Recipe]:
+                is_permanent: Optional[bool] = None,
+                total_time_minutes: Optional[int] = None,
+                difficulty: Optional[str] = None,
+                food_category: Optional[str] = None) -> Optional[Recipe]:
     """Update an existing recipe in the database."""
     result = await db.execute(
         select(Recipe)
@@ -122,6 +131,12 @@ async def update_recipe(db: AsyncSession,
         recipe.image_url = image_url
     if is_permanent is not None:
         recipe.is_permanent = is_permanent
+    if total_time_minutes is not None:
+        recipe.total_time_minutes = total_time_minutes
+    if difficulty is not None:
+        recipe.difficulty = difficulty
+    if food_category is not None:
+        recipe.food_category = food_category
 
     db.add(recipe)
     await db.commit()

@@ -14,7 +14,11 @@ class Recipe(Base):
     instructions = Column(Text, nullable=True)  # Store as JSON string
     image_url = Column(String(255), nullable=True)
     is_permanent = Column(Boolean, default=False)
+    total_time_minutes = Column(Integer, nullable=True)
+    difficulty = Column(String(20), nullable=True)  # easy, medium, hard
+    food_category = Column(String(20), nullable=True)  # vegan, vegetarian, meat
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    
     
 
     ingredients = relationship(
