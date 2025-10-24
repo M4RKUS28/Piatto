@@ -1,549 +1,447 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from 'react';
 import Lottie from 'lottie-react';
+import { useTimer } from 'react-timer-hook';
+import { useParams } from 'react-router-dom';
+import { getInstructions } from '../../api/instructionApi';
 
-// ============================================================================
-// SAMPLE DATA - Replace this with your actual recipe instructions
-// ============================================================================
-const sampleInstructions = [
+// --- Mock Data ---
+const mockInstructions = [
   {
-    id: 1,
-    title: "Boil the Water",
-    instruction: "Bring a large pot of salted water to a rolling boil. Use plenty of water to give the pasta room to move freely. The water should be as salty as the sea!",
-    duration: 300, // 5 minutes in seconds
-    animation: "boil_water",
-    tips: "Use about 4-5 quarts of water and 2 tablespoons of salt for perfect pasta",
-    heatLevel: "high"
+    heading: 'Chop your vegetables',
+    description: 'Wash and dry your vegetables, then chop them into bite-sized pieces using a big knife. Aim for even sizes so they cook uniformly.',
+    animationFile: 'big_knife.json'
   },
   {
-    id: 2,
-    title: "Prepare the Meat Sauce",
-    instruction: "Heat olive oil in a large pan over medium-high heat. Add the ground beef and break it up with a wooden spoon. Cook until browned all over, stirring occasionally.",
-    duration: 480, // 8 minutes
-    animation: "fry_in_pan",
-    tips: "Don't move the meat too much at first - let it develop a nice brown crust for maximum flavor",
-    heatLevel: "medium"
+    heading: 'Start the pan and heat some oil',
+    description: 'Place a large pan on medium-high heat and add a drizzle of olive oil. Wait until it shimmers — this means it’s hot enough to start cooking.',
+    animationFile: 'fire_in_pan.json'
   },
   {
-    id: 3,
-    title: "Add Aromatics",
-    instruction: "Add the chopped onions and minced garlic to the pan with the meat. Sauté until the onions become translucent and fragrant, about 3-4 minutes.",
-    duration: 240, // 4 minutes
-    animation: "let_cook_and_stirr",
-    tips: "If the garlic starts to brown too quickly, reduce the heat slightly",
-    heatLevel: "medium"
+    heading: 'Fry the vegetables',
+    description: 'Add your chopped vegetables to the hot pan. Fry them for a few minutes until they start to soften and get a light golden color.',
+    animationFile: 'fry_in_pan.json'
   },
   {
-    id: 4,
-    title: "Build the Sauce",
-    instruction: "Stir in the tomato paste and cook for 2 minutes. Then add crushed tomatoes, beef broth, oregano, and basil. Season with salt and pepper. Bring to a simmer.",
-    duration: 180, // 3 minutes
-    animation: "let_cook_and_stirr",
-    tips: "Cooking the tomato paste for a couple minutes removes the raw taste and deepens the flavor",
-    heatLevel: "medium"
+    heading: 'Let it cook and stir occasionally',
+    description: 'Lower the heat slightly, cover partially, and let the veggies cook through while stirring every couple of minutes to prevent sticking.',
+    animationFile: 'let_cook_and_stirr.json',
+    timer: 300
   },
   {
-    id: 5,
-    title: "Simmer the Sauce",
-    instruction: "Reduce heat to low and let the sauce simmer gently, stirring occasionally. This allows the flavors to meld together beautifully.",
-    duration: 900, // 15 minutes
-    animation: "steaming_with_lid",
-    tips: "The longer you simmer (up to 2 hours), the richer the sauce becomes. But 15-20 minutes minimum is perfect!",
-    heatLevel: "low"
+    heading: 'Steam for tenderness',
+    description: 'Add a splash of water and cover the pan fully with a lid to trap steam. Let it steam for 3–5 minutes until everything is tender and fragrant.',
+    animationFile: 'steaming_with_lid.json',
+    timer: 240
   },
   {
-    id: 6,
-    title: "Cook the Pasta",
-    instruction: "Add the spaghetti to the boiling water and cook according to package directions until al dente. Reserve 1 cup of pasta water before draining.",
-    duration: 540, // 9 minutes
-    animation: "boil_water",
-    tips: "Stir the pasta immediately after adding it to prevent sticking. Test it 1-2 minutes before the package time",
-    heatLevel: "high"
+    heading: 'Combine with cooked pasta and bake',
+    description: 'Mix your cooked pasta with the veggies, toss everything with a bit of cheese or sauce, and transfer to a baking dish. Bake in a preheated oven until bubbling and golden.',
+    animationFile: 'oven_convect.json'
   },
   {
-    id: 7,
-    title: "Combine and Serve",
-    instruction: "Drain the pasta and add it to the sauce. Toss well to coat every strand. Add pasta water if needed to achieve the perfect consistency. Serve immediately with fresh basil and Parmesan.",
-    duration: 120, // 2 minutes
-    animation: "let_cook_and_stirr",
-    tips: "The starchy pasta water helps the sauce cling to the noodles - don't skip this step!",
-    heatLevel: "off"
+    heading: 'Reheat leftovers easily',
+    description: 'If you have leftovers, place a portion in the microwave and heat until warm throughout. Perfect for an easy next-day meal!',
+    animationFile: 'microwave.json'
   }
 ];
 
-// ============================================================================
-// COOKING INSTRUCTIONS COMPONENT
-// ============================================================================
-const CookingInstructions = ({ instructions = sampleInstructions }) => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState(new Set());
-  const [timerActive, setTimerActive] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(0);
-  const timerIntervalRef = useRef(null);
+// --- Configuration ---
+const CURVE_AMOUNT = 180;
 
-  const step = instructions[currentStep];
-  const progressPercentage = ((currentStep + 1) / instructions.length) * 100;
+// Calculate responsive circle radius based on viewport width
+const getCircleRadius = () => {
+  const width = window.innerWidth;
+  // Base size: 36px for mobile (320px), scales up to 60px for large screens (1920px)
+  const minRadius = 36;
+  const maxRadius = 60;
+  const minWidth = 320;
+  const maxWidth = 1920;
 
-  // Load animations
-  const [animations, setAnimations] = useState({});
+  const radius = minRadius + ((width - minWidth) / (maxWidth - minWidth)) * (maxRadius - minRadius);
+  return Math.max(minRadius, Math.min(maxRadius, radius));
+};
 
-  useEffect(() => {
-    const loadAnimations = async () => {
-      const animFiles = [
-        'boil_water',
-        'fire_in_pan',
-        'fry_in_pan',
-        'let_cook_and_stirr',
-        'microwave',
-        'oven_convect',
-        'steaming_with_lid'
-      ];
+// --- StepCircle Component ---
+const StepCircle = ({ animationFile, circleRadius }) => {
+  const [animationData, setAnimationData] = React.useState(null);
 
-      const loaded = {};
-      for (const file of animFiles) {
-        try {
-          const response = await fetch(`/lottie-animations/${file}.json`);
-          loaded[file] = await response.json();
-        } catch (error) {
-          console.error(`Failed to load ${file}:`, error);
-        }
-      }
-      setAnimations(loaded);
-    };
-
-    loadAnimations();
-  }, []);
-
-  // Timer logic
-  useEffect(() => {
-    if (timerActive && timeRemaining > 0) {
-      timerIntervalRef.current = setInterval(() => {
-        setTimeRemaining(prev => {
-          if (prev <= 1) {
-            setTimerActive(false);
-            playTimerComplete();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else {
-      clearInterval(timerIntervalRef.current);
-    }
-
-    return () => clearInterval(timerIntervalRef.current);
-  }, [timerActive, timeRemaining]);
-
-  const playTimerComplete = () => {
-    if ('vibrate' in navigator) {
-      navigator.vibrate([200, 100, 200]);
-    }
-    // Show browser notification if permitted
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('Timer Complete! ⏰', {
-        body: `${step.title} is ready!`,
-        icon: '🍳'
-      });
-    }
-  };
-
-  const nextStep = () => {
-    if (currentStep < instructions.length - 1) {
-      setCurrentStep(prev => prev + 1);
-      setTimerActive(false);
-      setTimeRemaining(0);
-    }
-  };
-
-  const previousStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(prev => prev - 1);
-      setTimerActive(false);
-      setTimeRemaining(0);
-    }
-  };
-
-  const startTimer = () => {
-    if (step.duration) {
-      setTimeRemaining(step.duration);
-      setTimerActive(true);
-    }
-  };
-
-  const toggleStepComplete = () => {
-    const newCompleted = new Set(completedSteps);
-    if (completedSteps.has(currentStep)) {
-      newCompleted.delete(currentStep);
-    } else {
-      newCompleted.add(currentStep);
-    }
-    setCompletedSteps(newCompleted);
-  };
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const heatColors = {
-    high: 'bg-red-500',
-    medium: 'bg-orange-500',
-    low: 'bg-yellow-500',
-    off: 'bg-gray-400'
-  };
-
-  const heatLabels = {
-    high: 'High Heat',
-    medium: 'Medium Heat',
-    low: 'Low Heat',
-    off: 'Heat Off'
-  };
+  React.useEffect(() => {
+    fetch(`/lottie-animations/${animationFile}`)
+      .then((response) => response.json())
+      .then((data) => setAnimationData(data))
+      .catch((error) => console.error("Error loading Lottie animation:", error));
+  }, [animationFile]);
 
   return (
-    <div className="h-full overflow-y-auto no-scrollbar bg-[#FFF8F0]">
-      <div className="p-4 sm:p-6 md:p-8 max-w-4xl mx-auto">
-        {/* Header with Progress */}
-        <motion.div
-          className="mb-6"
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 100, damping: 20 }}
-        >
-          <h2 className="font-poppins font-bold text-2xl sm:text-3xl text-[#035035] mb-4">
-            Cooking Instructions
-          </h2>
+    <div
+      className="relative flex-shrink-0 rounded-full border-[0px] border-[#035035] bg-[#FFF8F0]"
+      style={{
+        width: `${circleRadius * 2}px`,
+        height: `${circleRadius * 2}px`
+      }}
+    >
+      <div className="absolute inset-2">
+        {animationData && (
+          <Lottie
+            animationData={animationData}
+            loop={true}
+            style={{ width: '100%', height: '100%' }}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
 
-          {/* Progress Bar */}
-          <div className="w-full h-3 bg-[#F5F5F5] rounded-full overflow-hidden shadow-sm">
-            <motion.div
-              className="h-full bg-gradient-to-r from-[#035035] to-[#FF9B7B] rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPercentage}%` }}
-              transition={{ type: "spring", stiffness: 100, damping: 20 }}
-            />
-          </div>
-          <p className="text-sm mt-2 text-[#2D2D2D]/70">
-            Step {currentStep + 1} of {instructions.length} • {Math.round(progressPercentage)}% Complete
-          </p>
-        </motion.div>
+// --- Timer Component ---
+const Timer = ({ expiryTimestamp, timerSeconds }) => {
+  const {
+    seconds,
+    minutes,
+    hours,
+    isRunning,
+    pause,
+    resume,
+    restart,
+  } = useTimer({
+    expiryTimestamp,
+    onExpire: () => console.warn('Timer expired'),
+  });
 
-        {/* Current Step Card */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentStep}
-            initial={{ opacity: 0, x: 100, scale: 0.95 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: -100, scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 150, damping: 20 }}
-            className="bg-white rounded-3xl shadow-xl overflow-hidden mb-6"
-          >
-            {/* Animation */}
-            {step.animation && animations[step.animation] && (
-              <div className="bg-gradient-to-br from-[#A8C9B8] to-[#FFF8F0] p-8 flex items-center justify-center">
-                <div className="w-full max-w-md">
-                  <Lottie
-                    animationData={animations[step.animation]}
-                    loop={true}
-                    style={{ width: '100%', height: 'auto' }}
-                  />
-                </div>
-              </div>
-            )}
+  const handleReset = () => {
+    const time = new Date();
+    time.setSeconds(time.getSeconds() + timerSeconds);
+    restart(time, false);
+  };
 
-            {/* Step Content */}
-            <div className="p-6 sm:p-8">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-3xl font-bold text-[#FF9B7B]">
-                      {currentStep + 1}
-                    </span>
-                    <h3 className="font-poppins text-2xl sm:text-3xl font-bold text-[#035035]">
-                      {step.title}
-                    </h3>
-                  </div>
-                  {step.heatLevel && (
-                    <div className="flex items-center gap-2">
-                      <motion.span
-                        className={`w-3 h-3 rounded-full ${heatColors[step.heatLevel]}`}
-                        animate={step.heatLevel === 'high' ? { scale: [1, 1.2, 1] } : {}}
-                        transition={{ repeat: Infinity, duration: 1.5 }}
-                      />
-                      <span className="text-sm text-[#2D2D2D]/70 capitalize">
-                        {heatLabels[step.heatLevel]}
-                      </span>
-                    </div>
-                  )}
-                </div>
+  const handleStart = () => {
+    if (!isRunning) {
+      resume();
+    }
+  };
 
-                <motion.button
-                  onClick={toggleStepComplete}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  className={`px-4 py-2 rounded-full font-semibold transition-all ${
-                    completedSteps.has(currentStep)
-                      ? 'bg-[#035035] text-white shadow-lg'
-                      : 'bg-[#F5F5F5] text-[#2D2D2D] hover:bg-[#A8C9B8]/30'
-                  }`}
-                >
-                  {completedSteps.has(currentStep) ? '✓ Done' : 'Mark Done'}
-                </motion.button>
-              </div>
+  const handlePause = () => {
+    pause();
+  };
 
-              <p className="text-lg sm:text-xl leading-relaxed text-[#2D2D2D] mb-6">
-                {step.instruction}
-              </p>
+  // Format time with leading zeros
+  const formatTime = (value) => String(value).padStart(2, '0');
 
-              {step.tips && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-[#FFF8F0] border-l-4 border-[#FF9B7B] p-4 rounded-r-2xl mb-6"
-                >
-                  <p className="text-sm sm:text-base">
-                    <span className="font-semibold text-[#035035]">💡 Pro Tip: </span>
-                    {step.tips}
-                  </p>
-                </motion.div>
-              )}
-
-              {/* Timer */}
-              {step.duration && (
-                <motion.div
-                  className={`p-6 rounded-2xl transition-all ${
-                    timerActive 
-                      ? 'bg-gradient-to-br from-[#FF9B7B] to-[#ff8a64] text-white shadow-2xl' 
-                      : 'bg-[#F5F5F5] text-[#2D2D2D]'
-                  }`}
-                  animate={timerActive ? { scale: [1, 1.02, 1] } : {}}
-                  transition={{ repeat: timerActive ? Infinity : 0, duration: 1 }}
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <span className="text-3xl">⏱️</span>
-                      <span className="font-semibold">
-                        {timerActive ? 'Timer Running' : 'Timer Ready'}
-                      </span>
-                    </div>
-                    <span className="text-sm opacity-80">
-                      {Math.floor(step.duration / 60)} min {step.duration % 60 !== 0 && `${step.duration % 60} sec`}
-                    </span>
-                  </div>
-
-                  <div className="text-center mb-4">
-                    <motion.div
-                      className="text-6xl sm:text-7xl font-bold mb-2"
-                      animate={timerActive && timeRemaining <= 10 ? {
-                        scale: [1, 1.1, 1],
-                        color: timerActive ? ['#FFFFFF', '#FFD700', '#FFFFFF'] : '#2D2D2D'
-                      } : {}}
-                      transition={{ duration: 1, repeat: Infinity }}
-                    >
-                      {formatTime(timerActive ? timeRemaining : step.duration)}
-                    </motion.div>
-
-                    {/* Progress Ring */}
-                    {timerActive && (
-                      <div className="flex justify-center mb-4">
-                        <svg className="w-32 h-32 transform -rotate-90">
-                          <circle
-                            cx="64"
-                            cy="64"
-                            r="56"
-                            stroke="currentColor"
-                            strokeWidth="8"
-                            fill="none"
-                            className="opacity-30"
-                          />
-                          <motion.circle
-                            cx="64"
-                            cy="64"
-                            r="56"
-                            stroke="currentColor"
-                            strokeWidth="8"
-                            fill="none"
-                            strokeLinecap="round"
-                            initial={{ pathLength: 1 }}
-                            animate={{ pathLength: timeRemaining / step.duration }}
-                            transition={{ duration: 0.5 }}
-                            style={{
-                              strokeDasharray: 352,
-                              strokeDashoffset: 0
-                            }}
-                          />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex gap-3">
-                    <motion.button
-                      onClick={startTimer}
-                      disabled={timerActive}
-                      whileHover={{ scale: timerActive ? 1 : 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={`flex-1 py-3 rounded-xl font-bold transition-all ${
-                        timerActive
-                          ? 'bg-white/20 cursor-not-allowed'
-                          : 'bg-white text-[#035035] hover:shadow-lg'
-                      }`}
-                    >
-                      {timerActive ? '▶ Running' : '▶ Start Timer'}
-                    </motion.button>
-
-                    {timerActive && (
-                      <motion.button
-                        onClick={() => setTimerActive(false)}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="flex-1 py-3 rounded-xl font-bold bg-white/20 hover:bg-white/30 transition-all"
-                      >
-                        ⏸ Pause
-                      </motion.button>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-            </div>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Navigation */}
-        <div className="flex gap-4 mb-8">
-          <motion.button
-            onClick={previousStep}
-            disabled={currentStep === 0}
-            whileHover={{ scale: currentStep === 0 ? 1 : 1.05, x: -5 }}
-            whileTap={{ scale: 0.95 }}
-            className={`flex-1 py-4 sm:py-5 rounded-2xl font-bold text-base sm:text-lg transition-all ${
-              currentStep === 0
-                ? 'bg-[#F5F5F5] text-gray-400 cursor-not-allowed'
-                : 'bg-white text-[#035035] hover:shadow-xl border-2 border-[#035035]'
-            }`}
-          >
-            ← Previous
-          </motion.button>
-
-          <motion.button
-            onClick={nextStep}
-            disabled={currentStep === instructions.length - 1}
-            whileHover={{ scale: currentStep === instructions.length - 1 ? 1 : 1.05, x: 5 }}
-            whileTap={{ scale: 0.95 }}
-            className={`flex-1 py-4 sm:py-5 rounded-2xl font-bold text-base sm:text-lg transition-all ${
-              currentStep === instructions.length - 1
-                ? 'bg-[#F5F5F5] text-gray-400 cursor-not-allowed'
-                : 'bg-[#035035] text-white hover:shadow-xl'
-            }`}
-          >
-            Next →
-          </motion.button>
+  return (
+    <div className="mt-4 bg-white p-4 sm:p-5 rounded-xl border-2 border-[#FF9B7B] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+      {/* Time Display - Left Side (or Top on mobile) */}
+      <div className="flex flex-col">
+        <div className="text-xl sm:text-2xl md:text-3xl font-bold text-[#2D2D2D] font-mono tracking-wide">
+          {hours > 0 && <span>{formatTime(hours)}:</span>}
+          <span>{formatTime(minutes)}</span>
+          <span>:</span>
+          <span>{formatTime(seconds)}</span>
         </div>
-
-        {/* Step Overview */}
-        <motion.div
-          className="bg-white rounded-3xl shadow-lg p-6"
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <h3 className="font-poppins text-xl font-bold text-[#035035] mb-4">
-            All Steps
-          </h3>
-          <div className="space-y-2">
-            {instructions.map((s, index) => (
-              <motion.button
-                key={s.id}
-                onClick={() => {
-                  setCurrentStep(index);
-                  setTimerActive(false);
-                  setTimeRemaining(0);
-                }}
-                whileHover={{ x: 5, scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className={`w-full text-left p-4 rounded-xl transition-all flex items-center gap-4 ${
-                  index === currentStep
-                    ? 'bg-[#035035] text-white shadow-lg'
-                    : completedSteps.has(index)
-                    ? 'bg-[#A8C9B8] text-[#035035]'
-                    : 'bg-[#FFF8F0] hover:bg-[#F5F5F5]'
-                }`}
-              >
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
-                  index === currentStep
-                    ? 'bg-[#FF9B7B]'
-                    : completedSteps.has(index)
-                    ? 'bg-[#035035] text-white'
-                    : 'bg-white text-[#035035]'
-                }`}>
-                  {completedSteps.has(index) ? '✓' : index + 1}
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold">{s.title}</p>
-                  {s.duration && (
-                    <p className="text-sm opacity-75">
-                      ⏱️ {Math.floor(s.duration / 60)} minutes
-                    </p>
-                  )}
-                </div>
-                {index === currentStep && (
-                  <motion.span
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ repeat: Infinity, duration: 1.5 }}
-                  >
-                    →
-                  </motion.span>
-                )}
-              </motion.button>
-            ))}
-          </div>
-        </motion.div>
+        <div className="mt-1 text-xs text-[#FF9B7B] font-medium uppercase tracking-wide">
+          {isRunning ? '⏱ Running' : '⏸ Paused'}
+        </div>
       </div>
 
-      {/* Completion Celebration */}
-      <AnimatePresence>
-        {completedSteps.size === instructions.length && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6"
-            onClick={() => setCompletedSteps(new Set())}
-          >
-            <motion.div
-              initial={{ y: 50 }}
-              animate={{ y: 0 }}
-              className="bg-white rounded-3xl p-8 max-w-md text-center"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <motion.div
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ repeat: Infinity, duration: 1 }}
-                className="text-8xl mb-4"
-              >
-                🎉
-              </motion.div>
-              <h2 className="font-poppins text-3xl font-bold text-[#035035] mb-2">
-                Congratulations!
-              </h2>
-              <p className="text-lg text-[#2D2D2D] mb-6">
-                You've completed all cooking steps! Time to enjoy your delicious creation.
-              </p>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  setCompletedSteps(new Set());
-                  setCurrentStep(0);
-                }}
-                className="px-8 py-3 bg-[#035035] text-white rounded-full font-bold hover:shadow-lg transition-all"
-              >
-                Review Instructions
-              </motion.button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Buttons - Right Side (or Bottom on mobile) */}
+      <div className="flex gap-2 flex-wrap">
+        <button
+          onClick={handleStart}
+          disabled={isRunning}
+          className={`
+            px-3 sm:px-4 py-2 rounded-lg font-medium text-xs uppercase tracking-wide
+            transition-all duration-200 flex-1 sm:flex-none
+            ${isRunning
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-[#035035] text-white hover:bg-[#024028] hover:scale-105 active:scale-95'
+            }
+          `}
+        >
+          ▶ Start
+        </button>
+
+        <button
+          onClick={handlePause}
+          disabled={!isRunning}
+          className={`
+            px-3 sm:px-4 py-2 rounded-lg font-medium text-xs uppercase tracking-wide
+            transition-all duration-200 flex-1 sm:flex-none
+            ${!isRunning
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-[#FF9B7B] text-white hover:bg-[#FF8B6B] hover:scale-105 active:scale-95'
+            }
+          `}
+        >
+          ⏸ Pause
+        </button>
+
+        <button
+          onClick={handleReset}
+          className="
+            px-3 sm:px-4 py-2 rounded-lg font-medium text-xs uppercase tracking-wide
+            transition-all duration-200 flex-1 sm:flex-none
+            bg-white text-[#FF9B7B] hover:bg-[#FFF8F0] hover:scale-105 active:scale-95
+            border-2 border-[#FF9B7B]
+          "
+        >
+          ↺ Reset
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// --- Build Instruction Content ---
+const buildInstructionContent = (instruction) => {
+  const { heading, description, timer } = instruction;
+
+  // Create timer expiry timestamp if timer is provided
+  let timerExpiryTimestamp = null;
+  if (timer) {
+    const time = new Date();
+    time.setSeconds(time.getSeconds() + timer);
+    timerExpiryTimestamp = time;
+  }
+
+  return (
+    <div className="p-4 sm:p-5 md:p-6 bg-white rounded-2xl shadow-md">
+      <h3 className="text-lg sm:text-xl md:text-xl font-semibold text-[#2D2D2D] mb-2">{heading}</h3>
+      <p className="text-sm sm:text-base text-[#2D2D2D] mb-4">{description}</p>
+      {timer && (
+        <Timer expiryTimestamp={timerExpiryTimestamp} timerSeconds={timer} />
+      )}
+    </div>
+  );
+};
+
+// --- StepDiv Component ---
+const StepDiv = React.forwardRef(({ instruction, content, index, circleRef, circleRadius }, ref) => {
+  // Alternate positioning: even steps at 0px, odd steps vary by screen size
+  const marginLeftClass = index % 2 === 0 ? 'ml-0' : 'ml-0 sm:ml-12 md:ml-20 lg:ml-24';
+
+  return (
+    <div
+      ref={ref}
+      className={`flex items-center gap-3 sm:gap-4 md:gap-6 p-2 sm:p-3 md:p-4 ${marginLeftClass}`}
+    >
+      <div ref={circleRef}>
+        <StepCircle animationFile={instruction.animationFile} circleRadius={circleRadius} />
+      </div>
+      <div className="flex-1">
+        {content}
+      </div>
+    </div>
+  );
+});
+
+// --- Main Component ---
+const CookingInstructions = ({
+  instructions: instructionsProp
+}) => {
+  const { recipeId } = useParams();
+  const [instructions, setInstructions] = React.useState(instructionsProp || null);
+  const [loading, setLoading] = React.useState(!instructionsProp);
+  const [error, setError] = React.useState(null);
+  const [stepPositions, setStepPositions] = React.useState([]);
+  const [circleRadius, setCircleRadius] = React.useState(getCircleRadius());
+  const stepRefs = React.useRef([]);
+  const circleRefs = React.useRef([]);
+  const containerRef = React.useRef(null);
+  const pollIntervalRef = React.useRef(null);
+
+  // Fetch instructions with polling logic
+  React.useEffect(() => {
+    // Don't fetch if instructions were provided as prop or no recipeId
+    if (instructionsProp || !recipeId) {
+      return;
+    }
+
+    const fetchInstructions = async () => {
+      try {
+        const data = await getInstructions(recipeId);
+        // Transform API response to match expected format
+        const transformedInstructions = data.map(step => ({
+          heading: step.heading,
+          description: step.description,
+          animationFile: step.animation,
+          timer: step.timer
+        }));
+
+        setInstructions(transformedInstructions);
+        setLoading(false);
+        setError(null);
+
+        // Clear polling interval once instructions are fetched
+        if (pollIntervalRef.current) {
+          clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
+        }
+      } catch (err) {
+        // If 404, instructions don't exist yet - continue polling
+        if (err.response?.status === 404) {
+          console.log('Instructions not ready yet, will retry...');
+        } else {
+          // Other errors - stop polling and show error
+          console.error('Error fetching instructions:', err);
+          setError('Failed to load instructions. Please try again.');
+          setLoading(false);
+          if (pollIntervalRef.current) {
+            clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
+          }
+        }
+      }
+    };
+
+    // Initial fetch
+    fetchInstructions();
+
+    // Set up polling every 2 seconds
+    pollIntervalRef.current = setInterval(fetchInstructions, 2000);
+
+    // Cleanup on unmount
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    };
+  }, [recipeId, instructionsProp]);
+
+  // Calculate circle positions for the SVG paths
+  React.useEffect(() => {
+    const calculatePositions = () => {
+      if (!containerRef.current) return;
+
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const positions = [];
+      const currentRadius = getCircleRadius();
+      setCircleRadius(currentRadius);
+
+      circleRefs.current.forEach((ref, index) => {
+        if (ref) {
+          const rect = ref.getBoundingClientRect();
+          const relativeTop = rect.top - containerRect.top;
+          const relativeLeft = rect.left - containerRect.left;
+
+          // Center of the circle
+          const centerX = relativeLeft + currentRadius;
+          const centerY = relativeTop + currentRadius;
+
+          positions.push({
+            id: index + 1,
+            x: centerX,
+            y: centerY
+          });
+        }
+      });
+
+      setStepPositions(positions);
+    };
+
+    calculatePositions();
+    window.addEventListener('resize', calculatePositions);
+
+    // Use setTimeout to ensure DOM is fully rendered
+    setTimeout(calculatePositions, 100);
+
+    return () => window.removeEventListener('resize', calculatePositions);
+  }, [instructions]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="bg-[#FFF8F0] min-h-screen w-full flex flex-col items-center justify-center p-3 sm:p-4 md:p-6">
+        <div className="text-center max-w-md">
+          <div className="mb-6">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-[#A8C9B8] border-t-[#035035]"></div>
+          </div>
+          <h2 className="font-['Poppins',_sans-serif] font-bold text-[#035035] text-2xl sm:text-3xl mb-3">
+            Generating Instructions...
+          </h2>
+          <p className="text-[#2D2D2D] opacity-75 text-sm sm:text-base">
+            Our AI chef is preparing detailed cooking instructions for your recipe. This usually takes just a few moments.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="bg-[#FFF8F0] min-h-screen w-full flex flex-col items-center justify-center p-3 sm:p-4 md:p-6">
+        <div className="text-center max-w-md">
+          <div className="mb-6 text-6xl">⚠️</div>
+          <h2 className="font-['Poppins',_sans-serif] font-bold text-[#FF9B7B] text-2xl sm:text-3xl mb-3">
+            Oops! Something went wrong
+          </h2>
+          <p className="text-[#2D2D2D] opacity-75 text-sm sm:text-base">
+            {error}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show instructions
+  return (
+    <div className="bg-[#FFF8F0] min-h-full w-full flex flex-col items-center p-3 sm:p-4 md:p-6">
+      {/* Header */}
+      <div className="p-3 sm:p-4 md:p-8 text-center">
+        <h1 className="font-['Poppins',_sans-serif] font-bold text-[#2D2D2D] text-2xl sm:text-3xl md:text-4xl lg:text-[2.5rem]">
+          Cooking Instructions
+        </h1>
+        <p className="text-[#2D2D2D] mt-3 sm:mt-4 max-w-lg text-sm sm:text-base">
+          Follow the steps along the path to complete your recipe.
+        </p>
+      </div>
+
+      {/* Main Content Area */}
+      <div
+        ref={containerRef}
+        className="w-full max-w-4xl relative"
+      >
+        {/* SVG Layer for connecting paths */}
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          style={{ zIndex: 0 }}
+        >
+          {stepPositions.map((step, index) => {
+            const nextStep = stepPositions[index + 1];
+            if (!nextStep) return null;
+
+            return (
+              <path
+                key={step.id}
+                d={`M ${step.x} ${step.y} C ${step.x} ${step.y + CURVE_AMOUNT}, ${nextStep.x} ${nextStep.y - CURVE_AMOUNT}, ${nextStep.x} ${nextStep.y}`}
+                stroke="#A8C9B8"
+                fill="none"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeDasharray="10 12"
+              />
+            );
+          })}
+        </svg>
+
+        {/* StepDivs */}
+        <div
+          className="relative flex flex-col gap-6 sm:gap-8 md:gap-10"
+          style={{ zIndex: 1 }}
+        >
+          {instructions.map((instruction, index) => (
+            <StepDiv
+              key={index}
+              ref={(el) => (stepRefs.current[index] = el)}
+              circleRef={(el) => (circleRefs.current[index] = el)}
+              instruction={instruction}
+              content={buildInstructionContent(instruction)}
+              index={index}
+              circleRadius={circleRadius}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

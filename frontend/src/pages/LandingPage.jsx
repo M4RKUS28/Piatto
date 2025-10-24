@@ -145,6 +145,57 @@ export default function LandingPage() {
           </div>
         </section>
 
+        <section id="how-it-works" className="py-20">
+          <div className="container mx-auto px-6">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl lg:text-5xl font-bold text-[#035035] mb-4">
+                How It Works
+              </h2>
+              <p className="text-xl text-[#2D2D2D] max-w-2xl mx-auto">
+                From idea to delicious meal in three simple steps
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              <div className="relative">
+                <div className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 h-full">
+                  <div className="w-16 h-16 rounded-full bg-[#FF9B7B] flex items-center justify-center mb-6 text-white text-2xl font-bold">
+                    1
+                  </div>
+                  <h3 className="text-2xl font-bold text-[#035035] mb-4">Share Your Preferences</h3>
+                  <p className="text-[#2D2D2D] leading-relaxed">
+                    Tell us what you're craving, dietary restrictions, available ingredients, or cooking time. Our AI understands your needs.
+                  </p>
+                </div>
+                <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-[#A8C9B8]"></div>
+              </div>
+
+              <div className="relative">
+                <div className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 h-full">
+                  <div className="w-16 h-16 rounded-full bg-[#035035] flex items-center justify-center mb-6 text-white text-2xl font-bold">
+                    2
+                  </div>
+                  <h3 className="text-2xl font-bold text-[#035035] mb-4">Get Personalized Recipes</h3>
+                  <p className="text-[#2D2D2D] leading-relaxed">
+                    Receive custom recipes tailored to your taste, skill level, and kitchen setup. Save favorites to your personal collection.
+                  </p>
+                </div>
+                <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-[#A8C9B8]"></div>
+              </div>
+
+              <div className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 h-full">
+                <div className="w-16 h-16 rounded-full bg-[#A8C9B8] flex items-center justify-center mb-6 text-white text-2xl font-bold">
+                  3
+                </div>
+                <h3 className="text-2xl font-bold text-[#035035] mb-4">Cook with Confidence</h3>
+                <p className="text-[#2D2D2D] leading-relaxed">
+                  Follow interactive step-by-step guidance with tips, timers, and voice assistance. Create amazing dishes every time.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section id="features" className="bg-[#FFF8F0] py-20">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">

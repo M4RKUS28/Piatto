@@ -103,7 +103,7 @@ const RecipeView = () => {
 
       {/* Instructions Panel (now permanent) */}
       <div className="relative flex-1 min-w-0">
-        <div className="h-full">
+        <div className="h-full overflow-y-auto">
           <CookingInstructions recipeId={parseInt(recipeId, 10)} />
         </div>
       </div>

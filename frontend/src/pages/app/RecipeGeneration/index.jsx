@@ -373,6 +373,7 @@ export default function RecipeGeneration() {
                                                         onSaveRecipe={handleSaveRecipeOption}
                                                         onFinishSession={handleFinishCurrentSession}
                                                         sessionCompleting={finishingSession}
+                                                        preparingSessionId={preparingSessionId}
                                                 />
                                         )}
 
