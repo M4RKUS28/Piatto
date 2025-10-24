@@ -21,6 +21,9 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
   // Map of recipeId -> Set of collectionIds
   const [recipeSelections, setRecipeSelections] = useState(new Map());
 
+  // Track which recipes have been visited/configured
+  const [visitedRecipes, setVisitedRecipes] = useState(new Set());
+
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -33,17 +36,21 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
   useEffect(() => {
     if (isOpen) {
       fetchCollections();
-      // Initialize with empty selections
-      const initialSelections = new Map();
-      recipes.forEach(recipe => {
-        initialSelections.set(recipe.id, new Set());
+      // Initialize with empty selections only if not already set
+      setRecipeSelections(prevSelections => {
+        const initialSelections = new Map();
+        recipes.forEach(recipe => {
+          // Keep existing selections if they exist, otherwise create empty set
+          initialSelections.set(recipe.id, prevSelections.get(recipe.id) || new Set());
+        });
+        return initialSelections;
       });
-      setRecipeSelections(initialSelections);
+      setVisitedRecipes(new Set()); // Reset visited tracking
       setCurrentStep(0);
       setSearchQuery('');
       setError(null);
     }
-  }, [isOpen]);
+  }, [isOpen, recipes]);
 
   const fetchCollections = async () => {
     setLoading(true);
@@ -122,15 +129,26 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
 
     setError(null);
 
-    if (currentStep < recipes.length - 1) {
-      const nextRecipe = recipes[currentStep + 1];
-      const nextSelections = recipeSelections.get(nextRecipe.id);
+    // Mark current recipe as visited
+    setVisitedRecipes(prev => new Set([...prev, currentRecipe.id]));
 
-      // If next recipe has no selections, inherit from current
-      if (!nextSelections || nextSelections.size === 0) {
-        const newRecipeSelections = new Map(recipeSelections);
-        newRecipeSelections.set(nextRecipe.id, new Set(currentSelections));
-        setRecipeSelections(newRecipeSelections);
+    if (currentStep < recipes.length - 1) {
+      const nextRecipeId = recipes[currentStep + 1].id;
+
+      // Only inherit selections if the next recipe hasn't been visited yet
+      if (!visitedRecipes.has(nextRecipeId)) {
+        setRecipeSelections(prevSelections => {
+          const nextSelections = prevSelections.get(nextRecipeId);
+
+          // If next recipe has no selections and hasn't been visited, inherit from current
+          if (!nextSelections || nextSelections.size === 0) {
+            const newRecipeSelections = new Map(prevSelections);
+            newRecipeSelections.set(nextRecipeId, new Set(currentSelections));
+            return newRecipeSelections;
+          }
+
+          return prevSelections;
+        });
       }
 
       setCurrentStep(currentStep + 1);
