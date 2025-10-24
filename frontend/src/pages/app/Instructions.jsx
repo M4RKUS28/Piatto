@@ -1,6 +1,8 @@
 import React from 'react';
 import Lottie from 'lottie-react';
 import { useTimer } from 'react-timer-hook';
+import { useParams } from 'react-router-dom';
+import { getInstructions } from '../../api/instructionApi';
 
 // --- Mock Data ---
 const mockInstructions = [
@@ -233,13 +235,77 @@ const StepDiv = React.forwardRef(({ instruction, content, index, circleRef, circ
 
 // --- Main Component ---
 const CookingInstructions = ({
-  instructions = mockInstructions
+  instructions: instructionsProp
 }) => {
+  const { recipeId } = useParams();
+  const [instructions, setInstructions] = React.useState(instructionsProp || null);
+  const [loading, setLoading] = React.useState(!instructionsProp);
+  const [error, setError] = React.useState(null);
   const [stepPositions, setStepPositions] = React.useState([]);
   const [circleRadius, setCircleRadius] = React.useState(getCircleRadius());
   const stepRefs = React.useRef([]);
   const circleRefs = React.useRef([]);
   const containerRef = React.useRef(null);
+  const pollIntervalRef = React.useRef(null);
+
+  // Fetch instructions with polling logic
+  React.useEffect(() => {
+    // Don't fetch if instructions were provided as prop or no recipeId
+    if (instructionsProp || !recipeId) {
+      return;
+    }
+
+    const fetchInstructions = async () => {
+      try {
+        const data = await getInstructions(recipeId);
+        // Transform API response to match expected format
+        const transformedInstructions = data.map(step => ({
+          heading: step.heading,
+          description: step.description,
+          animationFile: step.animation,
+          timer: step.timer
+        }));
+
+        setInstructions(transformedInstructions);
+        setLoading(false);
+        setError(null);
+
+        // Clear polling interval once instructions are fetched
+        if (pollIntervalRef.current) {
+          clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
+        }
+      } catch (err) {
+        // If 404, instructions don't exist yet - continue polling
+        if (err.response?.status === 404) {
+          console.log('Instructions not ready yet, will retry...');
+        } else {
+          // Other errors - stop polling and show error
+          console.error('Error fetching instructions:', err);
+          setError('Failed to load instructions. Please try again.');
+          setLoading(false);
+          if (pollIntervalRef.current) {
+            clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
+          }
+        }
+      }
+    };
+
+    // Initial fetch
+    fetchInstructions();
+
+    // Set up polling every 2 seconds
+    pollIntervalRef.current = setInterval(fetchInstructions, 2000);
+
+    // Cleanup on unmount
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    };
+  }, [recipeId, instructionsProp]);
 
   // Calculate circle positions for the SVG paths
   React.useEffect(() => {
@@ -281,6 +347,43 @@ const CookingInstructions = ({
     return () => window.removeEventListener('resize', calculatePositions);
   }, [instructions]);
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="bg-[#FFF8F0] min-h-screen w-full flex flex-col items-center justify-center p-3 sm:p-4 md:p-6">
+        <div className="text-center max-w-md">
+          <div className="mb-6">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-[#A8C9B8] border-t-[#035035]"></div>
+          </div>
+          <h2 className="font-['Poppins',_sans-serif] font-bold text-[#035035] text-2xl sm:text-3xl mb-3">
+            Generating Instructions...
+          </h2>
+          <p className="text-[#2D2D2D] opacity-75 text-sm sm:text-base">
+            Our AI chef is preparing detailed cooking instructions for your recipe. This usually takes just a few moments.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="bg-[#FFF8F0] min-h-screen w-full flex flex-col items-center justify-center p-3 sm:p-4 md:p-6">
+        <div className="text-center max-w-md">
+          <div className="mb-6 text-6xl">⚠️</div>
+          <h2 className="font-['Poppins',_sans-serif] font-bold text-[#FF9B7B] text-2xl sm:text-3xl mb-3">
+            Oops! Something went wrong
+          </h2>
+          <p className="text-[#2D2D2D] opacity-75 text-sm sm:text-base">
+            {error}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show instructions
   return (
     <div className="bg-[#FFF8F0] min-h-full w-full flex flex-col items-center p-3 sm:p-4 md:p-6">
       {/* Header */}

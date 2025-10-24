@@ -47,7 +47,7 @@ def get_instruction_query(recipe) -> types.Content:
     """builds the query for the instruction generation agent"""
     query = f"""
     The user made the following initial prompt:
-    {recipe.initial_prompt}
+    {recipe.prompt}
     Upon that, the following recipe was generated:
     Recipe Name: {recipe.title}
     Description: {recipe.description}

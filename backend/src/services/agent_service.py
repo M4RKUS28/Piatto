@@ -104,7 +104,6 @@ class AgentService:
                 session = await preparing_crud.create_or_update_preparing_session(
                     db=db,
                     user_id=user_id,
-                    prompt=prompt,
                     recipe_ids=recipe_ids,
                     preparing_session_id=preparing_session_id,
                 )
