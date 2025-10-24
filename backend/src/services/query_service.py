@@ -42,3 +42,16 @@ def get_chat_agent_query(prompt: str, recipe, cooking_session, prompt_history) -
     """
 
     return create_text_query(query)
+
+def get_instruction_query(recipe) -> types.Content:
+    """builds the query for the instruction generation agent"""
+    query = f"""
+    The user made the following initial prompt:
+    {recipe.prompt}
+    Upon that, the following recipe was generated:
+    Recipe Name: {recipe.title}
+    Description: {recipe.description}
+    Ingredients: {recipe.ingredients}
+    """
+
+    return create_text_query(query)

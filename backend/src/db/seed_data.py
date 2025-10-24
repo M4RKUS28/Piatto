@@ -105,6 +105,7 @@ async def _create_mock_recipes(session: AsyncSession, users: list[User]) -> None
             "user_id": users[0].id,
             "title": "Classic Italian Carbonara",
             "description": "A traditional Italian pasta dish with eggs, cheese, bacon, and black pepper. Simple yet incredibly delicious!",
+            "prompt": "I want to make a traditional Italian carbonara pasta with eggs and bacon",
             "instructions": json.dumps([
                 "Bring a large pot of salted water to boil and cook spaghetti according to package directions",
                 "While pasta cooks, fry the bacon until crispy, then set aside",
@@ -128,6 +129,7 @@ async def _create_mock_recipes(session: AsyncSession, users: list[User]) -> None
             "user_id": users[0].id,
             "title": "Creamy Tomato Soup",
             "description": "A comforting and rich tomato soup perfect for cold days. Pairs wonderfully with grilled cheese sandwiches.",
+            "prompt": "I want to make a comforting creamy tomato soup with fresh basil",
             "instructions": json.dumps([
                 "Heat olive oil in a large pot over medium heat",
                 "Add diced onions and garlic, sauté until softened",
@@ -153,6 +155,7 @@ async def _create_mock_recipes(session: AsyncSession, users: list[User]) -> None
             "user_id": users[1].id,
             "title": "Gordon's Beef Wellington",
             "description": "An elegant and show-stopping dish featuring tender beef wrapped in puff pastry with mushroom duxelles.",
+            "prompt": "I want to make an elegant beef wellington with mushroom duxelles wrapped in puff pastry",
             "instructions": json.dumps([
                 "Season beef fillet with salt and pepper, sear in hot pan until browned on all sides",
                 "Let beef cool, then brush with mustard",
@@ -178,6 +181,7 @@ async def _create_mock_recipes(session: AsyncSession, users: list[User]) -> None
             "user_id": users[1].id,
             "title": "Pan-Seared Salmon with Lemon Butter",
             "description": "Perfectly crispy skin salmon with a bright and flavorful lemon butter sauce.",
+            "prompt": "I want to make pan-seared salmon with crispy skin and a lemon butter sauce",
             "instructions": json.dumps([
                 "Pat salmon fillets dry and season with salt and pepper",
                 "Heat oil in a pan over medium-high heat",
@@ -202,6 +206,7 @@ async def _create_mock_recipes(session: AsyncSession, users: list[User]) -> None
             "user_id": users[0].id,
             "title": "Chocolate Chip Cookies",
             "description": "Classic homemade cookies that are crispy on the outside and chewy on the inside.",
+            "prompt": "I want to bake classic chocolate chip cookies that are crispy outside and chewy inside",
             "instructions": json.dumps([
                 "Preheat oven to 180°C (350°F)",
                 "Cream together butter and both sugars until fluffy",

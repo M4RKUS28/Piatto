@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Home, UtensilsCrossed, PanelLeft, Settings as SettingsIcon, LogOut, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -8,6 +8,10 @@ export default function MainLayout({ children }) {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Hide footer on recipe view page
+  const isRecipeViewPage = location.pathname.startsWith('/app/recipe/');
 
   const toggleSidebar = () => {
     setSidebarExpanded(!sidebarExpanded);
@@ -207,12 +211,14 @@ export default function MainLayout({ children }) {
       >
         <main className="flex-1">{content}</main>
 
-        {/* Footer */}
-        <footer className="py-3 px-6 text-center">
-          <p className="text-xs text-[#2D2D2D] opacity-40">
-            © 2025 Piatto. Cooking made delightful, one recipe at a time.
-          </p>
-        </footer>
+        {/* Footer (hidden on recipe view page) */}
+        {!isRecipeViewPage && (
+          <footer className="py-3 px-6 text-center">
+            <p className="text-xs text-[#2D2D2D] opacity-40">
+              © 2025 Piatto. Cooking made delightful, one recipe at a time.
+            </p>
+          </footer>
+        )}
       </div>
 
       {/* Click outside to close profile menu */}

@@ -12,7 +12,10 @@ async def get_recipe_by_id(db: AsyncSession, recipe_id: int) -> Optional[Recipe]
     """Retrieve a recipe by its ID."""
     result = await db.execute(
         select(Recipe)
-        .options(selectinload(Recipe.ingredients))
+        .options(
+            selectinload(Recipe.ingredients),
+            selectinload(Recipe.instruction_steps)
+        )
         .filter(Recipe.id == recipe_id)
     )
     return result.scalar_one_or_none()
@@ -43,7 +46,10 @@ async def get_recipes_by_preparing_session_id(db: AsyncSession, preparing_sessio
     # Step 3: Fetch the recipes from the DB
     result = await db.execute(
         select(Recipe)
-        .options(selectinload(Recipe.ingredients))
+        .options(
+            selectinload(Recipe.ingredients),
+            selectinload(Recipe.instruction_steps)
+        )
         .where(Recipe.id.in_(active_recipe_ids))
     )
     recipes = result.scalars().all()
@@ -54,7 +60,10 @@ async def get_all_recipes_by_user_id(db: AsyncSession, user_id: str) -> List[Rec
     """Retrieve all recipes for a given user ID."""
     result = await db.execute(
         select(Recipe)
-        .options(selectinload(Recipe.ingredients))
+        .options(
+            selectinload(Recipe.ingredients),
+            selectinload(Recipe.instruction_steps)
+        )
         .filter(Recipe.user_id == user_id)
         .order_by(Recipe.created_at.desc())
     )
@@ -64,6 +73,7 @@ async def create_recipe(db: AsyncSession,
                 user_id: str,
                 title: str,
                 description: str,
+                prompt: str,
                 ingredients: Optional[List[Ingredient]] = None,
                 instructions: str = "[]",
                 image_url: Optional[str] = None,
@@ -76,6 +86,7 @@ async def create_recipe(db: AsyncSession,
         user_id=user_id,
         title=title,
         description=description,
+        prompt=prompt,
         instructions=instructions,
         image_url=image_url,
         is_permanent=is_permanent,
@@ -103,6 +114,7 @@ async def update_recipe(db: AsyncSession,
                 recipe_id: int,
                 title: Optional[str] = None,
                 description: Optional[str] = None,
+                prompt: Optional[str] = None,
                 ingredients: Optional[List[Ingredient]] = None,
                 instructions: Optional[str] = None,
                 image_url: Optional[str] = None,
@@ -113,7 +125,10 @@ async def update_recipe(db: AsyncSession,
     """Update an existing recipe in the database."""
     result = await db.execute(
         select(Recipe)
-        .options(selectinload(Recipe.ingredients))
+        .options(
+            selectinload(Recipe.ingredients),
+            selectinload(Recipe.instruction_steps)
+        )
         .filter(Recipe.id == recipe_id)
     )
     recipe = result.scalar_one_or_none()
@@ -123,6 +138,8 @@ async def update_recipe(db: AsyncSession,
         recipe.title = title
     if description is not None:
         recipe.description = description
+    if prompt is not None:
+        recipe.prompt = prompt
     if ingredients is not None:
         _sync_recipe_ingredients(recipe, ingredients)
     if instructions is not None:
@@ -140,7 +157,7 @@ async def update_recipe(db: AsyncSession,
 
     db.add(recipe)
     await db.commit()
-    await db.refresh(recipe, attribute_names=["ingredients"])
+    await db.refresh(recipe, attribute_names=["ingredients", "instruction_steps"])
     return recipe
 
 async def delete_recipe(db: AsyncSession, recipe_id: int) -> bool:

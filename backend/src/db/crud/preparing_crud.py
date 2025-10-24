@@ -10,7 +10,6 @@ from ..models.db_recipe import Recipe, PreparingSession
 async def create_or_update_preparing_session(
     db: AsyncSession,
     user_id: str,
-    prompt: str,
     recipe_ids: List[int],
     preparing_session_id: Optional[int] = None,
 ) -> PreparingSession:

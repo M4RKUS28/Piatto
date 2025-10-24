@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { getImageUrl } from '../../../utils/imageUtils';
 import { useNavigate } from 'react-router-dom';
 import SaveRecipesCollectionModal from '../../../components/SaveRecipesCollectionModal';
+import { generateInstructions } from '../../../api/instructionApi';
 
 export default function RecipeOptionsStep({
 	recipeOptions,
@@ -10,6 +11,7 @@ export default function RecipeOptionsStep({
 	onSaveRecipe,
 	onFinishSession,
 	sessionCompleting = false,
+	preparingSessionId,
 }) {
 	const navigate = useNavigate();
 	const [selectedRecipes, setSelectedRecipes] = useState(new Set());
@@ -41,6 +43,14 @@ export default function RecipeOptionsStep({
 		setProcessingSelection(true);
 
 		try {
+			// Trigger instruction generation in the background (fire-and-forget)
+			// The Instructions.jsx polling will handle fetching them when ready
+			recipeIds.forEach(recipeId => {
+				generateInstructions(preparingSessionId, recipeId).catch(err => {
+					console.error(`Failed to trigger instruction generation for recipe ${recipeId}:`, err);
+				});
+			});
+
 			// Save only the selected recipes (marks them as permanent)
 			await Promise.all(
 				recipeIds.map(recipeId => onSaveRecipe(recipeId))

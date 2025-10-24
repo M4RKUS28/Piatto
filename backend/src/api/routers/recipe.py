@@ -145,26 +145,41 @@ async def delete_recipe(recipe_id: int,
 
 def _serialize_recipe(recipe) -> RecipeSchema:
     """Convert ORM recipe to API schema."""
-    raw_instructions: list = []
-    if recipe.instructions:
+    instructions_data: List[InstructionSchema] = []
+
+    # Use the new instruction_steps relationship if available
+    if hasattr(recipe, 'instruction_steps') and recipe.instruction_steps:
+        instructions_data = [
+            InstructionSchema(
+                id=step.id,
+                heading=step.heading,
+                description=step.description,
+                animation=step.animation,
+                timer=step.timer,
+            )
+            for step in recipe.instruction_steps
+        ]
+    # Fallback to old JSON-based instructions for backwards compatibility
+    elif recipe.instructions:
         try:
             raw_instructions = json.loads(recipe.instructions)
+            for entry in raw_instructions:
+                if isinstance(entry, dict):
+                    # Try to adapt old format to new format
+                    instructions_data.append(InstructionSchema(
+                        heading=entry.get("heading", entry.get("Instruction", "")),
+                        description=entry.get("description", entry.get("Instruction", "")),
+                        animation=entry.get("animation", "let_cook_and_stir.json"),
+                        timer=entry.get("timer"),
+                    ))
         except (json.JSONDecodeError, TypeError):
-            raw_instructions = []
-
-    instructions_data: List[InstructionSchema] = []
-    for entry in raw_instructions:
-        if isinstance(entry, InstructionSchema):
-            instructions_data.append(entry)
-        elif isinstance(entry, dict):
-            instructions_data.append(InstructionSchema(**entry))
-        else:
-            instructions_data.append(InstructionSchema(Instruction=str(entry), timer=None))
+            pass
 
     return RecipeSchema(
         id=recipe.id,
         title=recipe.title,
         description=recipe.description,
+        prompt=recipe.prompt,
         ingredients=[
             IngredientSchema(
                 id=ingredient.id,

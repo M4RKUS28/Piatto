@@ -301,7 +301,7 @@ const Recipe = ({ recipeId }) => {
   };
 
   return (
-    <div className="h-full overflow-y-auto no-scrollbar">
+    <div className="h-full overflow-y-auto no-scrollbar bg-white">
       <div className="p-4 sm:p-6 md:p-8">
         {/* Header with Share, Print, and Menu buttons */}
         <div className="flex items-start justify-between gap-4 mb-4">
