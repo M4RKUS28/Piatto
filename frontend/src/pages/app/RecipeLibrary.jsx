@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Clock, Users, FolderOpen, Plus } from 'lucide-react';
 import { PiLeaf, PiEgg, PiCow } from 'react-icons/pi';
-import { getUserRecipes, deleteRecipe } from '../../api/recipeApi';
+import { getUserRecipes } from '../../api/recipeApi';
 import { getUserCollections, createCollection } from '../../api/collectionApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorMessage from '../../components/ErrorMessage';
@@ -11,6 +11,7 @@ import EditCollectionsModal from '../../components/EditCollectionsModal';
 import CollectionCardMenu from '../../components/CollectionCardMenu';
 import EditCollectionNameModal from '../../components/EditCollectionNameModal';
 import DeleteCollectionModal from '../../components/DeleteCollectionModal';
+import DeleteRecipeModal from '../../components/DeleteRecipeModal';
 import CollectionImageCollage from '../../components/CollectionImageCollage';
 import { getImageUrl } from '../../utils/imageUtils';
 
@@ -90,6 +91,8 @@ export default function RecipeLibrary() {
   const [showEditCollectionModal, setShowEditCollectionModal] = useState(false);
   const [showDeleteCollectionModal, setShowDeleteCollectionModal] = useState(false);
   const [selectedCollection, setSelectedCollection] = useState(null);
+  const [showDeleteRecipeModal, setShowDeleteRecipeModal] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
 
   const fetchRecipes = async () => {
     setLoading(true);
@@ -164,19 +167,10 @@ export default function RecipeLibrary() {
     setShowCollectionsModal(true);
   };
 
-  const handleDeleteRecipe = async (recipeId) => {
-    if (!window.confirm('Möchtest du dieses Rezept wirklich löschen?')) {
-      return;
-    }
-
-    try {
-      await deleteRecipe(recipeId);
-      // Refresh recipes
-      await fetchRecipes();
-    } catch (err) {
-      console.error('Failed to delete recipe:', err);
-      alert('Fehler beim Löschen des Rezepts');
-    }
+  const handleDeleteRecipe = (recipeId) => {
+    const recipe = latestRecipes.find(r => r.id === recipeId);
+    setSelectedRecipe(recipe);
+    setShowDeleteRecipeModal(true);
   };
 
   const handleRecipeDeleted = () => {
@@ -483,6 +477,17 @@ export default function RecipeLibrary() {
           setSelectedCollection(null);
         }}
         onDeleted={handleCollectionDeleted}
+      />
+
+      {/* Delete Recipe Modal */}
+      <DeleteRecipeModal
+        recipe={selectedRecipe}
+        isOpen={showDeleteRecipeModal}
+        onClose={() => {
+          setShowDeleteRecipeModal(false);
+          setSelectedRecipe(null);
+        }}
+        onDeleted={handleRecipeDeleted}
       />
     </div>
   );
