@@ -214,8 +214,8 @@ export default function CollectionRecipesView() {
           <EmptyState
             title="Keine Rezepte in dieser Sammlung"
             message="Füge Rezepte zu dieser Sammlung hinzu, indem du sie im Rezept-Menü zur Sammlung hinzufügst."
-            actionLabel="Zur Bibliothek"
-            onAction={() => navigate('/app/recipes')}
+            actionLabel="Rezept generieren"
+            onAction={() => navigate('/app/generate', { state: { collectionId: parseInt(collectionId), collectionName: collection?.name } })}
           />
         )}
 
