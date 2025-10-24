@@ -51,6 +51,22 @@ const formatDifficulty = (difficulty) => {
   return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 };
 
+// Helper function to get difficulty text color
+const getDifficultyTextColor = (difficulty) => {
+  const lowerDifficulty = difficulty?.toLowerCase();
+
+  switch (lowerDifficulty) {
+    case 'easy':
+      return 'text-green-600';
+    case 'medium':
+      return 'text-orange-500';
+    case 'hard':
+      return 'text-orange-700';
+    default:
+      return 'text-[#035035]'; // Default color
+  }
+};
+
 // Helper function to format time
 const formatTime = (minutes) => {
   if (!minutes) return 'N/A';
@@ -363,7 +379,7 @@ const Recipe = ({ recipeId }) => {
           </div>
           <div className="flex flex-col items-center gap-1 sm:gap-2">
             <PiCookingPot className="h-6 w-6 sm:h-7 sm:w-7 text-[#035035]" />
-            <span className="text-xs sm:text-sm font-medium">{formatDifficulty(recipe.difficulty)}</span>
+            <span className={`text-xs sm:text-sm font-bold ${getDifficultyTextColor(recipe.difficulty)}`}>{formatDifficulty(recipe.difficulty)}</span>
             <span className="text-xs text-gray-500 hidden sm:block">Difficulty</span>
           </div>
           <div className="flex flex-col items-center gap-1 sm:gap-2">

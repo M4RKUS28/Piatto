@@ -11,11 +11,32 @@ import EditCollectionsModal from '../../components/EditCollectionsModal';
 import CollectionImageCollage from '../../components/CollectionImageCollage';
 import { getImageUrl } from '../../utils/imageUtils';
 
-// Helper function to get food category icon
-const getFoodCategoryIcon = (category) => {
-  if (category === 'vegan') return PiLeaf;
-  if (category === 'vegetarian') return PiEgg;
-  if (['beef', 'pork', 'chicken', 'lamb', 'fish', 'seafood', 'mixed-meat'].includes(category)) return PiCow;
+// Helper function to get food category display (icon and label)
+const getFoodCategoryDisplay = (category) => {
+  if (!category) return null;
+
+  if (category === 'vegan') {
+    return { icon: PiLeaf, label: 'Vegan' };
+  }
+  if (category === 'vegetarian') {
+    return { icon: PiEgg, label: 'Vegetarian' };
+  }
+
+  // Meat categories
+  const meatLabels = {
+    'beef': 'Beef',
+    'pork': 'Pork',
+    'chicken': 'Chicken',
+    'lamb': 'Lamb',
+    'fish': 'Fish',
+    'seafood': 'Seafood',
+    'mixed-meat': 'Mixed Meat',
+  };
+
+  if (meatLabels[category]) {
+    return { icon: PiCow, label: meatLabels[category] };
+  }
+
   return null;
 };
 
@@ -23,6 +44,22 @@ const getFoodCategoryIcon = (category) => {
 const formatDifficulty = (difficulty) => {
   if (!difficulty) return 'Medium';
   return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+};
+
+// Helper function to get difficulty color classes
+const getDifficultyColorClasses = (difficulty) => {
+  const lowerDifficulty = difficulty?.toLowerCase();
+
+  switch (lowerDifficulty) {
+    case 'easy':
+      return 'text-green-600 bg-green-600/10';
+    case 'medium':
+      return 'text-orange-500 bg-orange-500/10';
+    case 'hard':
+      return 'text-orange-700 bg-orange-700/10';
+    default:
+      return 'text-orange-500 bg-orange-500/10'; // Default to medium
+  }
 };
 
 // Helper function to format time
@@ -230,7 +267,7 @@ export default function RecipeLibrary() {
                             {/* Content */}
                             <div className="p-3">
                               <div className="flex items-center gap-1 mb-2 flex-wrap">
-                                <span className="text-[10px] font-semibold text-[#FF9B7B] bg-[#FF9B7B]/10 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${getDifficultyColorClasses(recipe.difficulty)}`}>
                                   {formatDifficulty(recipe.difficulty)}
                                 </span>
                               </div>
@@ -241,12 +278,15 @@ export default function RecipeLibrary() {
                                   <span className="whitespace-nowrap">{formatTime(recipe.total_time_minutes)}</span>
                                 </div>
                                 {(() => {
-                                  const FoodIcon = getFoodCategoryIcon(recipe.food_category);
-                                  return FoodIcon ? (
+                                  const foodDisplay = getFoodCategoryDisplay(recipe.food_category);
+                                  if (!foodDisplay) return null;
+                                  const FoodIcon = foodDisplay.icon;
+                                  return (
                                     <div className="flex items-center gap-1">
                                       <FoodIcon className="w-3 h-3 flex-shrink-0" />
+                                      <span className="whitespace-nowrap">{foodDisplay.label}</span>
                                     </div>
-                                  ) : null;
+                                  );
                                 })()}
                               </div>
                             </div>
