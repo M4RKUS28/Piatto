@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { getImageUrl } from '../../../utils/imageUtils';
 import { useNavigate } from 'react-router-dom';
+import SaveRecipesCollectionModal from '../../../components/SaveRecipesCollectionModal';
 
 export default function RecipeOptionsStep({
 	recipeOptions,
@@ -13,6 +14,7 @@ export default function RecipeOptionsStep({
 	const navigate = useNavigate();
 	const [selectedRecipes, setSelectedRecipes] = useState(new Set());
 	const [processingSelection, setProcessingSelection] = useState(false);
+	const [showCollectionModal, setShowCollectionModal] = useState(false);
 
 	const toggleRecipeSelection = (recipeId) => {
 		setSelectedRecipes(prev => {
@@ -31,23 +33,27 @@ export default function RecipeOptionsStep({
 			return;
 		}
 
-		const selectedIds = Array.from(selectedRecipes);
+		// Show collection selection modal instead of directly saving
+		setShowCollectionModal(true);
+	};
+
+	const handleSaveToCollections = async (recipeIds, collectionIds) => {
 		setProcessingSelection(true);
 
 		try {
 			// Save only the selected recipes (marks them as permanent)
 			await Promise.all(
-				selectedIds.map(recipeId => onSaveRecipe(recipeId))
+				recipeIds.map(recipeId => onSaveRecipe(recipeId))
 			);
 
 			// Finish the session (deletes all non-permanent recipes and the session)
 			await onFinishSession();
 
-			// Navigate to library
-			navigate('/app/library');
+			// Navigate to library with the saved recipe IDs in query params
+			const recipeIdsParam = recipeIds.join(',');
+			navigate(`/app/library?last_recipe=${recipeIdsParam}`);
 		} catch (error) {
 			console.error('Error processing recipes:', error);
-		} finally {
 			setProcessingSelection(false);
 		}
 	};
@@ -141,6 +147,14 @@ export default function RecipeOptionsStep({
 				{processingSelection ? 'Processing...' : `Generate (${selectedRecipes.size})`}
 				</button>
 			</div>
+
+			{/* Collection Selection Modal */}
+			<SaveRecipesCollectionModal
+				recipes={recipeOptions.filter(recipe => selectedRecipes.has(recipe.id))}
+				isOpen={showCollectionModal}
+				onClose={() => setShowCollectionModal(false)}
+				onSave={handleSaveToCollections}
+			/>
 		</div>
 	);
 }

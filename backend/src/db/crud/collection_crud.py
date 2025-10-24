@@ -34,6 +34,21 @@ async def get_collection_recipe_count(db: AsyncSession, collection_id: int) -> i
     return result.scalar_one()
 
 
+async def get_collection_preview_images(db: AsyncSession, collection_id: int, limit: int = 4) -> List[str]:
+    """Get the first N recipe image URLs from a collection."""
+    result = await db.execute(
+        select(Recipe.image_url)
+        .join(CollectionRecipe, CollectionRecipe.recipe_id == Recipe.id)
+        .filter(CollectionRecipe.collection_id == collection_id)
+        .filter(Recipe.image_url.isnot(None))
+        .filter(Recipe.image_url != '')
+        .order_by(CollectionRecipe.added_at.desc())
+        .limit(limit)
+    )
+    image_urls = result.scalars().all()
+    return list(image_urls)
+
+
 async def create_collection(db: AsyncSession, owner_id: str, name: str, description: Optional[str] = None) -> Collection:
     """Create a new collection."""
     collection = Collection(
