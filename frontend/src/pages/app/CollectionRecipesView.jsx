@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Search, Clock, Users, Filter, ArrowLeft } from 'lucide-react';
+import { PiLeaf, PiEgg, PiCow } from 'react-icons/pi';
 import { getCollectionById } from '../../api/collectionApi';
 import { deleteRecipe } from '../../api/recipeApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -10,6 +11,29 @@ import RecipeCardMenu from '../../components/RecipeCardMenu';
 import EditCollectionsModal from '../../components/EditCollectionsModal';
 import CollectionImageCollage from '../../components/CollectionImageCollage';
 import { getImageUrl } from '../../utils/imageUtils';
+
+// Helper function to get food category icon
+const getFoodCategoryIcon = (category) => {
+  if (category === 'vegan') return PiLeaf;
+  if (category === 'vegetarian') return PiEgg;
+  if (['beef', 'pork', 'chicken', 'lamb', 'fish', 'seafood', 'mixed-meat'].includes(category)) return PiCow;
+  return null;
+};
+
+// Helper function to format difficulty
+const formatDifficulty = (difficulty) => {
+  if (!difficulty) return 'Medium';
+  return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+};
+
+// Helper function to format time
+const formatTime = (minutes) => {
+  if (!minutes) return 'N/A';
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+};
 
 export default function CollectionRecipesView() {
   const { collectionId } = useParams();
@@ -37,10 +61,9 @@ export default function CollectionRecipesView() {
         description: recipe.description || '',
         image: recipe.image_url ? getImageUrl(recipe.image_url) : '🍽️',
         originalImageUrl: recipe.image_url || '', // Keep original URL for collage
-        time: '30 min',
-        servings: '4',
-        difficulty: 'Medium',
-        category: 'General'
+        total_time_minutes: recipe.total_time_minutes,
+        difficulty: recipe.difficulty,
+        food_category: recipe.food_category
       }));
       setRecipes(transformedRecipes);
     } catch (err) {
@@ -225,23 +248,24 @@ export default function CollectionRecipesView() {
                       {/* Content */}
                       <div className="p-3">
                         <div className="flex items-center gap-1 mb-2 flex-wrap">
-                          <span className="text-[10px] font-semibold text-[#035035] bg-[#035035]/10 px-2 py-0.5 rounded-full whitespace-nowrap">
-                            {recipe.category}
-                          </span>
                           <span className="text-[10px] font-semibold text-[#FF9B7B] bg-[#FF9B7B]/10 px-2 py-0.5 rounded-full whitespace-nowrap">
-                            {recipe.difficulty}
+                            {formatDifficulty(recipe.difficulty)}
                           </span>
                         </div>
                         <h3 className="text-sm font-bold text-[#2D2D2D] mb-2 line-clamp-2">{recipe.name}</h3>
                         <div className="flex items-center gap-2 text-xs text-[#2D2D2D] opacity-60 flex-wrap">
                           <div className="flex items-center gap-1">
                             <Clock className="w-3 h-3 flex-shrink-0" />
-                            <span className="whitespace-nowrap">{recipe.time}</span>
+                            <span className="whitespace-nowrap">{formatTime(recipe.total_time_minutes)}</span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Users className="w-3 h-3 flex-shrink-0" />
-                            <span className="whitespace-nowrap">{recipe.servings} servings</span>
-                          </div>
+                          {(() => {
+                            const FoodIcon = getFoodCategoryIcon(recipe.food_category);
+                            return FoodIcon ? (
+                              <div className="flex items-center gap-1">
+                                <FoodIcon className="w-3 h-3 flex-shrink-0" />
+                              </div>
+                            ) : null;
+                          })()}
                         </div>
                       </div>
                     </Link>

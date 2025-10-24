@@ -99,6 +99,9 @@ async def change_recipe_manual(request: ChangeRecipeManualRequest,
         ingredients=request.ingredients,
         instructions=_serialize_instructions_payload(request.instructions),
         image_url=request.image_url,
+        total_time_minutes=request.total_time_minutes,
+        difficulty=request.difficulty,
+        food_category=request.food_category,
     )
     if not recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
@@ -188,6 +191,9 @@ def _serialize_recipe(recipe) -> RecipeSchema:
         ],
         instructions=instructions_data,
         image_url=recipe.image_url,
+        total_time_minutes=recipe.total_time_minutes,
+        difficulty=recipe.difficulty,
+        food_category=recipe.food_category,
     )
 
 

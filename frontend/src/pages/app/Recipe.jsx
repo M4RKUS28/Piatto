@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   PiHeart, PiShareNetwork, PiPrinter, PiClock,
-  PiCookingPot, PiMinus, PiPlus, PiCow, PiDotsThreeVertical, PiTrash
+  PiCookingPot, PiMinus, PiPlus, PiCow, PiDotsThreeVertical, PiTrash, PiLeaf, PiEgg
 } from 'react-icons/pi';
 import { FolderOpen } from 'lucide-react';
 import { getRecipeById, deleteRecipe } from '../../api/recipeApi';
@@ -11,27 +11,57 @@ import ErrorMessage from '../../components/ErrorMessage';
 import EditCollectionsModal from '../../components/EditCollectionsModal';
 import { getImageUrl } from '../../utils/imageUtils';
 
-const recipeData = {
-  baseServings: 4,
-  ingredients: [
-    { amount: 1, unit: '', name: 'Onion, finely chopped' },
-    { amount: 2, unit: '', name: 'Garlic cloves, minced' },
-    { amount: 2, unit: 'tbsp', name: 'Olive oil' },
-    { amount: 500, unit: 'g', name: 'Ground beef' },
-    { amount: 400, unit: 'g', name: 'Canned tomatoes, crushed' },
-    { amount: 2, unit: 'tbsp', name: 'Tomato paste' },
-    { amount: 1, unit: 'cup', name: 'Beef broth' },
-    { amount: 1, unit: 'tsp', name: 'Dried oregano' },
-    { amount: 1, unit: 'tsp', name: 'Dried basil' },
-    { amount: 0, unit: '', name: 'Salt and pepper to taste' },
-    { amount: 400, unit: 'g', name: 'Spaghetti' },
-    { amount: 0, unit: '', name: 'Fresh basil for garnish' },
-    { amount: 0, unit: '', name: 'Parmesan cheese, grated' },
-  ],
+// Helper function to get food category icon and label
+const getFoodCategoryDisplay = (category) => {
+  if (!category) {
+    return { icon: PiCookingPot, label: 'N/A', sublabel: '' };
+  }
+
+  // Vegan and vegetarian
+  if (category === 'vegan') {
+    return { icon: PiLeaf, label: 'Vegan', sublabel: 'Plant-based' };
+  }
+  if (category === 'vegetarian') {
+    return { icon: PiEgg, label: 'Vegetarian', sublabel: 'Contains dairy/eggs' };
+  }
+
+  // All meat types use the same icon but display the specific meat type
+  const meatLabels = {
+    'beef': { label: 'Beef', sublabel: 'Beef-based' },
+    'pork': { label: 'Pork', sublabel: 'Pork-based' },
+    'chicken': { label: 'Chicken', sublabel: 'Poultry' },
+    'lamb': { label: 'Lamb', sublabel: 'Lamb-based' },
+    'fish': { label: 'Fish', sublabel: 'Fish-based' },
+    'seafood': { label: 'Seafood', sublabel: 'Seafood-based' },
+    'mixed-meat': { label: 'Mixed Meat', sublabel: 'Multiple meats' },
+  };
+
+  const meatInfo = meatLabels[category];
+  if (meatInfo) {
+    return { icon: PiCow, ...meatInfo };
+  }
+
+  // Fallback
+  return { icon: PiCookingPot, label: 'N/A', sublabel: '' };
+};
+
+// Helper function to format difficulty
+const formatDifficulty = (difficulty) => {
+  if (!difficulty) return 'N/A';
+  return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+};
+
+// Helper function to format time
+const formatTime = (minutes) => {
+  if (!minutes) return 'N/A';
+  if (minutes < 60) return `${minutes} Min.`;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
 };
 
 const nutritionData = {
-  servingsPerRecipe: recipeData.baseServings,
+  servingsPerRecipe: 4,
   calories: 648,
   totalFat: { amount: 28, dv: 36 },
   saturatedFat: { amount: 10, dv: 50 },
@@ -328,18 +358,26 @@ const Recipe = ({ recipeId }) => {
         <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center mt-6 sm:mt-8 py-4 border-y border-[#F5F5F5]">
           <div className="flex flex-col items-center gap-1 sm:gap-2">
             <PiClock className="h-6 w-6 sm:h-7 sm:w-7 text-[#035035]" />
-            <span className="text-xs sm:text-sm font-medium">45 Min.</span>
+            <span className="text-xs sm:text-sm font-medium">{formatTime(recipe.total_time_minutes)}</span>
             <span className="text-xs text-gray-500 hidden sm:block">Total Time</span>
           </div>
           <div className="flex flex-col items-center gap-1 sm:gap-2">
             <PiCookingPot className="h-6 w-6 sm:h-7 sm:w-7 text-[#035035]" />
-            <span className="text-xs sm:text-sm font-medium">Easy</span>
+            <span className="text-xs sm:text-sm font-medium">{formatDifficulty(recipe.difficulty)}</span>
             <span className="text-xs text-gray-500 hidden sm:block">Difficulty</span>
           </div>
           <div className="flex flex-col items-center gap-1 sm:gap-2">
-            <PiCow className="h-6 w-6 sm:h-7 sm:w-7 text-[#035035]" />
-            <span className="text-xs sm:text-sm font-medium">Contains Meat</span>
-            <span className="text-xs text-gray-500 hidden sm:block">Beef-based</span>
+            {(() => {
+              const foodDisplay = getFoodCategoryDisplay(recipe.food_category);
+              const IconComponent = foodDisplay.icon;
+              return (
+                <>
+                  <IconComponent className="h-6 w-6 sm:h-7 sm:w-7 text-[#035035]" />
+                  <span className="text-xs sm:text-sm font-medium">{foodDisplay.label}</span>
+                  <span className="text-xs text-gray-500 hidden sm:block">{foodDisplay.sublabel}</span>
+                </>
+              );
+            })()}
           </div>
         </div>
 
