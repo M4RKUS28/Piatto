@@ -190,16 +190,24 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
         }
       }
 
-      // Update collections with recipes
+      // Build a map of collectionId -> Set of recipeIds
+      const collectionToRecipes = new Map();
+
       for (const [recipeId, collectionIds] of recipeSelections.entries()) {
         for (const collectionId of collectionIds) {
-          const collection = collections.find(c => c.id === collectionId);
-          if (collection) {
-            const existingRecipeIds = new Set(collection.recipe_ids || []);
-            existingRecipeIds.add(recipeId);
-            await updateCollectionRecipes(collectionId, Array.from(existingRecipeIds));
+          if (!collectionToRecipes.has(collectionId)) {
+            // Initialize with existing recipes from the collection
+            const collection = collections.find(c => c.id === collectionId);
+            collectionToRecipes.set(collectionId, new Set(collection?.recipe_ids || []));
           }
+          // Add the current recipe to this collection
+          collectionToRecipes.get(collectionId).add(recipeId);
         }
+      }
+
+      // Update each collection once with all its recipes
+      for (const [collectionId, recipeIds] of collectionToRecipes.entries()) {
+        await updateCollectionRecipes(collectionId, Array.from(recipeIds));
       }
 
       // Call onSave callback with recipe IDs and their collection assignments
