@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
         generateRecipes,
         getRecipeOptions,
@@ -7,6 +7,7 @@ import {
         getImageAnalysisBySessionId,
 } from '../../../api/preparingApi';
 import { saveRecipe } from '../../../api/recipeApi';
+import { updateCollectionRecipes, getCollectionById } from '../../../api/collectionApi';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import ErrorMessage from '../../../components/ErrorMessage';
 import PromptStep from './PromptStep';
@@ -18,6 +19,8 @@ import { getImageUrl } from '../../../utils/imageUtils';
 
 export default function RecipeGeneration() {
         const navigate = useNavigate();
+        const location = useLocation();
+        const collectionContext = location.state; // { collectionId, collectionName }
         const [currentStep, setCurrentStep] = useState(1);
         const [prompt, setPrompt] = useState('');
         const [ingredients, setIngredients] = useState('');
@@ -105,8 +108,13 @@ export default function RecipeGeneration() {
                         setImageKey('');
                         setInputMethod('text');
                         setCurrentStep(1);
+
+                        // Navigate back to collection if there's a collection context
+                        if (collectionContext?.collectionId) {
+                                navigate(`/app/collection/${collectionContext.collectionId}`);
+                        }
                 }
-        }, [preparingSessionId, clearStoredSession]);
+        }, [preparingSessionId, clearStoredSession, collectionContext, navigate]);
 
         const handleFetchImageAnalysis = useCallback(async (sessionId) => {
                 try {
@@ -212,6 +220,26 @@ export default function RecipeGeneration() {
                 setError(null);
                 try {
                         await saveRecipe(recipeId);
+
+                        // If we have a collection context, add the recipe to that collection
+                        if (collectionContext?.collectionId) {
+                                try {
+                                        // Get current collection to get existing recipe IDs
+                                        const collection = await getCollectionById(collectionContext.collectionId);
+                                        const existingRecipeIds = collection.recipes.map(r => r.id);
+
+                                        // Add new recipe to collection
+                                        const updatedRecipeIds = [...existingRecipeIds, recipeId];
+                                        await updateCollectionRecipes(collectionContext.collectionId, updatedRecipeIds);
+
+                                        // Navigate back to the collection view
+                                        navigate(`/app/collection/${collectionContext.collectionId}`);
+                                } catch (collectionError) {
+                                        console.error('Failed to add recipe to collection:', collectionError);
+                                        // Still navigate to the recipe view if collection update fails
+                                        setError('Recipe saved, but failed to add to collection.');
+                                }
+                        }
                 } catch (saveError) {
                         console.error('Failed to save recipe option:', saveError);
                         setError('Failed to save recipe. Please try again.');
@@ -282,6 +310,15 @@ export default function RecipeGeneration() {
         return (
                 <div className="min-h-screen p-4 sm:p-6 lg:p-8">
                         <div className="max-w-4xl mx-auto">
+                                {/* Collection Context Banner */}
+                                {collectionContext?.collectionName && (
+                                        <div className="mb-6 p-4 bg-[#035035] bg-opacity-10 border border-[#035035] border-opacity-20 rounded-lg">
+                                                <p className="text-sm text-[#035035] text-center">
+                                                        <span className="font-semibold">Generiere Rezept für:</span> {collectionContext.collectionName}
+                                                </p>
+                                        </div>
+                                )}
+
                                 <div className="mb-8">
                                         <div className="flex items-center justify-center gap-4">
                                                 {[1, 2, 3].map((step) => (

@@ -3,12 +3,12 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Search, Clock, Users, Filter, ArrowLeft } from 'lucide-react';
 import { PiLeaf, PiEgg, PiCow } from 'react-icons/pi';
 import { getCollectionById } from '../../api/collectionApi';
-import { deleteRecipe } from '../../api/recipeApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorMessage from '../../components/ErrorMessage';
 import EmptyState from '../../components/EmptyState';
 import RecipeCardMenu from '../../components/RecipeCardMenu';
 import EditCollectionsModal from '../../components/EditCollectionsModal';
+import DeleteRecipeModal from '../../components/DeleteRecipeModal';
 import CollectionImageCollage from '../../components/CollectionImageCollage';
 import { getImageUrl } from '../../utils/imageUtils';
 
@@ -81,6 +81,8 @@ export default function CollectionRecipesView() {
   const [error, setError] = useState(null);
   const [showCollectionsModal, setShowCollectionsModal] = useState(false);
   const [selectedRecipeId, setSelectedRecipeId] = useState(null);
+  const [showDeleteRecipeModal, setShowDeleteRecipeModal] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
   const navigate = useNavigate();
 
   const fetchCollection = async () => {
@@ -129,19 +131,10 @@ export default function CollectionRecipesView() {
     setShowCollectionsModal(true);
   };
 
-  const handleDeleteRecipe = async (recipeId) => {
-    if (!window.confirm('Möchtest du dieses Rezept wirklich löschen?')) {
-      return;
-    }
-
-    try {
-      await deleteRecipe(recipeId);
-      // Refresh the collection to update the recipe list
-      fetchCollection();
-    } catch (err) {
-      console.error('Failed to delete recipe:', err);
-      alert('Fehler beim Löschen des Rezepts');
-    }
+  const handleDeleteRecipe = (recipeId) => {
+    const recipe = recipes.find(r => r.id === recipeId);
+    setSelectedRecipe(recipe);
+    setShowDeleteRecipeModal(true);
   };
 
   const handleRecipeDeleted = () => {
@@ -214,8 +207,8 @@ export default function CollectionRecipesView() {
           <EmptyState
             title="Keine Rezepte in dieser Sammlung"
             message="Füge Rezepte zu dieser Sammlung hinzu, indem du sie im Rezept-Menü zur Sammlung hinzufügst."
-            actionLabel="Zur Bibliothek"
-            onAction={() => navigate('/app/recipes')}
+            actionLabel="Rezept generieren"
+            onAction={() => navigate('/app/generate', { state: { collectionId: parseInt(collectionId), collectionName: collection?.name } })}
           />
         )}
 
@@ -329,6 +322,17 @@ export default function CollectionRecipesView() {
           onRecipeDeleted={handleRecipeDeleted}
         />
       )}
+
+      {/* Delete Recipe Modal */}
+      <DeleteRecipeModal
+        recipe={selectedRecipe}
+        isOpen={showDeleteRecipeModal}
+        onClose={() => {
+          setShowDeleteRecipeModal(false);
+          setSelectedRecipe(null);
+        }}
+        onDeleted={handleRecipeDeleted}
+      />
     </div>
   );
 }
