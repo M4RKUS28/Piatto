@@ -1,31 +1,32 @@
 import React from 'react';
-import useWakeWordDetection from '../hooks/useWakeWordDetection';
+import useWakeWordDetectionPorcupine from '../hooks/useWakeWordDetectionPorcupine';
 
 /**
- * Visual component for Wake Word Detection
+ * Visual component for Wake Word Detection using Porcupine
  * Shows listening status, controls, and detection feedback
  */
 const WakeWordDetection = () => {
   const {
     isListening,
     isActive,
+    isLoading,
     detectionCount,
     lastDetectedTime,
     error,
     browserSupported,
     toggleListening,
-  } = useWakeWordDetection();
+  } = useWakeWordDetectionPorcupine();
 
-  // Don't render if browser doesn't support speech recognition
+  // Don't render if browser doesn't support required features
   if (!browserSupported) {
     return (
       <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4 mb-6">
         <div className="flex items-center gap-3">
           <span className="text-2xl">⚠️</span>
           <div className="flex-1">
-            <h3 className="font-semibold text-red-800 text-sm">Speech Recognition Not Supported</h3>
+            <h3 className="font-semibold text-red-800 text-sm">Browser Not Supported</h3>
             <p className="text-xs text-red-600 mt-1">
-              Your browser doesn't support speech recognition. Please use Chrome, Edge, or Safari.
+              Your browser doesn't support the required audio features. Please use a modern browser (Chrome, Edge, Firefox, or Safari).
             </p>
           </div>
         </div>
@@ -51,16 +52,22 @@ const WakeWordDetection = () => {
 
         {/* Status Indicator */}
         <div className="flex items-center gap-2">
-          {isListening && (
+          {isLoading && (
+            <div className="flex items-center gap-2 px-3 py-1 bg-blue-100 rounded-full">
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-spin border-2 border-transparent border-t-blue-500" />
+              <span className="text-xs font-medium text-blue-700">Loading...</span>
+            </div>
+          )}
+          {isListening && !isLoading && (
             <div className="flex items-center gap-2 px-3 py-1 bg-green-100 rounded-full">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
               <span className="text-xs font-medium text-green-700">Listening</span>
             </div>
           )}
-          {isActive && !isListening && (
+          {isActive && !isListening && !isLoading && (
             <div className="flex items-center gap-2 px-3 py-1 bg-yellow-100 rounded-full">
               <div className="w-2 h-2 bg-yellow-500 rounded-full" />
-              <span className="text-xs font-medium text-yellow-700">Restarting...</span>
+              <span className="text-xs font-medium text-yellow-700">Initializing...</span>
             </div>
           )}
         </div>
@@ -70,16 +77,19 @@ const WakeWordDetection = () => {
       <div className="mb-4">
         <button
           onClick={toggleListening}
+          disabled={isLoading}
           className={`
             w-full sm:w-auto px-6 py-3 rounded-lg font-medium text-sm uppercase tracking-wide
-            transition-all duration-200 hover:scale-105 active:scale-95
-            ${isActive
-              ? 'bg-red-500 text-white hover:bg-red-600'
-              : 'bg-[#035035] text-white hover:bg-[#024028]'
+            transition-all duration-200
+            ${isLoading
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : isActive
+                ? 'bg-red-500 text-white hover:bg-red-600 hover:scale-105 active:scale-95'
+                : 'bg-[#035035] text-white hover:bg-[#024028] hover:scale-105 active:scale-95'
             }
           `}
         >
-          {isActive ? '⏹ Stop Listening' : '▶ Start Listening'}
+          {isLoading ? '⏳ Loading...' : isActive ? '⏹ Stop Listening' : '▶ Start Listening'}
         </button>
       </div>
 
@@ -115,8 +125,7 @@ const WakeWordDetection = () => {
       {isActive && (
         <div className="mt-4 pt-4 border-t border-gray-200">
           <p className="text-xs text-gray-500">
-            💡 Debug: Check browser console for detailed logs.
-            Listening auto-restarts every ~55 seconds.
+            💡 Debug: Check browser console for detailed logs. Using Porcupine deep learning model for accurate wake word detection.
           </p>
         </div>
       )}
