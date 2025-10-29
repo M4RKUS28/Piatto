@@ -19,3 +19,17 @@ body {
   width: 0;
   height: 0;
 }
+
+/* Shimmer animation for loading state */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+}
