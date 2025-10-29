@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTimer } from 'react-timer-hook';
+import { motion } from 'framer-motion';
 import { PiX, PiPlay, PiPause, PiArrowClockwise } from 'react-icons/pi';
 
 const AnimatedTimer = ({
@@ -8,6 +9,7 @@ const AnimatedTimer = ({
   timerSeconds,
   isFloating = false,
   isExpanded = true,
+  isAnimating = false,
   onStartFloating,
   onReturnToStep,
   onExpand,
@@ -71,9 +73,14 @@ const AnimatedTimer = ({
         className={`bg-white bg-opacity-90 rounded-lg shadow-sm border-2 ${borderColor} p-2.5 cursor-pointer hover:bg-opacity-100 transition-all duration-200`}
       >
         <div className="flex items-center justify-between">
-          <h4 className="text-xs sm:text-sm font-medium text-[#2D2D2D] flex-1 truncate opacity-80">
+          <motion.h4
+            className="text-xs sm:text-sm font-medium text-[#2D2D2D] flex-1 truncate opacity-80"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isAnimating ? 1 : 0.8 }}
+            transition={{ duration: 0.6 }}
+          >
             {heading}
-          </h4>
+          </motion.h4>
           <div className="text-xs font-mono text-[#2D2D2D] opacity-60 ml-2">
             {hours > 0 && <span>{formatTime(hours)}:</span>}
             <span>{formatTime(minutes)}</span>
@@ -96,9 +103,14 @@ const AnimatedTimer = ({
       >
         {/* Header with title and close button */}
         <div className="flex items-start justify-between mb-2">
-          <h4 className="text-sm sm:text-base font-semibold text-[#2D2D2D] flex-1 pr-2 leading-tight">
+          <motion.h4
+            className="text-sm sm:text-base font-semibold text-[#2D2D2D] flex-1 pr-2 leading-tight"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isAnimating ? 1 : 1 }}
+            transition={{ duration: 0.6 }}
+          >
             {heading}
-          </h4>
+          </motion.h4>
           <button
             onClick={handleClose}
             className="flex-shrink-0 w-5 h-5 flex items-center justify-center text-gray-400 hover:text-[#FF9B7B] hover:bg-[#FFF8F0] rounded transition-colors"
@@ -172,63 +184,113 @@ const AnimatedTimer = ({
 
   // Inline view (in step div)
   return (
-    <div ref={timerRef} className="mt-4 bg-white p-4 sm:p-5 rounded-xl border-2 border-[#FF9B7B] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 transition-opacity duration-300">
-      {/* Time Display - Left Side (or Top on mobile) */}
-      <div className="flex flex-col">
-        <div className="text-xl sm:text-2xl md:text-3xl font-bold text-[#2D2D2D] font-mono tracking-wide">
-          {hours > 0 && <span>{formatTime(hours)}:</span>}
-          <span>{formatTime(minutes)}</span>
-          <span>:</span>
-          <span>{formatTime(seconds)}</span>
+    <div ref={timerRef} className="mt-4 bg-white p-4 sm:p-5 rounded-xl border-2 border-[#FF9B7B] flex flex-col gap-3 transition-opacity duration-300">
+      {/* Heading - only rendered during animation */}
+      {isAnimating && (
+        <motion.div
+          className="flex items-center justify-between"
+          initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+          animate={{ opacity: 1, height: 'auto', marginBottom: '0.5rem' }}
+          transition={{ duration: 0.6 }}
+          style={{ overflow: 'hidden' }}
+        >
+          <h4 className="text-sm sm:text-base font-semibold text-[#2D2D2D] flex-1 pr-2 leading-tight">
+            {heading}
+          </h4>
+        </motion.div>
+      )}
+
+      {/* Timer and Controls Row */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        {/* Time Display - Left Side (or Top on mobile) */}
+        <div className="flex flex-col">
+          <div className="text-xl sm:text-2xl md:text-3xl font-bold text-[#2D2D2D] font-mono tracking-wide">
+            {hours > 0 && <span>{formatTime(hours)}:</span>}
+            <span>{formatTime(minutes)}</span>
+            <span>:</span>
+            <span>{formatTime(seconds)}</span>
+          </div>
+          <motion.div
+            className="mt-1 text-xs text-[#FF9B7B] font-medium uppercase tracking-wide"
+            initial={{ opacity: 1 }}
+            animate={{ opacity: isAnimating ? 0 : 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            {isRunning ? '⏱ Running' : '⏸ Paused'}
+          </motion.div>
         </div>
-        <div className="mt-1 text-xs text-[#FF9B7B] font-medium uppercase tracking-wide">
-          {isRunning ? '⏱ Running' : '⏸ Paused'}
+
+        {/* Buttons - Right Side (or Bottom on mobile) */}
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={handleStart}
+            disabled={isRunning}
+            className={`
+              px-3 sm:px-4 py-2 rounded-lg font-medium text-xs uppercase tracking-wide
+              transition-all duration-200 flex-1 sm:flex-none
+              ${isRunning
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-[#035035] text-white hover:bg-[#024028] hover:scale-105 active:scale-95'
+              }
+            `}
+          >
+            <span className="inline-flex items-center gap-1">
+              <span>▶</span>
+              <motion.span
+                initial={{ opacity: 1 }}
+                animate={{ opacity: isAnimating ? 0 : 1 }}
+                transition={{ duration: 0.6 }}
+              >
+                Start
+              </motion.span>
+            </span>
+          </button>
+
+          <button
+            onClick={handlePause}
+            disabled={!isRunning}
+            className={`
+              px-3 sm:px-4 py-2 rounded-lg font-medium text-xs uppercase tracking-wide
+              transition-all duration-200 flex-1 sm:flex-none
+              ${!isRunning
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-[#FF9B7B] text-white hover:bg-[#FF8B6B] hover:scale-105 active:scale-95'
+              }
+            `}
+          >
+            <span className="inline-flex items-center gap-1">
+              <span>⏸</span>
+              <motion.span
+                initial={{ opacity: 1 }}
+                animate={{ opacity: isAnimating ? 0 : 1 }}
+                transition={{ duration: 0.6 }}
+              >
+                Pause
+              </motion.span>
+            </span>
+          </button>
+
+          <button
+            onClick={handleReset}
+            className="
+              px-3 sm:px-4 py-2 rounded-lg font-medium text-xs uppercase tracking-wide
+              transition-all duration-200 flex-1 sm:flex-none
+              bg-white text-[#FF9B7B] hover:bg-[#FFF8F0] hover:scale-105 active:scale-95
+              border-2 border-[#FF9B7B]
+            "
+          >
+            <span className="inline-flex items-center gap-1">
+              <span>↺</span>
+              <motion.span
+                initial={{ opacity: 1 }}
+                animate={{ opacity: isAnimating ? 0 : 1 }}
+                transition={{ duration: 0.6 }}
+              >
+                Reset
+              </motion.span>
+            </span>
+          </button>
         </div>
-      </div>
-
-      {/* Buttons - Right Side (or Bottom on mobile) */}
-      <div className="flex gap-2 flex-wrap">
-        <button
-          onClick={handleStart}
-          disabled={isRunning}
-          className={`
-            px-3 sm:px-4 py-2 rounded-lg font-medium text-xs uppercase tracking-wide
-            transition-all duration-200 flex-1 sm:flex-none
-            ${isRunning
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-[#035035] text-white hover:bg-[#024028] hover:scale-105 active:scale-95'
-            }
-          `}
-        >
-          ▶ Start
-        </button>
-
-        <button
-          onClick={handlePause}
-          disabled={!isRunning}
-          className={`
-            px-3 sm:px-4 py-2 rounded-lg font-medium text-xs uppercase tracking-wide
-            transition-all duration-200 flex-1 sm:flex-none
-            ${!isRunning
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-[#FF9B7B] text-white hover:bg-[#FF8B6B] hover:scale-105 active:scale-95'
-            }
-          `}
-        >
-          ⏸ Pause
-        </button>
-
-        <button
-          onClick={handleReset}
-          className="
-            px-3 sm:px-4 py-2 rounded-lg font-medium text-xs uppercase tracking-wide
-            transition-all duration-200 flex-1 sm:flex-none
-            bg-white text-[#FF9B7B] hover:bg-[#FFF8F0] hover:scale-105 active:scale-95
-            border-2 border-[#FF9B7B]
-          "
-        >
-          ↺ Reset
-        </button>
       </div>
     </div>
   );
