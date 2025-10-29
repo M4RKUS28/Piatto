@@ -38,14 +38,22 @@ const WakeWordDetection = () => {
       await startListening();
     } catch (err) {
       console.error('Error starting wake word detection:', err);
+
+      // Check for specific error types
       if (err.name === 'NotAllowedError') {
         setError('Microphone permission denied. Please allow microphone access and try again.');
       } else if (err.name === 'NotFoundError') {
         setError('No microphone found. Please connect a microphone and try again.');
-      } else if (err.message?.includes('model')) {
+      } else if (err.message?.includes('no available backend') || err.message?.includes('initWasm() failed')) {
+        setError('Failed to load ONNX Runtime. This might be due to: (1) No internet connection to load WASM files from CDN, or (2) Browser restrictions. Try refreshing the page or check your internet connection.');
+      } else if (err.message?.includes('protobuf') || err.message?.includes('ERROR_CODE: 7')) {
+        setError('Wake word model not found! You need to train your custom "Hey Piatto" model first. See the setup instructions below or check QUICK_START.md for training steps.');
+      } else if (err.message?.includes('model') || err.message?.includes('onnx')) {
         setError('Failed to load wake word model. Make sure wakeword_model.onnx is in the public folder. See CUSTOM_WAKE_WORD_TRAINING.md for setup.');
+      } else if (err.message?.includes('wasm') || err.message?.includes('backend') || err.message?.includes('dynamically imported module')) {
+        setError('WebAssembly loading failed. Please refresh the page. If this persists, check your internet connection (WASM files load from CDN).');
       } else {
-        setError(`Failed to start: ${err.message || 'Unknown error'}`);
+        setError(`Failed to start: ${err.message || 'Unknown error'}. Check browser console for details.`);
       }
     }
   };

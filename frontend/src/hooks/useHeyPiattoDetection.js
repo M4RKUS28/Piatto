@@ -1,10 +1,16 @@
-import { useWakeword } from '@p0llen/wakeword-react';
+import useWakeword from '@p0llen/wakeword-react/dist/useWakeword';
+import * as ort from 'onnxruntime-web';
+
+// Configure ONNX Runtime BEFORE any hook initialization
+// This must run at module load time, not in useEffect
+ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.23.0/dist/';
 
 /**
  * Custom hook for "Hey Piatto" wake word detection
  * Uses trained ONNX model for accurate detection
  */
 const useHeyPiattoDetection = () => {
+
   const {
     wakewordDetected,
     confidence,

@@ -9,7 +9,23 @@ export default defineConfig({
     tailwindcss(),
   ],
 
+  // Fix for ONNX Runtime Web WebAssembly files
+  optimizeDeps: {
+    exclude: ['onnxruntime-web']
+  },
+
+  // Ensure WASM files are properly handled
+  assetsInclude: ['**/*.wasm'],
+
   server: {
+    headers: {
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Opener-Policy': 'same-origin',
+    },
+    fs: {
+      // Allow serving files from node_modules
+      allow: ['..']
+    },
     proxy: {
       "/api": {
         target: "http://localhost:8080",
