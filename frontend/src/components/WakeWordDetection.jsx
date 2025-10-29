@@ -1,38 +1,60 @@
-import React from 'react';
-import useWakeWordDetectionPorcupine from '../hooks/useWakeWordDetectionPorcupine';
+import React, { useEffect, useState } from 'react';
+import useHeyPiattoDetection from '../hooks/useHeyPiattoDetection';
 
 /**
- * Visual component for Wake Word Detection using Porcupine
- * Shows listening status, controls, and detection feedback
+ * Visual component for Custom "Hey Piatto" Wake Word Detection
+ * Uses trained ONNX model with @p0llen/wakeword-react
  */
 const WakeWordDetection = () => {
   const {
+    detected,
+    confidence,
     isListening,
-    isActive,
-    isLoading,
-    detectionCount,
-    lastDetectedTime,
-    error,
-    browserSupported,
-    toggleListening,
-  } = useWakeWordDetectionPorcupine();
+    startListening,
+    stopListening
+  } = useHeyPiattoDetection();
 
-  // Don't render if browser doesn't support required features
-  if (!browserSupported) {
-    return (
-      <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4 mb-6">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">⚠️</span>
-          <div className="flex-1">
-            <h3 className="font-semibold text-red-800 text-sm">Browser Not Supported</h3>
-            <p className="text-xs text-red-600 mt-1">
-              Your browser doesn't support the required audio features. Please use a modern browser (Chrome, Edge, Firefox, or Safari).
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const [detectionCount, setDetectionCount] = useState(0);
+  const [lastDetectedTime, setLastDetectedTime] = useState(null);
+  const [error, setError] = useState(null);
+
+  // Handle wake word detection
+  useEffect(() => {
+    if (detected) {
+      console.log('🎯 HEY PIATTO DETECTED! Confidence:', (confidence * 100).toFixed(1) + '%');
+      setDetectionCount(prev => prev + 1);
+      setLastDetectedTime(new Date());
+      setError(null);
+
+      // TODO: Add callback here to trigger audio streaming to backend
+      // Example: startAudioStreamingToBackend();
+    }
+  }, [detected, confidence]);
+
+  // Handle start listening with error handling
+  const handleStart = async () => {
+    try {
+      setError(null);
+      await startListening();
+    } catch (err) {
+      console.error('Error starting wake word detection:', err);
+      if (err.name === 'NotAllowedError') {
+        setError('Microphone permission denied. Please allow microphone access and try again.');
+      } else if (err.name === 'NotFoundError') {
+        setError('No microphone found. Please connect a microphone and try again.');
+      } else if (err.message?.includes('model')) {
+        setError('Failed to load wake word model. Make sure wakeword_model.onnx is in the public folder. See CUSTOM_WAKE_WORD_TRAINING.md for setup.');
+      } else {
+        setError(`Failed to start: ${err.message || 'Unknown error'}`);
+      }
+    }
+  };
+
+  // Handle stop listening
+  const handleStop = () => {
+    stopListening();
+    setError(null);
+  };
 
   return (
     <div className="bg-white border-2 border-[#A8C9B8] rounded-xl p-4 sm:p-5 mb-6 shadow-sm">
@@ -42,7 +64,7 @@ const WakeWordDetection = () => {
           <div className="text-2xl">🎤</div>
           <div>
             <h3 className="font-semibold text-[#2D2D2D] text-sm sm:text-base">
-              Voice Wake Word Detection
+              Custom Wake Word Detection
             </h3>
             <p className="text-xs text-gray-600 mt-0.5">
               Listening for: "Hey Piatto"
@@ -52,22 +74,10 @@ const WakeWordDetection = () => {
 
         {/* Status Indicator */}
         <div className="flex items-center gap-2">
-          {isLoading && (
-            <div className="flex items-center gap-2 px-3 py-1 bg-blue-100 rounded-full">
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-spin border-2 border-transparent border-t-blue-500" />
-              <span className="text-xs font-medium text-blue-700">Loading...</span>
-            </div>
-          )}
-          {isListening && !isLoading && (
+          {isListening && (
             <div className="flex items-center gap-2 px-3 py-1 bg-green-100 rounded-full">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
               <span className="text-xs font-medium text-green-700">Listening</span>
-            </div>
-          )}
-          {isActive && !isListening && !isLoading && (
-            <div className="flex items-center gap-2 px-3 py-1 bg-yellow-100 rounded-full">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full" />
-              <span className="text-xs font-medium text-yellow-700">Initializing...</span>
             </div>
           )}
         </div>
@@ -76,20 +86,17 @@ const WakeWordDetection = () => {
       {/* Control Button */}
       <div className="mb-4">
         <button
-          onClick={toggleListening}
-          disabled={isLoading}
+          onClick={isListening ? handleStop : handleStart}
           className={`
             w-full sm:w-auto px-6 py-3 rounded-lg font-medium text-sm uppercase tracking-wide
-            transition-all duration-200
-            ${isLoading
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : isActive
-                ? 'bg-red-500 text-white hover:bg-red-600 hover:scale-105 active:scale-95'
-                : 'bg-[#035035] text-white hover:bg-[#024028] hover:scale-105 active:scale-95'
+            transition-all duration-200 hover:scale-105 active:scale-95
+            ${isListening
+              ? 'bg-red-500 text-white hover:bg-red-600'
+              : 'bg-[#035035] text-white hover:bg-[#024028]'
             }
           `}
         >
-          {isLoading ? '⏳ Loading...' : isActive ? '⏹ Stop Listening' : '▶ Start Listening'}
+          {isListening ? '⏹ Stop Listening' : '▶ Start Listening'}
         </button>
       </div>
 
@@ -103,29 +110,52 @@ const WakeWordDetection = () => {
         </div>
       )}
 
-      {/* Detection Feedback - Simple visual indicator */}
-      {lastDetectedTime && (
-        <div className="p-3 bg-green-50 border-2 border-green-300 rounded-lg animate-pulse">
+      {/* Detection Feedback */}
+      {detected && lastDetectedTime && (
+        <div className="mb-4 p-3 bg-green-50 border-2 border-green-300 rounded-lg animate-pulse">
           <div className="flex items-center gap-3">
             <span className="text-2xl">🎯</span>
             <div className="flex-1">
               <p className="text-sm font-semibold text-green-800">
-                Wake word detected!
+                "Hey Piatto" detected!
               </p>
               <p className="text-xs text-green-600 mt-1">
-                Last detected: {lastDetectedTime.toLocaleTimeString()}
-                {detectionCount > 1 && ` (${detectionCount} times total)`}
+                Confidence: {(confidence * 100).toFixed(1)}%
+                {' • '}
+                {lastDetectedTime.toLocaleTimeString()}
+                {detectionCount > 1 && ` • Total: ${detectionCount}`}
               </p>
             </div>
           </div>
         </div>
       )}
 
+      {/* Setup Warning */}
+      {!isListening && !error && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-start gap-2">
+            <span className="text-blue-500 text-sm">ℹ️</span>
+            <div className="flex-1 text-xs text-blue-700">
+              <p className="font-semibold mb-1">First time setup required:</p>
+              <ol className="list-decimal ml-4 space-y-1">
+                <li>Train your custom "Hey Piatto" model (see CUSTOM_WAKE_WORD_TRAINING.md)</li>
+                <li>Place <code className="bg-blue-100 px-1 rounded">wakeword_model.onnx</code> in <code className="bg-blue-100 px-1 rounded">frontend/public/</code></li>
+                <li>Click "Start Listening" to begin detection</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Debug Info */}
-      {isActive && (
+      {isListening && (
         <div className="mt-4 pt-4 border-t border-gray-200">
           <p className="text-xs text-gray-500">
-            💡 Debug: Check browser console for detailed logs. Using Porcupine deep learning model for accurate wake word detection.
+            💡 Using custom-trained ONNX model for "Hey Piatto" detection.
+            {confidence > 0 && ` Current confidence: ${(confidence * 100).toFixed(1)}%`}
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            Check browser console for detailed detection logs.
           </p>
         </div>
       )}
