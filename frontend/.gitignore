@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Keep the custom trained model (don't ignore it)
+# public/wakeword_model.onnx should be committed
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
