@@ -3,6 +3,7 @@ import Lottie from 'lottie-react';
 import { useParams } from 'react-router-dom';
 import { getInstructions } from '../../api/instructionApi';
 import AnimatedTimer from './Instructions/AnimatedTimer';
+import AnimatingTimerPortal from './Instructions/AnimatingTimerPortal';
 
  // --- Configuration ---
 const CURVE_AMOUNT = 180;
@@ -61,21 +62,21 @@ const buildInstructionContent = (instruction, stepIndex, timerData, handlers) =>
       <h3 className="text-lg sm:text-xl md:text-xl font-semibold text-[#2D2D2D] mb-2">{heading}</h3>
       <p className="text-sm sm:text-base text-[#2D2D2D] mb-4">{description}</p>
       {timer && timerData && !timerData.isFloating && (
-        <AnimatedTimer
-          stepIndex={stepIndex}
-          heading={heading}
-          timerSeconds={timer}
-          isFloating={false}
-          isExpanded={false}
-          onStartFloating={handlers.onStartFloating}
-          onReturnToStep={handlers.onReturnToStep}
-          onExpand={handlers.onExpand}
-          timerRef={timerData.timerRef}
-        />
-      )}
-      {timer && timerData && timerData.isFloating && (
-        <div className="mt-4 h-24 sm:h-28">
-          {/* Empty space placeholder when timer is floating */}
+        <div style={{
+          opacity: timerData.isHidden ? 0 : 1,
+          pointerEvents: timerData.isHidden ? 'none' : 'auto'
+        }}>
+          <AnimatedTimer
+            stepIndex={stepIndex}
+            heading={heading}
+            timerSeconds={timer}
+            isFloating={false}
+            isExpanded={false}
+            onStartFloating={handlers.onStartFloating}
+            onReturnToStep={handlers.onReturnToStep}
+            onExpand={handlers.onExpand}
+            timerRef={timerData.timerRef}
+          />
         </div>
       )}
     </div>
@@ -123,20 +124,67 @@ const CookingInstructions = ({
   // Track which step timers are floating and which is expanded
   const [floatingTimerSteps, setFloatingTimerSteps] = React.useState([]); // Array of step indices
   const [expandedTimerStep, setExpandedTimerStep] = React.useState(null); // Only one can be expanded
+  const [animatingTimers, setAnimatingTimers] = React.useState([]); // Timers currently animating
+  const [hiddenTimers, setHiddenTimers] = React.useState([]); // Timers hidden during animation
   const timerRefs = React.useRef({});
 
   // Handle timer starting to float
   const handleStartFloating = React.useCallback((stepIndex) => {
-    setFloatingTimerSteps((prev) => {
-      if (prev.includes(stepIndex)) return prev;
-      return [...prev, stepIndex];
-    });
-    // New timer is always expanded, collapse others
-    setExpandedTimerStep(stepIndex);
-  }, []);
+    // Get positions for animation
+    const stepTimerEl = timerRefs.current[stepIndex];
+    if (!stepTimerEl) {
+      // Fallback: instant transition
+      setFloatingTimerSteps((prev) => {
+        if (prev.includes(stepIndex)) return prev;
+        return [...prev, stepIndex];
+      });
+      setExpandedTimerStep(stepIndex);
+      return;
+    }
+
+    const fromRect = stepTimerEl.getBoundingClientRect();
+
+    // Hide the original timer during animation
+    setHiddenTimers((prev) => [...prev, stepIndex]);
+
+    // Calculate target position (top-right corner)
+    // Use responsive widths
+    const containerWidth = window.innerWidth < 640 ? 288 : window.innerWidth < 768 ? 320 : 384; // w-72, w-80, w-96
+    const toRect = {
+      left: window.innerWidth - containerWidth - 16, // width minus padding
+      top: 16 + (floatingTimerSteps.length * 50), // stack vertically with gap
+      width: containerWidth,
+      height: 120 // Approximate compact height
+    };
+
+    // Add to animating timers
+    const animationId = `anim-${stepIndex}-${Date.now()}`;
+    setAnimatingTimers((prev) => [
+      ...prev,
+      {
+        id: animationId,
+        stepIndex,
+        fromRect,
+        toRect,
+        isCompacting: true
+      }
+    ]);
+
+    // After animation completes, show in floating state
+    setTimeout(() => {
+      setAnimatingTimers((prev) => prev.filter((t) => t.id !== animationId));
+      setHiddenTimers((prev) => prev.filter((idx) => idx !== stepIndex));
+      setFloatingTimerSteps((prev) => {
+        if (prev.includes(stepIndex)) return prev;
+        return [...prev, stepIndex];
+      });
+      setExpandedTimerStep(stepIndex);
+    }, 600); // Match animation duration
+  }, [floatingTimerSteps]);
 
   // Handle timer returning to step
   const handleReturnToStep = React.useCallback((stepIndex) => {
+    // Simply remove from floating and show back in step - no animation
     setFloatingTimerSteps((prev) => prev.filter((idx) => idx !== stepIndex));
     if (expandedTimerStep === stepIndex) {
       setExpandedTimerStep(null);
@@ -385,10 +433,12 @@ const CookingInstructions = ({
           {instructions.map((instruction, index) => {
             const isFloating = floatingTimerSteps.includes(index);
             const isExpanded = expandedTimerStep === index;
+            const isHidden = hiddenTimers.includes(index);
 
             const timerData = instruction.timer ? {
               isFloating,
               isExpanded,
+              isHidden,
               timerRef: (el) => {
                 if (el) timerRefs.current[index] = el;
               }
@@ -446,6 +496,9 @@ const CookingInstructions = ({
           })}
         </div>
       )}
+
+      {/* Animating Timers Portal */}
+      <AnimatingTimerPortal timers={animatingTimers} instructions={instructions} />
     </div>
   );
 };

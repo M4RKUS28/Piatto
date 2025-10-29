@@ -26,7 +26,7 @@ const AnimatedTimer = ({
     restart,
   } = useTimer({
     expiryTimestamp: time,
-    autoStart: false,
+    autoStart: isFloating && isExpanded, // Auto-start when floating and expanded
     onExpire: () => console.warn('Timer expired'),
   });
 
@@ -39,10 +39,12 @@ const AnimatedTimer = ({
   const handleStart = () => {
     if (!isRunning) {
       if (!isFloating) {
-        // Start floating animation
+        // Start floating animation - the floating timer will auto-start
         onStartFloating(stepIndex);
+      } else {
+        // If already floating, just resume
+        resume();
       }
-      resume();
     }
   };
 
@@ -60,11 +62,13 @@ const AnimatedTimer = ({
 
   // Collapsed floating view (just the heading bar)
   if (isFloating && !isExpanded) {
+    const borderColor = isRunning ? 'border-green-500' : 'border-orange-400';
+
     return (
       <div
         ref={timerRef}
         onClick={onExpand}
-        className="bg-white bg-opacity-90 rounded-lg shadow-sm border border-gray-300 p-2.5 cursor-pointer hover:bg-opacity-100 hover:border-[#FF9B7B] transition-all duration-200"
+        className={`bg-white bg-opacity-90 rounded-lg shadow-sm border-2 ${borderColor} p-2.5 cursor-pointer hover:bg-opacity-100 transition-all duration-200`}
       >
         <div className="flex items-center justify-between">
           <h4 className="text-xs sm:text-sm font-medium text-[#2D2D2D] flex-1 truncate opacity-80">
@@ -83,10 +87,12 @@ const AnimatedTimer = ({
 
   // Expanded floating view
   if (isFloating && isExpanded) {
+    const borderColor = isRunning ? 'border-green-500' : 'border-orange-400';
+
     return (
       <div
         ref={timerRef}
-        className="bg-white bg-opacity-95 rounded-lg shadow-md border border-[#FF9B7B] p-3 sm:p-4 transition-all duration-300"
+        className={`bg-white bg-opacity-95 rounded-lg shadow-md border-2 ${borderColor} p-3 sm:p-4 transition-all duration-300`}
       >
         {/* Header with title and close button */}
         <div className="flex items-start justify-between mb-2">
@@ -159,11 +165,6 @@ const AnimatedTimer = ({
               <PiArrowClockwise className="text-sm sm:text-base" />
             </button>
           </div>
-        </div>
-
-        {/* Status indicator */}
-        <div className="mt-2 text-xs text-[#FF9B7B] font-medium uppercase tracking-wide">
-          {isRunning ? '⏱ Running' : '⏸ Paused'}
         </div>
       </div>
     );
