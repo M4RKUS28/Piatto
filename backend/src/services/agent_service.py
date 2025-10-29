@@ -5,7 +5,6 @@ import asyncio
 import json
 from logging import getLogger
 from typing import Optional
-
 from fastapi import Depends, HTTPException
 
 from ..agents.chat_agent.agent import ChatAgent
