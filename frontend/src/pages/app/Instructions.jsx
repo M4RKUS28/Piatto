@@ -3,6 +3,7 @@ import Lottie from 'lottie-react';
 import { useTimer } from 'react-timer-hook';
 import { useParams } from 'react-router-dom';
 import { getInstructions } from '../../api/instructionApi';
+import WakeWordDetection from '../../components/WakeWordDetection';
 
 // --- Mock Data ---
 const mockInstructions = [
@@ -394,6 +395,11 @@ const CookingInstructions = ({
         <p className="text-[#2D2D2D] mt-3 sm:mt-4 max-w-lg text-sm sm:text-base">
           Follow the steps along the path to complete your recipe.
         </p>
+      </div>
+
+      {/* Wake Word Detection Module */}
+      <div className="w-full max-w-4xl mb-6">
+        <WakeWordDetection />
       </div>
 
       {/* Main Content Area */}
