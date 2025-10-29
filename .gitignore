@@ -267,3 +267,6 @@ mobile/.expo/
 mobile/.expo-shared/
 mobile/.bundle/
 mobile/.metro-health-check*
+
+
+.claude/
