@@ -60,29 +60,22 @@ class AgentService:
         Internal async method that runs in a separate thread's event loop.
         Generates all images concurrently.
         """
-        print("!!!BACKGROUND TASK: Started _generate_and_save_images_async")
-
         # Generate single image and update DB immediately
         async def generate_and_save_single_image(recipe_payload, recipe_id, idx):
-            print(f"!!!BACKGROUND TASK: Starting image generation for recipe {idx+1}")
             try:
                 image = await self.image_agent.run(
                     user_id=user_id,
                     state={},
                     content=get_image_gen_query(recipe_payload),
                 )
-                print(f"!!!BACKGROUND TASK: Image {idx+1} generated, now uploading")
 
                 async with get_async_bucket_session() as bs:
                     image_saved = await save_image_bytes(bs, user_id, "image", image, "recipe_image.png")
-
-                print(f"!!!BACKGROUND TASK: Image {idx+1} uploaded, updating DB")
 
                 # Update recipe with image URL
                 async with get_async_db_context() as db:
                     await recipe_crud.update_recipe(db, recipe_id, image_url=image_saved['key'])
 
-                print(f"!!!BACKGROUND TASK: Recipe {idx+1} updated with image")
             except Exception as e:
                 print(f"!!!BACKGROUND TASK: Error generating image for recipe {idx+1}: {e}")
 
@@ -92,12 +85,8 @@ class AgentService:
             task = asyncio.create_task(generate_and_save_single_image(recipe_payload, recipe_ids[idx], idx))
             tasks.append(task)
 
-        print(f"!!!BACKGROUND TASK: Created {len(tasks)} concurrent image generation tasks")
-
         # Await all tasks to complete (they run in parallel)
         await asyncio.gather(*tasks, return_exceptions=True)
-
-        print(f"!!!BACKGROUND TASK: All images generated and saved")
 
     # Rezepte Erstellen
     async def generate_recipe(
@@ -144,10 +133,8 @@ class AgentService:
                 raise HTTPException(status_code=403,
                                     detail="Preparing session does not belong to the authenticated user") from error
 
-        print("!!!Recipes saved to db")
         # Generate images in a separate thread (completely isolated from main event loop)
         background_tasks.add_task(self._generate_and_save_images_async, user_id, recipes, recipe_ids)
-        print("!!!Returning session id now")
         return session.id
 
     async def generate_instruction(self, user_id: str, preparing_session_id: int, recipe_id: int) -> int:
