@@ -1,51 +1,12 @@
 import React from 'react';
 import Lottie from 'lottie-react';
-import { useTimer } from 'react-timer-hook';
 import { useParams } from 'react-router-dom';
 import { getInstructions } from '../../api/instructionApi';
+import WakeWordDetection from '../../components/WakeWordDetection';
+import AnimatedTimer from './Instructions/AnimatedTimer';
+import AnimatingTimerPortal from './Instructions/AnimatingTimerPortal';
 
-// --- Mock Data ---
-const mockInstructions = [
-  {
-    heading: 'Chop your vegetables',
-    description: 'Wash and dry your vegetables, then chop them into bite-sized pieces using a big knife. Aim for even sizes so they cook uniformly.',
-    animationFile: 'big_knife.json'
-  },
-  {
-    heading: 'Start the pan and heat some oil',
-    description: 'Place a large pan on medium-high heat and add a drizzle of olive oil. Wait until it shimmers — this means it’s hot enough to start cooking.',
-    animationFile: 'fire_in_pan.json'
-  },
-  {
-    heading: 'Fry the vegetables',
-    description: 'Add your chopped vegetables to the hot pan. Fry them for a few minutes until they start to soften and get a light golden color.',
-    animationFile: 'fry_in_pan.json'
-  },
-  {
-    heading: 'Let it cook and stir occasionally',
-    description: 'Lower the heat slightly, cover partially, and let the veggies cook through while stirring every couple of minutes to prevent sticking.',
-    animationFile: 'let_cook_and_stirr.json',
-    timer: 300
-  },
-  {
-    heading: 'Steam for tenderness',
-    description: 'Add a splash of water and cover the pan fully with a lid to trap steam. Let it steam for 3–5 minutes until everything is tender and fragrant.',
-    animationFile: 'steaming_with_lid.json',
-    timer: 240
-  },
-  {
-    heading: 'Combine with cooked pasta and bake',
-    description: 'Mix your cooked pasta with the veggies, toss everything with a bit of cheese or sauce, and transfer to a baking dish. Bake in a preheated oven until bubbling and golden.',
-    animationFile: 'oven_convect.json'
-  },
-  {
-    heading: 'Reheat leftovers easily',
-    description: 'If you have leftovers, place a portion in the microwave and heat until warm throughout. Perfect for an easy next-day meal!',
-    animationFile: 'microwave.json'
-  }
-];
-
-// --- Configuration ---
+ // --- Configuration ---
 const CURVE_AMOUNT = 180;
 
 // Calculate responsive circle radius based on viewport width
@@ -93,140 +54,51 @@ const StepCircle = ({ animationFile, circleRadius }) => {
   );
 };
 
-// --- Timer Component ---
-const Timer = ({ expiryTimestamp, timerSeconds }) => {
-  const {
-    seconds,
-    minutes,
-    hours,
-    isRunning,
-    pause,
-    resume,
-    restart,
-  } = useTimer({
-    expiryTimestamp,
-    onExpire: () => console.warn('Timer expired'),
-  });
-
-  const handleReset = () => {
-    const time = new Date();
-    time.setSeconds(time.getSeconds() + timerSeconds);
-    restart(time, false);
-  };
-
-  const handleStart = () => {
-    if (!isRunning) {
-      resume();
-    }
-  };
-
-  const handlePause = () => {
-    pause();
-  };
-
-  // Format time with leading zeros
-  const formatTime = (value) => String(value).padStart(2, '0');
-
-  return (
-    <div className="mt-4 bg-white p-4 sm:p-5 rounded-xl border-2 border-[#FF9B7B] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-      {/* Time Display - Left Side (or Top on mobile) */}
-      <div className="flex flex-col">
-        <div className="text-xl sm:text-2xl md:text-3xl font-bold text-[#2D2D2D] font-mono tracking-wide">
-          {hours > 0 && <span>{formatTime(hours)}:</span>}
-          <span>{formatTime(minutes)}</span>
-          <span>:</span>
-          <span>{formatTime(seconds)}</span>
-        </div>
-        <div className="mt-1 text-xs text-[#FF9B7B] font-medium uppercase tracking-wide">
-          {isRunning ? '⏱ Running' : '⏸ Paused'}
-        </div>
-      </div>
-
-      {/* Buttons - Right Side (or Bottom on mobile) */}
-      <div className="flex gap-2 flex-wrap">
-        <button
-          onClick={handleStart}
-          disabled={isRunning}
-          className={`
-            px-3 sm:px-4 py-2 rounded-lg font-medium text-xs uppercase tracking-wide
-            transition-all duration-200 flex-1 sm:flex-none
-            ${isRunning
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-[#035035] text-white hover:bg-[#024028] hover:scale-105 active:scale-95'
-            }
-          `}
-        >
-          ▶ Start
-        </button>
-
-        <button
-          onClick={handlePause}
-          disabled={!isRunning}
-          className={`
-            px-3 sm:px-4 py-2 rounded-lg font-medium text-xs uppercase tracking-wide
-            transition-all duration-200 flex-1 sm:flex-none
-            ${!isRunning
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-[#FF9B7B] text-white hover:bg-[#FF8B6B] hover:scale-105 active:scale-95'
-            }
-          `}
-        >
-          ⏸ Pause
-        </button>
-
-        <button
-          onClick={handleReset}
-          className="
-            px-3 sm:px-4 py-2 rounded-lg font-medium text-xs uppercase tracking-wide
-            transition-all duration-200 flex-1 sm:flex-none
-            bg-white text-[#FF9B7B] hover:bg-[#FFF8F0] hover:scale-105 active:scale-95
-            border-2 border-[#FF9B7B]
-          "
-        >
-          ↺ Reset
-        </button>
-      </div>
-    </div>
-  );
-};
-
 // --- Build Instruction Content ---
-const buildInstructionContent = (instruction) => {
+const buildInstructionContent = (instruction, stepIndex, timerData, handlers) => {
   const { heading, description, timer } = instruction;
-
-  // Create timer expiry timestamp if timer is provided
-  let timerExpiryTimestamp = null;
-  if (timer) {
-    const time = new Date();
-    time.setSeconds(time.getSeconds() + timer);
-    timerExpiryTimestamp = time;
-  }
 
   return (
     <div className="p-4 sm:p-5 md:p-6 bg-white rounded-2xl shadow-md">
       <h3 className="text-lg sm:text-xl md:text-xl font-semibold text-[#2D2D2D] mb-2">{heading}</h3>
       <p className="text-sm sm:text-base text-[#2D2D2D] mb-4">{description}</p>
-      {timer && (
-        <Timer expiryTimestamp={timerExpiryTimestamp} timerSeconds={timer} />
+      {timer && timerData && !timerData.isFloating && (
+        <div style={{
+          opacity: timerData.isHidden ? 0 : 1,
+          pointerEvents: timerData.isHidden ? 'none' : 'auto'
+        }}>
+          <AnimatedTimer
+            stepIndex={stepIndex}
+            heading={heading}
+            timerSeconds={timer}
+            isFloating={false}
+            isExpanded={false}
+            onStartFloating={handlers.onStartFloating}
+            onReturnToStep={handlers.onReturnToStep}
+            onExpand={handlers.onExpand}
+            timerRef={timerData.timerRef}
+          />
+        </div>
       )}
     </div>
   );
 };
 
 // --- StepDiv Component ---
-const StepDiv = React.forwardRef(({ instruction, content, index, circleRef, circleRadius }, ref) => {
+const StepDiv = React.forwardRef(({ instruction, content, index, circleRef, circleRadius, isFocused, onClick }, ref) => {
   // Alternate positioning: even steps at 0px, odd steps vary by screen size
   const marginLeftClass = index % 2 === 0 ? 'ml-0' : 'ml-0 sm:ml-12 md:ml-20 lg:ml-24';
 
   return (
     <div
       ref={ref}
-      className={`flex items-center gap-3 sm:gap-4 md:gap-6 p-2 sm:p-3 md:p-4 ${marginLeftClass}`}
+      className={`flex items-center gap-3 sm:gap-4 md:gap-6 p-2 sm:p-3 md:p-4 ${marginLeftClass} transition-all duration-300 ${!isFocused ? 'opacity-40 grayscale cursor-pointer' : 'opacity-100'}`}
+      onClick={onClick}
     >
-      <div ref={circleRef}>
+      <div ref={circleRef} className="cursor-pointer">
         <StepCircle animationFile={instruction.animationFile} circleRadius={circleRadius} />
       </div>
-      <div className="flex-1">
+      <div className="flex-1 cursor-pointer">
         {content}
       </div>
     </div>
@@ -247,6 +119,126 @@ const CookingInstructions = ({
   const circleRefs = React.useRef([]);
   const containerRef = React.useRef(null);
   const pollIntervalRef = React.useRef(null);
+  const [focusedStep, setFocusedStep] = React.useState(0);
+
+  // Timer state management
+  // Track which step timers are floating and which is expanded
+  const [floatingTimerSteps, setFloatingTimerSteps] = React.useState([]); // Array of step indices
+  const [expandedTimerStep, setExpandedTimerStep] = React.useState(null); // Only one can be expanded
+  const [animatingTimers, setAnimatingTimers] = React.useState([]); // Timers currently animating
+  const [hiddenTimers, setHiddenTimers] = React.useState([]); // Timers hidden during animation
+  const timerRefs = React.useRef({});
+
+  // Handle timer starting to float
+  const handleStartFloating = React.useCallback((stepIndex) => {
+    // Get positions for animation
+    const stepTimerEl = timerRefs.current[stepIndex];
+    if (!stepTimerEl) {
+      // Fallback: instant transition
+      setFloatingTimerSteps((prev) => {
+        if (prev.includes(stepIndex)) return prev;
+        return [...prev, stepIndex];
+      });
+      setExpandedTimerStep(stepIndex);
+      return;
+    }
+
+    const fromRect = stepTimerEl.getBoundingClientRect();
+
+    // Hide the original timer during animation
+    setHiddenTimers((prev) => [...prev, stepIndex]);
+
+    // Calculate target position (top-right corner)
+    // Use responsive widths
+    const containerWidth = window.innerWidth < 640 ? 288 : window.innerWidth < 768 ? 320 : 384; // w-72, w-80, w-96
+    const toRect = {
+      left: window.innerWidth - containerWidth - 16, // width minus padding
+      top: 16 + (floatingTimerSteps.length * 50), // stack vertically with gap
+      width: containerWidth,
+      height: 120 // Approximate compact height
+    };
+
+    // Add to animating timers
+    const animationId = `anim-${stepIndex}-${Date.now()}`;
+    setAnimatingTimers((prev) => [
+      ...prev,
+      {
+        id: animationId,
+        stepIndex,
+        fromRect,
+        toRect,
+        isCompacting: true
+      }
+    ]);
+
+    // After animation completes, show in floating state
+    setTimeout(() => {
+      setAnimatingTimers((prev) => prev.filter((t) => t.id !== animationId));
+      setHiddenTimers((prev) => prev.filter((idx) => idx !== stepIndex));
+      setFloatingTimerSteps((prev) => {
+        if (prev.includes(stepIndex)) return prev;
+        return [...prev, stepIndex];
+      });
+      setExpandedTimerStep(stepIndex);
+    }, 600); // Match animation duration
+  }, [floatingTimerSteps]);
+
+  // Handle timer returning to step
+  const handleReturnToStep = React.useCallback((stepIndex) => {
+    // Simply remove from floating and show back in step - no animation
+    setFloatingTimerSteps((prev) => prev.filter((idx) => idx !== stepIndex));
+    if (expandedTimerStep === stepIndex) {
+      setExpandedTimerStep(null);
+    }
+  }, [expandedTimerStep]);
+
+  // Handle expanding a collapsed timer
+  const handleExpandTimer = React.useCallback((stepIndex) => {
+    setExpandedTimerStep(stepIndex);
+  }, []);
+
+  // Handle step click with smooth scroll to center
+  const handleStepClick = React.useCallback((index) => {
+    setFocusedStep(index);
+
+    // Scroll the step to center of viewport
+    const stepElement = stepRefs.current[index];
+    if (stepElement) {
+      // Find the scrollable parent container
+      let scrollableParent = stepElement.parentElement;
+      while (scrollableParent) {
+        const style = window.getComputedStyle(scrollableParent);
+        if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
+          break;
+        }
+        scrollableParent = scrollableParent.parentElement;
+      }
+
+      // Use the scrollable parent or fall back to window
+      const scrollContainer = scrollableParent || window;
+
+      if (scrollContainer === window) {
+        const elementRect = stepElement.getBoundingClientRect();
+        const absoluteElementTop = elementRect.top + window.pageYOffset;
+        const middle = absoluteElementTop - (window.innerHeight / 2) + (elementRect.height / 2);
+        window.scrollTo({
+          top: middle,
+          behavior: 'smooth'
+        });
+      } else {
+        // Scroll within the container
+        const containerRect = scrollContainer.getBoundingClientRect();
+        const elementRect = stepElement.getBoundingClientRect();
+        const relativeTop = elementRect.top - containerRect.top;
+        const middle = scrollContainer.scrollTop + relativeTop - (containerRect.height / 2) + (elementRect.height / 2);
+
+        scrollContainer.scrollTo({
+          top: middle,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, []);
 
   // Fetch instructions with polling logic
   React.useEffect(() => {
@@ -306,6 +298,16 @@ const CookingInstructions = ({
       }
     };
   }, [recipeId, instructionsProp]);
+
+  // Center first step on initial load
+  React.useEffect(() => {
+    if (instructions && stepRefs.current[0]) {
+      // Small delay to ensure DOM is rendered
+      setTimeout(() => {
+        handleStepClick(0);
+      }, 200);
+    }
+  }, [instructions, handleStepClick]);
 
   // Calculate circle positions for the SVG paths
   React.useEffect(() => {
@@ -396,6 +398,11 @@ const CookingInstructions = ({
         </p>
       </div>
 
+      {/* Wake Word Detection Module */}
+      <div className="w-full max-w-4xl mb-6">
+        <WakeWordDetection />
+      </div>
+
       {/* Main Content Area */}
       <div
         ref={containerRef}
@@ -429,19 +436,75 @@ const CookingInstructions = ({
           className="relative flex flex-col gap-6 sm:gap-8 md:gap-10"
           style={{ zIndex: 1 }}
         >
-          {instructions.map((instruction, index) => (
-            <StepDiv
-              key={index}
-              ref={(el) => (stepRefs.current[index] = el)}
-              circleRef={(el) => (circleRefs.current[index] = el)}
-              instruction={instruction}
-              content={buildInstructionContent(instruction)}
-              index={index}
-              circleRadius={circleRadius}
-            />
-          ))}
+          {instructions.map((instruction, index) => {
+            const isFloating = floatingTimerSteps.includes(index);
+            const isExpanded = expandedTimerStep === index;
+            const isHidden = hiddenTimers.includes(index);
+
+            const timerData = instruction.timer ? {
+              isFloating,
+              isExpanded,
+              isHidden,
+              timerRef: (el) => {
+                if (el) timerRefs.current[index] = el;
+              }
+            } : null;
+
+            const handlers = {
+              onStartFloating: handleStartFloating,
+              onReturnToStep: handleReturnToStep,
+              onExpand: () => handleExpandTimer(index)
+            };
+
+            return (
+              <StepDiv
+                key={index}
+                ref={(el) => (stepRefs.current[index] = el)}
+                circleRef={(el) => (circleRefs.current[index] = el)}
+                instruction={instruction}
+                content={buildInstructionContent(instruction, index, timerData, handlers)}
+                index={index}
+                circleRadius={circleRadius}
+                isFocused={focusedStep === index}
+                onClick={() => handleStepClick(index)}
+              />
+            );
+          })}
         </div>
       </div>
+
+      {/* Floating Timers Container */}
+      {floatingTimerSteps.length > 0 && (
+        <div className="fixed top-4 right-4 z-50 w-72 sm:w-80 md:w-96 flex flex-col gap-2">
+          {/* Render floating timers - newest at bottom */}
+          {floatingTimerSteps.map((stepIndex) => {
+            const instruction = instructions[stepIndex];
+            if (!instruction || !instruction.timer) return null;
+
+            const isExpanded = expandedTimerStep === stepIndex;
+
+            return (
+              <AnimatedTimer
+                key={stepIndex}
+                stepIndex={stepIndex}
+                heading={instruction.heading}
+                timerSeconds={instruction.timer}
+                isFloating={true}
+                isExpanded={isExpanded}
+                onStartFloating={handleStartFloating}
+                onReturnToStep={handleReturnToStep}
+                onExpand={() => handleExpandTimer(stepIndex)}
+                timerRef={(el) => {
+                  if (el) timerRefs.current[`floating-${stepIndex}`] = el;
+                }}
+              />
+            );
+          })}
+        </div>
+      )}
+
+      {/* Animating Timers Portal */}
+      <AnimatingTimerPortal timers={animatingTimers} instructions={instructions} />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import json
 from typing import List, Optional
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from ...api.schemas.recipe import Ingredient
 from ..models.db_recipe import Recipe, PreparingSession
@@ -33,10 +34,13 @@ async def create_or_update_preparing_session(
                 merged_context_ids = _merge_unique_ids(existing_recipe_ids, recipe_ids)
                 session.context_suggestions = json.dumps(merged_context_ids)
 
-            existing_current_ids = _load_recipe_id_list(session.current_recipes)
+            # Update recipe relationships
             if recipe_ids:
-                merged_current_ids = _merge_unique_ids(existing_current_ids, recipe_ids)
-                session.current_recipes = json.dumps(merged_current_ids)
+                # Fetch the recipes and set their preparing_session_id
+                result = await db.execute(select(Recipe).where(Recipe.id.in_(recipe_ids)))
+                recipes = result.scalars().all()
+                for recipe in recipes:
+                    recipe.preparing_session_id = preparing_session_id
 
             await db.commit()
             await db.refresh(session)
@@ -47,11 +51,20 @@ async def create_or_update_preparing_session(
     new_session = PreparingSession(
         user_id=user_id,
         context_suggestions=serialized_ids,
-        current_recipes=serialized_ids
     )
     db.add(new_session)
     await db.commit()
     await db.refresh(new_session)
+
+    # Set recipes to belong to this session
+    if recipe_ids:
+        result = await db.execute(select(Recipe).where(Recipe.id.in_(recipe_ids)))
+        recipes = result.scalars().all()
+        for recipe in recipes:
+            recipe.preparing_session_id = new_session.id
+        await db.commit()
+        await db.refresh(new_session)
+
     return new_session
 
 
@@ -85,16 +98,20 @@ async def remove_recipe_from_current(
     if session is None:
         return None
 
-    current_ids = _load_recipe_id_list(session.current_recipes)
+    # Find the recipe and set its preparing_session_id to NULL
     target_id = int(recipe_id)
-    filtered_ids = [rid for rid in current_ids if rid != target_id]
-    if len(filtered_ids) == len(current_ids):
-        return filtered_ids
+    result = await db.execute(
+        select(Recipe).where(Recipe.id == target_id, Recipe.preparing_session_id == preparing_session_id)
+    )
+    recipe = result.scalar_one_or_none()
 
-    session.current_recipes = json.dumps(filtered_ids)
-    await db.commit()
+    if recipe:
+        recipe.preparing_session_id = None
+        await db.commit()
+
+    # Return the current list of recipe IDs
     await db.refresh(session)
-    return filtered_ids
+    return [r.id for r in session.current_recipes]
 
 
 async def add_recipe_to_current(
@@ -108,16 +125,20 @@ async def add_recipe_to_current(
     if session is None:
         return None
 
-    current_ids = _load_recipe_id_list(session.current_recipes)
+    # Find the recipe and set its preparing_session_id
     target_id = int(recipe_id)
-    if target_id in current_ids:
-        return current_ids
+    result = await db.execute(select(Recipe).where(Recipe.id == target_id))
+    recipe = result.scalar_one_or_none()
 
-    current_ids.append(target_id)
-    session.current_recipes = json.dumps(current_ids)
-    await db.commit()
+    if recipe:
+        # Only update if not already assigned to this session
+        if recipe.preparing_session_id != preparing_session_id:
+            recipe.preparing_session_id = preparing_session_id
+            await db.commit()
+
+    # Return the current list of recipe IDs
     await db.refresh(session)
-    return current_ids
+    return [r.id for r in session.current_recipes]
 
 
 async def _get_session_for_user(
@@ -126,7 +147,9 @@ async def _get_session_for_user(
     user_id: str,
 ) -> Optional[PreparingSession]:
     result = await db.execute(
-        select(PreparingSession).filter(PreparingSession.id == preparing_session_id)
+        select(PreparingSession)
+        .options(selectinload(PreparingSession.current_recipes))
+        .filter(PreparingSession.id == preparing_session_id)
     )
     session = result.scalar_one_or_none()
     if session is None:
