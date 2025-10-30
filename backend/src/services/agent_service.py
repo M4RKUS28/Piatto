@@ -5,7 +5,7 @@ import asyncio
 import json
 from logging import getLogger
 from typing import Optional
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, BackgroundTasks
 
 from ..agents.chat_agent.agent import ChatAgent
 from ..agents.instruction_agent.agent import InstructionAgent
@@ -54,6 +54,26 @@ class AgentService:
             output = json.dumps(output)
         return output
 
+    async def generate_and_save_images(self, user_id, recipes, recipe_ids):
+        # Parallelize the image generation + upload step so agent calls do not block each other.
+        async def generate_image_async(recipe_payload):
+            image = await self.image_agent.run(
+                user_id=user_id,
+                state={},
+                content=get_image_gen_query(recipe_payload),
+            )
+            async with get_async_bucket_session() as bs:
+                image_saved = await save_image_bytes(bs, user_id, "image", image, "recipe_image.png")
+            return image_saved['key']
+
+        images = await asyncio.gather(
+            *(generate_image_async(recipe) for recipe in recipes['recipes'])
+        )
+
+        async with get_async_db_context() as db:
+            for idx, image_key in enumerate(images):
+                recipe_id = recipe_ids[idx]
+                await recipe_crud.update_recipe(db, recipe_id, image_url=image_key)
 
     # Rezepte Erstellen
     async def generate_recipe(
@@ -69,35 +89,20 @@ class AgentService:
             state={},
             content=query,
         )
-        # Parallelize the image generation + upload step so agent calls do not block each other.
-        async def generate_recipe_assets(recipe_payload):
-            image = await self.image_agent.run(
-                user_id=user_id,
-                state={},
-                content=get_image_gen_query(recipe_payload),
-            )
-            async with get_async_bucket_session() as bs:
-                image_saved = await save_image_bytes(bs, user_id, "image", image, "recipe_image.png")
-            return recipe_payload, image_saved['key']
-
-        recipe_payloads = await asyncio.gather(
-            *(generate_recipe_assets(recipe) for recipe in recipes['recipes'])
-        )
-
+        # Save the recipes in db before generating images
         recipe_ids = []
         async with get_async_db_context() as db:
-            for recipe_payload, image_key in recipe_payloads:
+            for recipe in recipes['recipes']:
                 recipe_db = await recipe_crud.create_recipe(
                     db=db,
                     user_id=user_id,
-                    title=recipe_payload['title'],
-                    description=recipe_payload['description'],
+                    title=recipe['title'],
+                    description=recipe['description'],
                     prompt=prompt,
-                    ingredients=recipe_payload['ingredients'],
-                    image_url=image_key,
-                    total_time_minutes=recipe_payload.get('total_time_minutes'),
-                    difficulty=recipe_payload.get('difficulty'),
-                    food_category=recipe_payload.get('food_category'),
+                    ingredients=recipe['ingredients'],
+                    total_time_minutes=recipe.get('total_time_minutes'),
+                    difficulty=recipe['difficulty'],
+                    food_category=recipe['food_category'],
                 )
                 recipe_ids.append(recipe_db.id)
 
@@ -111,7 +116,16 @@ class AgentService:
                 )
             except PermissionError as error:
                 logger.warning("Preparing session %s cannot be updated by user %s", preparing_session_id, user_id)
-                raise HTTPException(status_code=403, detail="Preparing session does not belong to the authenticated user") from error
+                raise HTTPException(status_code=403,
+                                    detail="Preparing session does not belong to the authenticated user") from error
+
+        # Generate images in background (fire-and-forget)
+        asyncio.create_task(
+            self.generate_and_save_images(
+            user_id,
+            recipes,
+            recipe_ids)
+        )
 
         return session.id
 

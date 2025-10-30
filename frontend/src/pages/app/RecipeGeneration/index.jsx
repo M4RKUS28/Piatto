@@ -8,14 +8,12 @@ import {
 } from '../../../api/preparingApi';
 import { saveRecipe } from '../../../api/recipeApi';
 import { updateCollectionRecipes, getCollectionById } from '../../../api/collectionApi';
-import LoadingSpinner from '../../../components/LoadingSpinner';
 import ErrorMessage from '../../../components/ErrorMessage';
 import PromptStep from './PromptStep';
 import IngredientsStep from './IngredientsStep';
 import RecipeOptionsStep from './RecipeOptionsStep';
 import { ensureFadeInStyles } from './fadeInStyles';
 import { SESSION_STORAGE_KEY } from './constants';
-import { getImageUrl } from '../../../utils/imageUtils';
 
 export default function RecipeGeneration() {
         const navigate = useNavigate();
@@ -158,11 +156,28 @@ export default function RecipeGeneration() {
                         const sessionId = await generateRecipes(prompt, sanitizedIngredients, sanitizedImageKey, preparingSessionId);
                         setPreparingSessionId(sessionId);
                         storeSessionId(sessionId);
-                        await handleGetRecipeOptions(sessionId);
+
+                        // Show 3 placeholder recipes immediately
+                        setRecipeOptions([
+                                { id: -1, title: '', description: '' },
+                                { id: -2, title: '', description: '' },
+                                { id: -3, title: '', description: '' }
+                        ]);
+                        setLoading(false);
+                        goToStep(3);
+
+                        // Fetch actual recipe options in background (don't navigate since we're already there)
+                        handleGetRecipeOptions(sessionId, false).catch(err => {
+                                console.error('Failed to get recipe options:', err);
+                                setError('Failed to load recipe options. Please try again.');
+                        });
+
+                        // Fetch image analysis in background without blocking UI
                         if (hasUploadedImage) {
-                                await handleFetchImageAnalysis(sessionId);
+                                handleFetchImageAnalysis(sessionId).catch(err => {
+                                        console.error('Background image analysis fetch failed:', err);
+                                });
                         }
-                        showTemporarySuccess('Recipes generated successfully!');
                 } catch (generationError) {
                         console.error('Recipe generation failed:', generationError);
                         console.error('Error details:', {
@@ -187,16 +202,17 @@ export default function RecipeGeneration() {
                         }
 
                         setError(errorMessage);
-                } finally {
                         setLoading(false);
                 }
         };
 
-        const handleGetRecipeOptions = useCallback(async (sessionId) => {
+        const handleGetRecipeOptions = useCallback(async (sessionId, shouldNavigate = true) => {
                 try {
                         const options = await getRecipeOptions(sessionId);
                         setRecipeOptions(options);
-                        goToStep(3);
+                        if (shouldNavigate) {
+                                goToStep(3);
+                        }
                 } catch (optionsError) {
                         console.error('Failed to get recipe options:', optionsError);
                         let errorMessage = 'Failed to load recipe options. Please try again.';
@@ -377,13 +393,6 @@ export default function RecipeGeneration() {
                                                 />
                                         )}
 
-                                        {currentStep === 2 && loading && (
-                                                <div className="flex flex-col items-center justify-center p-12 text-center" role="status" aria-live="polite">
-                                                        <LoadingSpinner size="large" />
-                                                        <p className="mt-4 text-lg text-[#035035] font-medium">Generating your recipe options...</p>
-                                                        <p className="mt-2 text-sm text-[#2D2D2D] opacity-60">This may take a few moments</p>
-                                                </div>
-                                        )}
 
                                         {currentStep === 2 && error && (
                                                 <div className="my-6" role="alert" aria-live="assertive">
@@ -391,18 +400,8 @@ export default function RecipeGeneration() {
                                                 </div>
                                         )}
 
-                                        {currentStep === 2 && successMessage && (
-                                                <div className="flex flex-col items-center justify-center p-6 sm:p-8 text-center" role="status" aria-live="polite">
-                                                        <div className="mb-4 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#035035] bg-opacity-10 flex items-center justify-center">
-                                                                <svg className="w-7 h-7 sm:w-8 sm:h-8 text-[#035035]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                </svg>
-                                                        </div>
-                                                        <p className="text-[#035035] text-base sm:text-lg font-medium">{successMessage}</p>
-                                                </div>
-                                        )}
 
-                                        {currentStep === 3 && !loading && !error && (
+                                        {currentStep === 3 && !error && (
                                                 <RecipeOptionsStep
                                                         recipeOptions={recipeOptions}
                                                         onRegenerate={handleRegenerateRecipes}
@@ -414,13 +413,6 @@ export default function RecipeGeneration() {
                                                 />
                                         )}
 
-                                        {currentStep === 3 && loading && (
-                                                <div className="flex flex-col items-center justify-center p-12 text-center" role="status" aria-live="polite">
-                                                        <LoadingSpinner size="large" />
-                                                        <p className="mt-4 text-lg text-[#035035] font-medium">Generating new recipe options...</p>
-                                                        <p className="mt-2 text-sm text-[#2D2D2D] opacity-60">This may take a few moments</p>
-                                                </div>
-                                        )}
 
                                         {currentStep === 3 && error && (
                                                 <div className="my-6" role="alert" aria-live="assertive">

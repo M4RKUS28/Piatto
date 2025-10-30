@@ -60,7 +60,6 @@ async def get_recipe_options(preparing_session_id: int,
             id=recipe.id,
             title=recipe.title,
             description=recipe.description,
-            image_url=recipe.image_url,
         ))
     return result
 
