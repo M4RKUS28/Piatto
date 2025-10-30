@@ -31,9 +31,9 @@ async def generate_recipes(request: GenerateRecipeRequest, user_id: str = Depend
         int: A preparing session ID containing the generated recipe.
     """
     return await agent_service.generate_recipe(
-        user_id, 
-        request.prompt, 
-        request.written_ingredients, 
+        user_id,
+        request.prompt,
+        request.written_ingredients,
         preparing_session_id=request.preparing_session_id
     )
 
@@ -49,8 +49,8 @@ async def get_recipe_options(preparing_session_id: int,
     Returns:
         List[RecipePreview]: A list of recipe previews.
     """
-
-    recipes = await recipe_crud.get_recipes_by_preparing_session_id(db, preparing_session_id)
+    print("!!! Hello from get_recipe_options !!!")
+    recipes = await recipe_crud.get_recipe_previews_by_preparing_session_id(db, preparing_session_id)
     if recipes is None:
         raise HTTPException(status_code=404, detail="Preparing session not found")
 

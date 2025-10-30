@@ -154,6 +154,18 @@ export default function RecipeOptionsStep({
 
 	return (
 		<div className="space-y-6">
+			{/* CSS keyframes for shimmer animation */}
+			<style>{`
+				@keyframes shimmer {
+					0% {
+						background-position: -200% 0;
+					}
+					100% {
+						background-position: 200% 0;
+					}
+				}
+			`}</style>
+
 			<div>
 				<h2 className="text-3xl font-bold text-[#035035] mb-6 text-center">Select Recipes to Generate</h2>
 			</div>
@@ -193,10 +205,23 @@ export default function RecipeOptionsStep({
 							<div className="flex gap-4">
 								<div className="flex-shrink-0 w-32 h-32 sm:w-40 sm:h-40">
 									{imageStatus === 'loading' && (
-										<div className="w-full h-full bg-gray-200 rounded-xl animate-pulse flex items-center justify-center">
-											<svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-											</svg>
+										<div className="relative w-full h-full rounded-xl overflow-hidden bg-gray-200">
+											{/* Animated shimmer effect */}
+											<div
+												className="absolute inset-0 rounded-xl"
+												style={{
+													background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent)',
+													backgroundSize: '200% 100%',
+													animation: 'shimmer 2s ease-in-out infinite'
+												}}
+											/>
+
+											{/* Text container */}
+											<div className="absolute inset-0 flex items-center justify-center">
+												<span className="text-gray-600 font-semibold text-sm sm:text-base text-center px-2">
+													Generating Image...
+												</span>
+											</div>
 										</div>
 									)}
 									{imageStatus === 'error' && (
@@ -243,10 +268,10 @@ export default function RecipeOptionsStep({
 					type="button"
 					onClick={onRegenerate}
 					disabled={loading || sessionCompleting}
-					className="bg-white text-[#035035] border-2 border-[#035035] px-6 py-3 rounded-full font-semibold text-base
-						hover:bg-[#035035] hover:text-white transition-all duration-200
+					className="bg-white text-[#035035] border-2 border-[#FF9B7B] px-6 py-3 rounded-full font-semibold text-base
+						hover:bg-[#035035] hover:text-white hover:border-[#035035] transition-all duration-200
 						disabled:opacity-50 disabled:cursor-not-allowed
-						focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2"
+						focus:outline-none focus:ring-2 focus:ring-[#FF9B7B] focus:ring-offset-2"
 					aria-label="Generate new recipe options with same ingredients"
 				>
 					{loading ? 'Generating...' : 'Generate New Recipes'}
@@ -261,10 +286,10 @@ export default function RecipeOptionsStep({
 					sessionCompleting ||
 					processingSelection
 				}
-					className="bg-[#035035] text-white px-8 py-3 rounded-full font-semibold text-base
+					className="bg-[#035035] text-white border-2 border-[#FF9B7B] px-8 py-3 rounded-full font-semibold text-base
 						hover:bg-[#024027] transition-all duration-200
 						disabled:opacity-50 disabled:cursor-not-allowed
-						focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2"
+						focus:outline-none focus:ring-2 focus:ring-[#FF9B7B] focus:ring-offset-2"
 					aria-label="Generate selected recipes"
 				>
 				{processingSelection ? 'Processing...' : `Generate (${selectedRecipes.size})`}

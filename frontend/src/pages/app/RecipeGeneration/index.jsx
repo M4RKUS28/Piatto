@@ -144,7 +144,6 @@ export default function RecipeGeneration() {
 
                 setIngredients(sanitizedIngredients);
                 setImageKey(sanitizedImageKey);
-                setLoading(true);
                 setError(null);
                 setSuccessMessage(null);
                 const hasUploadedImage = sanitizedImageKey.length > 0;
@@ -152,25 +151,22 @@ export default function RecipeGeneration() {
                         setImageAnalysis(null);
                 }
 
+                // Show 3 placeholder recipes immediately and navigate to step 3
+                setRecipeOptions([
+                        { id: -1, title: '', description: '' },
+                        { id: -2, title: '', description: '' },
+                        { id: -3, title: '', description: '' }
+                ]);
+                goToStep(3);
+
                 try {
+                        // Call generateRecipes in background while user sees placeholders
                         const sessionId = await generateRecipes(prompt, sanitizedIngredients, sanitizedImageKey, preparingSessionId);
                         setPreparingSessionId(sessionId);
                         storeSessionId(sessionId);
 
-                        // Show 3 placeholder recipes immediately
-                        setRecipeOptions([
-                                { id: -1, title: '', description: '' },
-                                { id: -2, title: '', description: '' },
-                                { id: -3, title: '', description: '' }
-                        ]);
-                        setLoading(false);
-                        goToStep(3);
-
-                        // Fetch actual recipe options in background (don't navigate since we're already there)
-                        handleGetRecipeOptions(sessionId, false).catch(err => {
-                                console.error('Failed to get recipe options:', err);
-                                setError('Failed to load recipe options. Please try again.');
-                        });
+                        // Fetch actual recipe options and replace placeholders
+                        await handleGetRecipeOptions(sessionId, false);
 
                         // Fetch image analysis in background without blocking UI
                         if (hasUploadedImage) {
@@ -201,14 +197,17 @@ export default function RecipeGeneration() {
                                 errorMessage = 'Invalid request. Please check your inputs.';
                         }
 
+                        // Remove placeholders and show error on step 3
+                        setRecipeOptions([]);
                         setError(errorMessage);
-                        setLoading(false);
                 }
         };
 
         const handleGetRecipeOptions = useCallback(async (sessionId, shouldNavigate = true) => {
                 try {
+                        console.log('!!!Fetching recipe options for session:', sessionId);
                         const options = await getRecipeOptions(sessionId);
+                        console.log('!!!Received recipe options:', options);
                         setRecipeOptions(options);
                         if (shouldNavigate) {
                                 goToStep(3);
@@ -227,6 +226,8 @@ export default function RecipeGeneration() {
                         } else if (optionsError.response.status === 400) {
                                 errorMessage = 'Invalid request. Please check your inputs.';
                         }
+                        // Remove placeholders and show error
+                        setRecipeOptions([]);
                         setError(errorMessage);
                         setSuccessMessage(null);
                 }
