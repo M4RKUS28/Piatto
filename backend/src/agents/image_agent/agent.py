@@ -22,15 +22,19 @@ class ImageAgent:
             contents=[self.full_instructions + user_text],
         )
 
-        for part in response.candidates[0].content.parts:
-            if part.inline_data is not None:
-                return part.inline_data.data
+        candidates = getattr(response, "candidates", None)
+        if candidates and len(candidates) > 0:
+            candidate_content = getattr(candidates[0], "content", None)
+            if candidate_content is not None and hasattr(candidate_content, "parts"):
+                for part in candidate_content.parts:
+                    if getattr(part, "inline_data", None) is not None:
+                        return part.inline_data.data
 
         return None
 
 
 async def test_agent():
-    agent = ImageAgent()
+    agent = ImageAgent("Test", None)
     query = """Image of a korean bbq"""
 
     data = await agent.run("1", {}, create_text_query(query))
