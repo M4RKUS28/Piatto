@@ -268,10 +268,10 @@ export default function RecipeOptionsStep({
 					type="button"
 					onClick={onRegenerate}
 					disabled={loading || sessionCompleting}
-					className="bg-white text-[#035035] border-2 border-[#FF9B7B] px-6 py-3 rounded-full font-semibold text-base
-						hover:bg-[#035035] hover:text-white hover:border-[#035035] transition-all duration-200
+					className="bg-white text-[#035035] border-2 border-[#035035] px-6 py-3 rounded-full font-semibold text-base
+						hover:bg-[#035035] hover:text-white transition-all duration-200
 						disabled:opacity-50 disabled:cursor-not-allowed
-						focus:outline-none focus:ring-2 focus:ring-[#FF9B7B] focus:ring-offset-2"
+						focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2"
 					aria-label="Generate new recipe options with same ingredients"
 				>
 					{loading ? 'Generating...' : 'Generate New Recipes'}
@@ -286,10 +286,10 @@ export default function RecipeOptionsStep({
 					sessionCompleting ||
 					processingSelection
 				}
-					className="bg-[#035035] text-white border-2 border-[#FF9B7B] px-8 py-3 rounded-full font-semibold text-base
+					className="bg-[#035035] text-white px-8 py-3 rounded-full font-semibold text-base
 						hover:bg-[#024027] transition-all duration-200
 						disabled:opacity-50 disabled:cursor-not-allowed
-						focus:outline-none focus:ring-2 focus:ring-[#FF9B7B] focus:ring-offset-2"
+						focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2"
 					aria-label="Generate selected recipes"
 				>
 				{processingSelection ? 'Processing...' : `Generate (${selectedRecipes.size})`}
