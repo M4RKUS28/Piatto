@@ -16,9 +16,10 @@ class ImageAgent:
         self.full_instructions = load_instruction_from_file("image_agent/instructions.txt")
 
     async def run(self, user_id: str, state: dict, content: types.Content):
-        response = self.client.models.generate_content(
+        user_text = content.parts[0].text if content.parts and content.parts[0].text else ""
+        response = await self.client.aio.models.generate_content(
             model="gemini-2.5-flash-image",
-            contents=[self.full_instructions + content.parts[0].text],
+            contents=[self.full_instructions + user_text],
         )
 
         for part in response.candidates[0].content.parts:
