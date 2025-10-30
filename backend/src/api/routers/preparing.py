@@ -10,6 +10,7 @@ from ...utils.auth import get_read_write_user_id, get_read_only_user_id
 from ...db.crud import recipe_crud, preparing_crud
 from sqlalchemy.ext.asyncio import AsyncSession
 from ...services.agent_service import AgentService
+from fastapi import BackgroundTasks
 
 agent_service = AgentService()
 
@@ -20,7 +21,7 @@ router = APIRouter(
 )
 
 @router.post("/generate", response_model=int)
-async def generate_recipes(request: GenerateRecipeRequest, user_id: str = Depends(get_read_write_user_id)):
+async def generate_recipes(request: GenerateRecipeRequest, background_tasks: BackgroundTasks = None, user_id: str = Depends(get_read_write_user_id)):
     """
     Generate a recipes based on the user ID, prompt, and optional preparing session ID.
 
@@ -34,7 +35,8 @@ async def generate_recipes(request: GenerateRecipeRequest, user_id: str = Depend
         user_id,
         request.prompt,
         request.written_ingredients,
-        preparing_session_id=request.preparing_session_id
+        preparing_session_id=request.preparing_session_id,
+        background_tasks=background_tasks
     )
 
 @router.get("/{preparing_session_id}/get_options", response_model=List[RecipePreview])
