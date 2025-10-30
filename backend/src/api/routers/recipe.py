@@ -4,6 +4,7 @@ from typing import List, Optional
 from ...db.database import get_db
 from ...services.agent_service import AgentService
 from fastapi import APIRouter, HTTPException, Body, Depends
+from fastapi import status
 from ..schemas.recipe import (
     GenerateRecipeRequest,
     ChangeRecipeAIRequest,
@@ -17,6 +18,13 @@ from ..schemas.recipe import (
     Ingredient as IngredientSchema,
     Instruction as InstructionSchema,
 )
+
+router = APIRouter(
+    prefix="/recipe",
+    tags=["recipe"],
+    responses={404: {"description": "Not found"}},
+)
+
 from ...utils.auth import get_read_write_user_id, get_read_only_user_id, get_user_id_optional, get_read_write_user_token_data
 from ...db.crud import recipe_crud
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -30,6 +38,33 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+@router.post("/create", response_model=RecipeSchema, status_code=status.HTTP_201_CREATED)
+async def create_recipe(request: GenerateRecipeRequest, db: AsyncSession = Depends(get_db), user_id: str = Depends(get_read_write_user_id)):
+    """
+    Create a new recipe for the given user.
+
+    Args:
+        request (GenerateRecipeRequest): The request containing recipe details.
+        user_id (str): The user ID creating the recipe.
+    Returns:
+        Recipe: The created recipe.
+    """
+    recipe = await recipe_crud.create_recipe(
+        db=db,
+        user_id=user_id,
+        title=request.title,
+        description=request.description,
+        ingredients=request.ingredients,
+        instructions=_serialize_instructions_payload(request.instructions),
+        image_url=request.image_url,
+        total_time_minutes=request.total_time_minutes,
+        difficulty=request.difficulty,
+        food_category=request.food_category,
+        prompt=request.prompt if hasattr(request, 'prompt') else None,
+    )
+    if not recipe:
+        raise HTTPException(status_code=400, detail="Recipe creation failed")
+    return _serialize_recipe(recipe)
 
 @router.get("/{recipe_id}/get", response_model=RecipeSchema)
 async def get_recipe(recipe_id: int,

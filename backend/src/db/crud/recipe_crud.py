@@ -29,21 +29,34 @@ async def get_recipes_by_user_id(db: AsyncSession, user_id: str) -> List[Recipe]
 
 async def get_recipes_by_preparing_session_id(db: AsyncSession, preparing_session_id: int) -> Optional[List[Recipe]]:
     """Retrieve the active recipes for a preparing session in creation order."""
-    # Step 1: Get the preparing session
-    result = await db.execute(select(PreparingSession).where(PreparingSession.id == preparing_session_id))
+    # Get the preparing session with current_recipes relationship eagerly loaded
+    result = await db.execute(
+        select(PreparingSession)
+        .options(
+            selectinload(PreparingSession.current_recipes)
+            .selectinload(Recipe.ingredients)
+        )
+        .options(
+            selectinload(PreparingSession.current_recipes)
+            .selectinload(Recipe.instruction_steps)
+        )
+        .where(PreparingSession.id == preparing_session_id)
+    )
     preparing_session = result.scalars().first()
 
     if not preparing_session:
         return None
 
-    # Step 2: Determine the active recipe IDs, falling back to full history when needed
-    active_recipe_ids = _parse_recipe_id_list(preparing_session.current_recipes)
-    if not active_recipe_ids:
-        active_recipe_ids = _parse_recipe_id_list(preparing_session.context_suggestions)[-3:]
+    # Return the recipes from the relationship
+    # If no current recipes, fall back to the last 3 from context_suggestions
+    if preparing_session.current_recipes:
+        return list(preparing_session.current_recipes)
+
+    # Fallback: get the last 3 recipes from context_suggestions
+    active_recipe_ids = _parse_recipe_id_list(preparing_session.context_suggestions)[-3:]
     if not active_recipe_ids:
         return []
 
-    # Step 3: Fetch the recipes from the DB
     result = await db.execute(
         select(Recipe)
         .options(
@@ -52,6 +65,43 @@ async def get_recipes_by_preparing_session_id(db: AsyncSession, preparing_sessio
         )
         .where(Recipe.id.in_(active_recipe_ids))
     )
+    recipes = result.scalars().all()
+    recipe_lookup = {recipe.id: recipe for recipe in recipes}
+    return [recipe_lookup[recipe_id] for recipe_id in active_recipe_ids if recipe_id in recipe_lookup]
+
+async def get_recipe_previews_by_preparing_session_id(db: AsyncSession, preparing_session_id: int) -> Optional[List[Recipe]]:
+    """Retrieve the active recipes for a preparing session (lightweight - no ingredients/instructions)."""
+    # Get the preparing session with current_recipes relationship eagerly loaded (no extra relations)
+    result = await db.execute(
+        select(PreparingSession)
+        .options(
+            selectinload(PreparingSession.current_recipes)
+        )
+        .where(PreparingSession.id == preparing_session_id)
+    )
+
+    preparing_session = result.scalars().first()
+
+
+    if not preparing_session:
+        return None
+
+    # Return the recipes from the relationship
+    # If no current recipes, fall back to the last 3 from context_suggestions
+    if preparing_session.current_recipes:
+        return list(preparing_session.current_recipes)
+
+
+    # Fallback: get the last 3 recipes from context_suggestions
+    active_recipe_ids = _parse_recipe_id_list(preparing_session.context_suggestions)[-3:]
+    if not active_recipe_ids:
+        return []
+
+    result = await db.execute(
+        select(Recipe)
+        .where(Recipe.id.in_(active_recipe_ids))
+    )
+
     recipes = result.scalars().all()
     recipe_lookup = {recipe.id: recipe for recipe in recipes}
     return [recipe_lookup[recipe_id] for recipe_id in active_recipe_ids if recipe_id in recipe_lookup]

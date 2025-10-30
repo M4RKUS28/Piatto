@@ -75,3 +75,26 @@ export const getSignedImageUrl = async (key, minutes = 60) => {
 
   return response.data;
 };
+
+/**
+ * Get the image URL for a recipe by recipe ID.
+ * @param {number} recipeId - The recipe ID
+ * @returns {Promise<{image_url: string | null}>} Object containing the image URL or null if not yet generated
+ * @throws {Error} If the request fails
+ */
+export const getRecipeImage = async (recipeId) => {
+  try {
+    const response = await apiWithCookies.get(`/files/recipe-image/${recipeId}`);
+    return response.data;
+  } catch (error) {
+    console.error('getRecipeImage error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      response: error.response,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+    });
+    throw error;
+  }
+};

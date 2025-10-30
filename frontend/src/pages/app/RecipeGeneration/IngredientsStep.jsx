@@ -73,6 +73,26 @@ export default function IngredientsStep({
                                                         aria-describedby={validationError ? 'ingredients-error' : undefined}
                                                         aria-label="List of ingredients you have available"
                                                 />
+                                                {analyzing && (
+                                                        <div
+                                                                className="absolute pointer-events-none flex flex-col gap-2"
+                                                                style={{
+                                                                        left: '16px',
+                                                                        top: ingredientsText.trim() ? `${12 + (ingredientsText.split('\n').length * 24)}px` : '12px',
+                                                                        width: 'calc(100% - 64px)',
+                                                                }}
+                                                        >
+                                                                <div className="h-5 rounded-md bg-gray-200 relative overflow-hidden">
+                                                                        <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-shimmer bg-[length:200%_100%]" />
+                                                                </div>
+                                                                <div className="h-5 rounded-md bg-gray-200 relative overflow-hidden">
+                                                                        <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-shimmer bg-[length:200%_100%]" style={{ animationDelay: '0.1s' }} />
+                                                                </div>
+                                                                <div className="h-5 rounded-md bg-gray-200 relative overflow-hidden" style={{ width: '60%' }}>
+                                                                        <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-shimmer bg-[length:200%_100%]" style={{ animationDelay: '0.2s' }} />
+                                                                </div>
+                                                        </div>
+                                                )}
                                                 <input
                                                         id="image-upload"
                                                         type="file"

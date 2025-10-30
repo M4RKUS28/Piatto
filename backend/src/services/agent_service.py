@@ -5,8 +5,8 @@ import asyncio
 import json
 from logging import getLogger
 from typing import Optional
-
 from fastapi import Depends, HTTPException
+import threading
 
 from ..agents.chat_agent.agent import ChatAgent
 from ..agents.instruction_agent.agent import InstructionAgent
@@ -55,6 +55,72 @@ class AgentService:
             output = json.dumps(output)
         return output
 
+    def generate_and_save_images_in_thread(self, user_id, recipes, recipe_ids):
+        """
+        Start image generation in a separate thread with its own event loop.
+        This completely isolates the image generation from the main FastAPI event loop.
+        """
+        def run_in_new_thread():
+            print("!!!BACKGROUND THREAD: Started in new thread")
+
+            # Create a new event loop for this thread
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
+            try:
+                loop.run_until_complete(self._generate_and_save_images_async(user_id, recipes, recipe_ids))
+            finally:
+                loop.close()
+                print("!!!BACKGROUND THREAD: Thread completed")
+
+        # Start the thread and return immediately
+        thread = threading.Thread(target=run_in_new_thread, daemon=True)
+        thread.start()
+        print("!!!BACKGROUND THREAD: Thread started, returning immediately")
+
+    async def _generate_and_save_images_async(self, user_id, recipes, recipe_ids):
+        """
+        Internal async method that runs in a separate thread's event loop.
+        Generates all images concurrently.
+        """
+        print("!!!BACKGROUND TASK: Started _generate_and_save_images_async")
+
+        # Generate single image and update DB immediately
+        async def generate_and_save_single_image(recipe_payload, recipe_id, idx):
+            print(f"!!!BACKGROUND TASK: Starting image generation for recipe {idx+1}")
+            try:
+                image = await self.image_agent.run(
+                    user_id=user_id,
+                    state={},
+                    content=get_image_gen_query(recipe_payload),
+                )
+                print(f"!!!BACKGROUND TASK: Image {idx+1} generated, now uploading")
+
+                async with get_async_bucket_session() as bs:
+                    image_saved = await save_image_bytes(bs, user_id, "image", image, "recipe_image.png")
+
+                print(f"!!!BACKGROUND TASK: Image {idx+1} uploaded, updating DB")
+
+                # Update recipe with image URL
+                async with get_async_db_context() as db:
+                    await recipe_crud.update_recipe(db, recipe_id, image_url=image_saved['key'])
+
+                print(f"!!!BACKGROUND TASK: Recipe {idx+1} updated with image")
+            except Exception as e:
+                print(f"!!!BACKGROUND TASK: Error generating image for recipe {idx+1}: {e}")
+
+        # Create all tasks concurrently using asyncio.create_task
+        tasks = []
+        for idx, recipe_payload in enumerate(recipes['recipes']):
+            task = asyncio.create_task(generate_and_save_single_image(recipe_payload, recipe_ids[idx], idx))
+            tasks.append(task)
+
+        print(f"!!!BACKGROUND TASK: Created {len(tasks)} concurrent image generation tasks")
+
+        # Await all tasks to complete (they run in parallel)
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+        print(f"!!!BACKGROUND TASK: All images generated and saved")
 
     # Rezepte Erstellen
     async def generate_recipe(
@@ -70,35 +136,20 @@ class AgentService:
             state={},
             content=query,
         )
-        # Parallelize the image generation + upload step so agent calls do not block each other.
-        async def generate_recipe_assets(recipe_payload):
-            image = await self.image_agent.run(
-                user_id=user_id,
-                state={},
-                content=get_image_gen_query(recipe_payload),
-            )
-            async with get_async_bucket_session() as bs:
-                image_saved = await save_image_bytes(bs, user_id, "image", image, "recipe_image.png")
-            return recipe_payload, image_saved['key']
-
-        recipe_payloads = await asyncio.gather(
-            *(generate_recipe_assets(recipe) for recipe in recipes['recipes'])
-        )
-
+        # Save the recipes in db before generating images
         recipe_ids = []
         async with get_async_db_context() as db:
-            for recipe_payload, image_key in recipe_payloads:
+            for recipe in recipes['recipes']:
                 recipe_db = await recipe_crud.create_recipe(
                     db=db,
                     user_id=user_id,
-                    title=recipe_payload['title'],
-                    description=recipe_payload['description'],
+                    title=recipe['title'],
+                    description=recipe['description'],
                     prompt=prompt,
-                    ingredients=recipe_payload['ingredients'],
-                    image_url=image_key,
-                    total_time_minutes=recipe_payload.get('total_time_minutes'),
-                    difficulty=recipe_payload.get('difficulty'),
-                    food_category=recipe_payload.get('food_category'),
+                    ingredients=recipe['ingredients'],
+                    total_time_minutes=recipe.get('total_time_minutes'),
+                    difficulty=recipe['difficulty'],
+                    food_category=recipe['food_category'],
                 )
                 recipe_ids.append(recipe_db.id)
 
@@ -112,8 +163,13 @@ class AgentService:
                 )
             except PermissionError as error:
                 logger.warning("Preparing session %s cannot be updated by user %s", preparing_session_id, user_id)
-                raise HTTPException(status_code=403, detail="Preparing session does not belong to the authenticated user") from error
+                raise HTTPException(status_code=403,
+                                    detail="Preparing session does not belong to the authenticated user") from error
 
+        print("!!!Recipes saved to db")
+        # Generate images in a separate thread (completely isolated from main event loop)
+        self.generate_and_save_images_in_thread(user_id, recipes, recipe_ids)
+        print("!!!Returning session id now")
         return session.id
 
     async def generate_instruction(self, user_id: str, preparing_session_id: int, recipe_id: int) -> int:

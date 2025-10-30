@@ -45,7 +45,9 @@ export const generateRecipes = async (prompt, writtenIngredients, imageKey = '',
  */
 export const getRecipeOptions = async (preparingSessionId) => {
   try {
+    console.log('!!!API: About to make HTTP GET request to /preparing/' + preparingSessionId + '/get_options');
     const response = await apiWithCookies.get(`/preparing/${preparingSessionId}/get_options`);
+    console.log('!!!API: Received HTTP response');
     return response.data;
   } catch (error) {
     // Log all errors to console with full error details for debugging

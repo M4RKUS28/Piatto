@@ -12,6 +12,7 @@ from ...db.crud.bucket_base_repo import (
 from ...db.database import get_db
 from ...utils.auth import get_read_write_user_id, get_read_only_user_id
 from ...db.crud.bucket_base_repo import get_file_info
+from ...db.crud import recipe_crud
 
 from fastapi.responses import Response
 from ...db.crud.bucket_base_repo import get_file, get_file_info
@@ -219,6 +220,34 @@ async def delete_(key: str, sess: BucketSession = Depends(get_bucket_session),
     # Verify user access
     verify_user_access(key, user_id)
     return await delete_file(sess, key)
+
+
+@router.get("/recipe-image/{recipe_id}")
+async def get_image_by_recipe_id(
+    recipe_id: int,
+    db: AsyncSession = Depends(get_db),
+    user_id: str = Depends(get_read_only_user_id)
+):
+    """
+    Get the image URL for a specific recipe by recipe ID.
+    Returns null if the image is not yet generated.
+
+    Args:
+        recipe_id: The recipe ID
+
+    Returns:
+        dict: {"image_url": str | null}
+    """
+    recipe = await recipe_crud.get_recipe_by_id(db, recipe_id)
+
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+
+    # Verify the recipe belongs to the user
+    if recipe.user_id != user_id:
+        raise HTTPException(status_code=403, detail="Forbidden: Recipe does not belong to the authenticated user")
+
+    return {"image_url": recipe.image_url}
 
 
 

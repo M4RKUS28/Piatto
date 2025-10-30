@@ -9,6 +9,7 @@ class Recipe(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(String(50), ForeignKey("users.id"), nullable=False)
+    preparing_session_id = Column(Integer, ForeignKey("preparing_sessions.id", ondelete="SET NULL"), nullable=True)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=False)
     prompt = Column(Text, nullable=False)
@@ -41,6 +42,8 @@ class Recipe(Base):
         secondary="collection_recipes",
         back_populates="recipes"
     )
+
+    preparing_session = relationship("PreparingSession", back_populates="current_recipes")
 
 
 class RecipeIngredient(Base):
@@ -78,8 +81,9 @@ class PreparingSession(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(String(50), ForeignKey("users.id"), nullable=False)
     context_suggestions = Column(Text, nullable=True)  # Store suggestions as JSON string
-    current_recipes = Column(Text, nullable=True)  # Track active recipes for the session
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
+
+    current_recipes = relationship("Recipe", back_populates="preparing_session", order_by="Recipe.created_at")
 
 
 class CookingSession(Base):
