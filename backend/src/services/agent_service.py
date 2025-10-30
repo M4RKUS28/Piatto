@@ -55,29 +55,6 @@ class AgentService:
             output = json.dumps(output)
         return output
 
-    def generate_and_save_images_in_thread(self, user_id, recipes, recipe_ids):
-        """
-        Start image generation in a separate thread with its own event loop.
-        This completely isolates the image generation from the main FastAPI event loop.
-        """
-        def run_in_new_thread():
-            print("!!!BACKGROUND THREAD: Started in new thread")
-
-            # Create a new event loop for this thread
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-
-            try:
-                loop.run_until_complete(self._generate_and_save_images_async(user_id, recipes, recipe_ids))
-            finally:
-                loop.close()
-                print("!!!BACKGROUND THREAD: Thread completed")
-
-        # Start the thread and return immediately
-        thread = threading.Thread(target=run_in_new_thread, daemon=True)
-        thread.start()
-        print("!!!BACKGROUND THREAD: Thread started, returning immediately")
-
     async def _generate_and_save_images_async(self, user_id, recipes, recipe_ids):
         """
         Internal async method that runs in a separate thread's event loop.
@@ -128,7 +105,8 @@ class AgentService:
         user_id: str,
         prompt: str,
         written_ingredients: str,
-        preparing_session_id: Optional[int] = None
+        preparing_session_id: Optional[int] = None,
+        background_tasks = None
     ):
         query = get_recipe_gen_query(prompt, written_ingredients)
         recipes =  await self.recipe_agent.run(
@@ -168,7 +146,7 @@ class AgentService:
 
         print("!!!Recipes saved to db")
         # Generate images in a separate thread (completely isolated from main event loop)
-        self.generate_and_save_images_in_thread(user_id, recipes, recipe_ids)
+        background_tasks.add_task(self._generate_and_save_images_async, user_id, recipes, recipe_ids)
         print("!!!Returning session id now")
         return session.id
 
