@@ -153,7 +153,7 @@ export default function RecipeOptionsStep({
 	}, [recipes, imageLoadStatus]);
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-5">
 			{/* CSS keyframes for shimmer animation */}
 			<style>{`
 				@keyframes shimmer {
@@ -170,7 +170,7 @@ export default function RecipeOptionsStep({
 				<h2 className="text-3xl font-bold text-[#035035] mb-6 text-center">Select Recipes to Generate</h2>
 			</div>
 
-			<div className="space-y-4" role="list" aria-label="Generated recipe options">
+			<div className="space-y-2" role="list" aria-label="Generated recipe options">
 				{recipes.map((recipe, index) => {
 					const isSelected = selectedRecipes.has(recipe.id);
 					const imageStatus = imageLoadStatus[recipe.id] || 'loading';
@@ -203,7 +203,7 @@ export default function RecipeOptionsStep({
 							</div>
 
 							<div className="flex gap-4">
-								<div className="flex-shrink-0 w-32 h-32 sm:w-40 sm:h-40">
+								<div className="flex-shrink-0 w-28 h-28 sm:w-36 sm:h-36">
 									{imageStatus === 'loading' && (
 										<div className="relative w-full h-full rounded-xl overflow-hidden bg-gray-200">
 											{/* Animated shimmer effect */}
@@ -244,7 +244,7 @@ export default function RecipeOptionsStep({
 
 								<div className="flex-1 min-w-0 flex flex-col justify-center pr-10">
 									{recipe.title ? (
-										<h3 className="text-lg sm:text-xl font-semibold text-[#035035] mb-2 line-clamp-2">{recipe.title}</h3>
+										<h3 className="text-md sm:text-xl font-semibold text-[#035035] mb-2 line-clamp-2">{recipe.title}</h3>
 									) : (
 										<div className="h-6 bg-gray-200 rounded animate-pulse mb-2"></div>
 									)}

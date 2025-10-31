@@ -283,6 +283,20 @@ export default function RecipeGeneration() {
         }, []);
 
         useEffect(() => {
+                if (typeof document === 'undefined') {
+                        return undefined;
+                }
+
+                const { body } = document;
+                const previousOverflow = body.style.overflow;
+                body.style.overflow = 'hidden';
+
+                return () => {
+                        body.style.overflow = previousOverflow;
+                };
+        }, []);
+
+        useEffect(() => {
                 if (typeof window === 'undefined') {
                         return;
                 }
@@ -325,127 +339,118 @@ export default function RecipeGeneration() {
                 : [];
 
         return (
-                <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-                        <div className="max-w-4xl mx-auto">
-                                {/* Collection Context Banner */}
-                                {collectionContext?.collectionName && (
-                                        <div className="mb-6 p-4 bg-[#035035] bg-opacity-10 border border-[#035035] border-opacity-20 rounded-lg">
-                                                <p className="text-sm text-[#035035] text-center">
-                                                        <span className="font-semibold">Generiere Rezept für:</span> {collectionContext.collectionName}
-                                                </p>
-                                        </div>
-                                )}
+                <div className="fixed inset-0 z-40 flex items-center justify-center bg-[#02140c]/60 backdrop-blur-sm px-4 py-6 sm:px-6 lg:px-8">
+                        <div className="relative w-full max-w-4xl">
+                                <div className="relative rounded-3xl border border-[#E5ECE8] bg-white shadow-2xl">
+                                        <div className="max-h-[calc(100vh-4rem)] overflow-y-auto px-6 pb-8 pt-8 sm:px-10">
+                                                {/* Collection Context Banner */}
+                                                {collectionContext?.collectionName && (
+                                                        <div className="mb-6 rounded-lg border border-[#035035]/20 bg-[#035035]/10 p-4">
+                                                                <p className="text-center text-sm text-[#035035]">
+                                                                        <span className="font-semibold">Generiere Rezept für:</span> {collectionContext.collectionName}
+                                                                </p>
+                                                        </div>
+                                                )}
 
-                                <div className="mb-8">
-                                        <div className="flex items-center justify-center gap-4">
-                                                {[1, 2, 3].map((step) => (
-                                                        <div key={step} className="flex items-center">
-                                                                <div
-                                                                        className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${currentStep === step
-                                                                                ? 'bg-[#035035] text-white'
-                                                                                : currentStep > step
-                                                                                ? 'bg-[#A8C9B8] text-white'
-                                                                                : 'bg-[#F5F5F5] text-[#2D2D2D] opacity-50'}`}
-                                                                        aria-current={currentStep === step ? 'step' : undefined}
-                                                                >
-                                                                        {step}
+                                                {currentStep !== 3 && (
+                                                        <div className="mb-6">
+                                                                <div className="flex items-center justify-center gap-4">
+                                                                        {[1, 2, 3].map((step) => (
+                                                                                <div key={step} className="flex items-center">
+                                                                                        <div
+                                                                                                className={`flex h-10 w-10 items-center justify-center rounded-full font-semibold transition-all ${currentStep === step
+                                                                                                        ? 'bg-[#035035] text-white shadow-[0_4px_12px_rgba(3,80,53,0.35)]'
+                                                                                                        : currentStep > step
+                                                                                                        ? 'bg-[#A8C9B8] text-white'
+                                                                                                        : 'bg-[#F5F5F5] text-[#2D2D2D] opacity-50'}`}
+                                                                                                aria-current={currentStep === step ? 'step' : undefined}
+                                                                                        >
+                                                                                                {step}
+                                                                                        </div>
+                                                                                        {step < 3 && (
+                                                                                                <div
+                                                                                                        className={`mx-2 h-1 w-16 transition-all ${currentStep > step ? 'bg-[#A8C9B8]' : 'bg-[#F5F5F5]'}`}
+                                                                                                />
+                                                                                        )}
+                                                                                </div>
+                                                                        ))}
                                                                 </div>
-                                                                {step < 3 && (
-                                                                        <div
-                                                                                className={`w-16 h-1 mx-2 transition-all ${currentStep > step ? 'bg-[#A8C9B8]' : 'bg-[#F5F5F5]'}`}
-                                                                        />
-                                                                )}
+                                                                <div className="mt-4 text-center text-sm text-[#2D2D2D] opacity-60">
+                                                                        {currentStep === 1 && 'Step 1: What do you want to cook?'}
+                                                                        {currentStep === 2 && 'Step 2: What ingredients do you have?'}
+                                                                </div>
                                                         </div>
-                                                ))}
-                                        </div>
-                                        <div className="text-center mt-4 text-sm text-[#2D2D2D] opacity-60">
-                                                {currentStep === 1 && 'Step 1: What do you want to cook?'}
-                                                {currentStep === 2 && 'Step 2: What ingredients do you have?'}
-                                                {currentStep === 3 && 'Step 3: Choose your recipe'}
+                                                )}
+
+                                                <div className="rounded-2xl border border-[#EEF5F1] bg-white p-5 sm:p-7 shadow-[0_12px_32px_rgba(3,80,53,0.05)]">
+                                                        {currentStep === 1 && (
+                                                                <PromptStep
+                                                                        onSubmit={(promptText) => {
+                                                                                setPrompt(promptText);
+                                                                                goToStep(2);
+                                                                        }}
+                                                                        initialValue={prompt}
+                                                                        loading={loading}
+                                                                />
+                                                        )}
+
+                                                        {currentStep === 2 && !loading && !error && (
+                                                                <IngredientsStep
+                                                                        onSubmit={(ingredientsText, imgKey) => {
+                                                                                setInputMethod(ingredientsText ? 'text' : 'image');
+                                                                                handleGenerateRecipes({
+                                                                                        ingredientsOverride: ingredientsText,
+                                                                                        imageKeyOverride: imgKey,
+                                                                                });
+                                                                        }}
+                                                                        onBack={handleGoBack}
+                                                                        initialIngredients={ingredients}
+                                                                        initialImageKey={imageKey}
+                                                                        initialInputMethod={inputMethod}
+                                                                        loading={loading}
+                                                                />
+                                                        )}
+
+
+                                                        {currentStep === 2 && error && (
+                                                                <div className="my-6" role="alert" aria-live="assertive">
+                                                                        <ErrorMessage message={error} onRetry={handleRetry} />
+                                                                </div>
+                                                        )}
+
+
+                                                        {currentStep === 3 && !error && (
+                                                                <RecipeOptionsStep
+                                                                        recipeOptions={recipeOptions}
+                                                                        onRegenerate={handleRegenerateRecipes}
+                                                                        loading={loading}
+                                                                        onSaveRecipe={handleSaveRecipeOption}
+                                                                        onFinishSession={handleFinishCurrentSession}
+                                                                        sessionCompleting={finishingSession}
+                                                                        preparingSessionId={preparingSessionId}
+                                                                />
+                                                        )}
+
+
+                                                        {currentStep === 3 && error && (
+                                                                <div className="my-6" role="alert" aria-live="assertive">
+                                                                        <ErrorMessage message={error} onRetry={handleRetry} />
+                                                                </div>
+                                                        )}
+
+                                                        {currentStep === 3 && successMessage && (
+                                                                <div className="mb-4 flex justify-center" role="status" aria-live="polite">
+                                                                        <div className="flex items-center gap-2 rounded-full bg-[#035035]/10 px-4 py-2 text-[#035035]">
+                                                                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                                </svg>
+                                                                                <span className="text-sm font-medium">{successMessage}</span>
+                                                                        </div>
+                                                                </div>
+                                                        )}
+                                                </div>
                                         </div>
                                 </div>
-
-                                <div className="bg-white rounded-2xl border border-[#F5F5F5] p-8">
-                                        {currentStep === 1 && (
-                                                <PromptStep
-                                                        onSubmit={(promptText) => {
-                                                                setPrompt(promptText);
-                                                                goToStep(2);
-                                                        }}
-                                                        initialValue={prompt}
-                                                        loading={loading}
-                                                />
-                                        )}
-
-                                        {currentStep === 2 && !loading && !error && (
-                                                <IngredientsStep
-                                                        onSubmit={(ingredientsText, imgKey) => {
-                                                                setInputMethod(ingredientsText ? 'text' : 'image');
-                                                                handleGenerateRecipes({
-                                                                        ingredientsOverride: ingredientsText,
-                                                                        imageKeyOverride: imgKey,
-                                                                });
-                                                        }}
-                                                        onBack={handleGoBack}
-                                                        initialIngredients={ingredients}
-                                                        initialImageKey={imageKey}
-                                                        initialInputMethod={inputMethod}
-                                                        loading={loading}
-                                                />
-                                        )}
-
-
-                                        {currentStep === 2 && error && (
-                                                <div className="my-6" role="alert" aria-live="assertive">
-                                                        <ErrorMessage message={error} onRetry={handleRetry} />
-                                                </div>
-                                        )}
-
-
-                                        {currentStep === 3 && !error && (
-                                                <RecipeOptionsStep
-                                                        recipeOptions={recipeOptions}
-                                                        onRegenerate={handleRegenerateRecipes}
-                                                        loading={loading}
-                                                        onSaveRecipe={handleSaveRecipeOption}
-                                                        onFinishSession={handleFinishCurrentSession}
-                                                        sessionCompleting={finishingSession}
-                                                        preparingSessionId={preparingSessionId}
-                                                />
-                                        )}
-
-
-                                        {currentStep === 3 && error && (
-                                                <div className="my-6" role="alert" aria-live="assertive">
-                                                        <ErrorMessage message={error} onRetry={handleRetry} />
-                                                </div>
-                                        )}
-
-                                        {currentStep === 3 && successMessage && (
-                                                <div className="flex justify-center mb-4" role="status" aria-live="polite">
-                                                        <div className="flex items-center gap-2 bg-[#035035] bg-opacity-10 text-[#035035] px-4 py-2 rounded-full">
-                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                </svg>
-                                                                <span className="text-sm font-medium">{successMessage}</span>
-                                                        </div>
-                                                </div>
-                                        )}
-                                </div>
-
-                                {process.env.NODE_ENV === 'development' && (
-                                        <div className="mt-4 p-4 bg-[#F5F5F5] rounded-lg text-xs">
-                                                <div className="font-semibold mb-2">Debug State:</div>
-                                                <div>Current Step: {currentStep}</div>
-                                                <div>Prompt: {prompt || '(empty)'}</div>
-                                                <div>Ingredients: {ingredients || '(empty)'}</div>
-                                                <div>Input Method: {inputMethod}</div>
-                                                <div>Session ID: {preparingSessionId || '(none)'}</div>
-                                                <div>Recipe Options: {recipeOptions.length} items</div>
-                                                <div>Loading: {loading ? 'Yes' : 'No'}</div>
-                                                <div>Error: {error || '(none)'}</div>
-                                        </div>
-                                )}
                         </div>
                 </div>
         );
