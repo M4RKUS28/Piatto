@@ -19,7 +19,7 @@ const useHeyPiattoDetection = () => {
     stop,
     analyser
   } = useWakeword({
-    modelPath: '/wakeword_model.onnx',
+    modelPath: '/wakeword_model_15.onnx',
 
     // Confidence threshold (0.0 to 1.0)
     // Higher = fewer false positives, but may miss some detections
