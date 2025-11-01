@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next'
 
 const PROMPT_PLACEHOLDER = 'e.g., Something healthy for dinner, Quick pasta dish, Comfort food...';
 
@@ -37,16 +36,16 @@ export default function PromptStep({ onSubmit, initialValue = '', loading = fals
         };
 
         return (
-                <div>
-                        <h2 className="text-3xl font-bold text-[#035035] mb-6 text-center">
+                <div className="space-y-6">
+                        <h2 className="text-2xl sm:text-3xl font-bold text-[#035035] text-center">
                                 What do you want to cook today?
                         </h2>
-                        <p className="text-center text-[#2D2D2D] opacity-60 mb-8">
+                        <p className="text-sm sm:text-base text-center text-[#2D2D2D] opacity-70">
                                 Describe what you're in the mood for, and we'll help you create the perfect recipe
                         </p>
 
-                        <form onSubmit={handleSubmit} className="max-w-2xl mx-auto" aria-label="Recipe prompt form">
-                                <div className="mb-6">
+                        <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6" aria-label="Recipe prompt form">
+                                <div>
                                         <label htmlFor="prompt-input" className="block text-sm font-medium text-[#2D2D2D] mb-2">
                                                 What do you want to cook?
                                         </label>
@@ -78,12 +77,12 @@ export default function PromptStep({ onSubmit, initialValue = '', loading = fals
                                         )}
                                 </div>
 
-                                <div className="flex justify-center">
+                                <div className="flex flex-col sm:flex-row justify-center">
                                         <button
                                                 type="submit"
                                                 disabled={loading}
-                                                className="bg-[#035035] text-white px-8 py-3 rounded-full font-semibold text-base
-                                                        hover:scale-105 active:scale-95 transition-all duration-200
+                                                className="w-full sm:w-auto bg-[#035035] text-white px-8 py-3 rounded-full font-semibold text-base
+                                                        hover:scale-105 active:scale-95 transition-all duration-200 text-center
                                                         disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
                                                         focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2
                                                         min-w-[120px]

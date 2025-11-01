@@ -46,7 +46,7 @@ export default function MainLayout({ children }) {
 
   const navItems = [
     { label: 'Dashboard', to: '/app', icon: Home, end: true },
-    { label: 'Generate Recipe', to: '/app/generate', icon: Sparkles },
+    { label: 'Generate', to: '/app/generate', icon: Sparkles },
     { label: 'Recipe Library', to: '/app/library', icon: UtensilsCrossed }
   ];
 

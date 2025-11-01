@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useRef } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import axios from 'axios';
-import { useTranslation } from 'react-i18next'
 
 const INGREDIENTS_PLACEHOLDER = 'Enter your ingredients, separated by commas...';
 
@@ -48,17 +47,17 @@ export default function IngredientsStep({
 
 
         return (
-                <div>
-                        <h2 className="text-3xl font-bold text-[#035035] mb-6 text-center">
+                <div className="space-y-6">
+                        <h2 className="text-2xl sm:text-3xl font-bold text-[#035035] text-center">
                                 What ingredients do you have?
                         </h2>
-                        <p className="text-center text-[#2D2D2D] opacity-60 mb-8">
+                        <p className="text-sm sm:text-base text-center text-[#2D2D2D] opacity-70">
                                 Tell us what's in your kitchen. You can also analyze a photo to extract ingredients.
                         </p>
 
-                        <form onSubmit={handleSubmit} className="max-w-2xl mx-auto" aria-label="Ingredients input form">
-                                <div className="mb-6 relative">
-                                        <label htmlFor="ingredients-input" className="block text-sm font-medium text-[#2D2D2D] mb-2">
+                        <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6" aria-label="Ingredients input form">
+                                <div className="relative">
+                                        <label htmlFor="ingredients-input" className="block text-xs sm:text-sm font-medium text-[#2D2D2D] mb-2">
                                                 Enter your ingredients
                                         </label>
                                         <div className="relative">
@@ -69,7 +68,7 @@ export default function IngredientsStep({
                                                         placeholder={INGREDIENTS_PLACEHOLDER}
                                                         disabled={loading || analyzing}
                                                         rows={6}
-                                                        className={`w-full px-4 py-3 pr-12 rounded-xl border-2 transition-all resize-vertical font-['Inter'] text-base min-h-[120px] focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${validationError ? 'border-[#FF9B7B] focus:border-[#FF9B7B]' : 'border-[#F5F5F5] focus:border-[#035035]'}`}
+                                                        className={`w-full px-3 sm:px-4 py-3 pr-12 rounded-xl border-2 transition-all resize-vertical font-['Inter'] text-sm sm:text-base min-h-[120px] focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${validationError ? 'border-[#FF9B7B] focus:border-[#FF9B7B]' : 'border-[#F5F5F5] focus:border-[#035035]'}`}
                                                         aria-invalid={validationError ? 'true' : 'false'}
                                                         aria-describedby={validationError ? 'ingredients-error' : undefined}
                                                         aria-label="List of ingredients you have available"
@@ -144,7 +143,7 @@ export default function IngredientsStep({
                                                         type="button"
                                                         onClick={() => document.getElementById('image-upload')?.click()}
                                                         disabled={loading || analyzing}
-                                                        className="absolute bottom-2 left-2 bg-[#035035] rounded-full px-3 py-2 shadow-md hover:bg-[#046a47] focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                                        className="absolute bottom-3 left-3 bg-[#035035] rounded-full px-3 py-2 shadow-md hover:bg-[#046a47] focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                                         aria-label="Analyze image to extract ingredients"
                                                 >
                                                         {analyzing ? (
@@ -153,8 +152,8 @@ export default function IngredientsStep({
                                                                 </svg>
                                                         ) : (
                                                                 <>
-                                                                        <img src="/wired-outline-61-camera-in-reveal.gif" alt="Upload ingredients image" className="w-7 h-7" />
-                                                                        <span className="text-white font-semibold text-sm">Analyze Image</span>
+                                                                        <img src="/wired-outline-61-camera-in-reveal.gif" alt="Upload ingredients image" className="w-6 h-6" />
+                                                                        <span className="text-white font-semibold text-xs sm:text-sm">Analyze Image</span>
                                                                 </>
                                                         )}
                                                 </button>

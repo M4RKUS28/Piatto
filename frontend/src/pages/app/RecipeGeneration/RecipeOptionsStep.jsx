@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import SaveRecipesCollectionModal from '../../../components/SaveRecipesCollectionModal';
 import { generateInstructions } from '../../../api/instructionApi';
 import { getRecipeImage } from '../../../api/filesApi';
-import { useTranslation } from 'react-i18next'
 
 export default function RecipeOptionsStep({
 	recipeOptions,
@@ -44,7 +43,8 @@ export default function RecipeOptionsStep({
 		setShowCollectionModal(true);
 	};
 
-	const handleSaveToCollections = async (recipeIds, collectionIds) => {
+	const handleSaveToCollections = async (recipeIds, COLLECTION_IDS_UNUSED) => {
+		void COLLECTION_IDS_UNUSED;
 		setProcessingSelection(true);
 
 		try {
@@ -168,7 +168,7 @@ export default function RecipeOptionsStep({
 			`}</style>
 
 			<div>
-				<h2 className="text-3xl font-bold text-[#035035] mb-6 text-center">Select Recipes to Generate</h2>
+				<h2 className="text-2xl sm:text-3xl font-bold text-[#035035] mb-4 sm:mb-6 text-center">Select Recipes to Generate</h2>
 			</div>
 
 			<div className="space-y-4" role="list" aria-label="Generated recipe options">
@@ -203,8 +203,8 @@ export default function RecipeOptionsStep({
 								</div>
 							</div>
 
-							<div className="flex gap-4">
-								<div className="flex-shrink-0 w-32 h-32 sm:w-40 sm:h-40">
+							<div className="flex flex-col sm:flex-row gap-4">
+								<div className="w-full sm:w-40 sm:h-40 h-48 sm:flex-shrink-0">
 									{imageStatus === 'loading' && (
 										<div className="relative w-full h-full rounded-xl overflow-hidden bg-gray-200">
 											{/* Animated shimmer effect */}
@@ -243,7 +243,7 @@ export default function RecipeOptionsStep({
 									)}
 								</div>
 
-								<div className="flex-1 min-w-0 flex flex-col justify-center pr-10">
+								<div className="flex-1 min-w-0 flex flex-col justify-center sm:pr-10">
 									{recipe.title ? (
 										<h3 className="text-lg sm:text-xl font-semibold text-[#035035] mb-2 line-clamp-2">{recipe.title}</h3>
 									) : (
@@ -264,12 +264,12 @@ export default function RecipeOptionsStep({
 				})}
 			</div>
 
-			<div className="flex justify-between items-center mt-6">
+			<div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 mt-6">
 				<button
 					type="button"
 					onClick={onRegenerate}
 					disabled={loading || sessionCompleting}
-					className="bg-white text-[#035035] border-2 border-[#035035] px-6 py-3 rounded-full font-semibold text-base
+					className="w-full sm:w-auto bg-white text-[#035035] border-2 border-[#035035] px-6 py-3 rounded-full font-semibold text-base text-center
 						hover:bg-[#035035] hover:text-white transition-all duration-200
 						disabled:opacity-50 disabled:cursor-not-allowed
 						focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2"
@@ -287,7 +287,7 @@ export default function RecipeOptionsStep({
 					sessionCompleting ||
 					processingSelection
 				}
-					className="bg-[#035035] text-white px-8 py-3 rounded-full font-semibold text-base
+					className="w-full sm:w-auto bg-[#035035] text-white px-8 py-3 rounded-full font-semibold text-base text-center
 						hover:bg-[#024027] transition-all duration-200
 						disabled:opacity-50 disabled:cursor-not-allowed
 						focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2"

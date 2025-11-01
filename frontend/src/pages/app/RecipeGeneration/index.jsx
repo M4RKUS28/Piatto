@@ -14,7 +14,6 @@ import IngredientsStep from './IngredientsStep';
 import RecipeOptionsStep from './RecipeOptionsStep';
 import { ensureFadeInStyles } from './fadeInStyles';
 import { SESSION_STORAGE_KEY } from './constants';
-import { useTranslation } from 'react-i18next'
 
 export default function RecipeGeneration() {
         const navigate = useNavigate();
@@ -27,11 +26,9 @@ export default function RecipeGeneration() {
         const [inputMethod, setInputMethod] = useState('text');
         const [loading, setLoading] = useState(false);
         const [error, setError] = useState(null);
-        const [successMessage, setSuccessMessage] = useState(null);
         const [preparingSessionId, setPreparingSessionId] = useState(null);
         const [recipeOptions, setRecipeOptions] = useState([]);
-        const [imageAnalysis, setImageAnalysis] = useState(null);
-        const [isImagePanelOpen, setIsImagePanelOpen] = useState(true);
+        const [, setImageAnalysis] = useState(null);
         const [finishingSession, setFinishingSession] = useState(false);
 
 
@@ -57,21 +54,10 @@ export default function RecipeGeneration() {
                 }
         }, []);
 
-
-        const showTemporarySuccess = useCallback((message) => {
-                setSuccessMessage(message);
-                if (typeof window !== 'undefined') {
-                        window.setTimeout(() => {
-                                setSuccessMessage(null);
-                        }, 3000);
-                }
-        }, []);
-
         const goToStep = useCallback((step) => {
                 if (step >= 1 && step <= 3) {
                         setCurrentStep(step);
                         setError(null);
-                        setSuccessMessage(null);
                 }
         }, []);
 
@@ -79,7 +65,6 @@ export default function RecipeGeneration() {
                 if (currentStep > 1) {
                         setCurrentStep(currentStep - 1);
                         setError(null);
-                        setSuccessMessage(null);
                 }
         };
 
@@ -100,7 +85,6 @@ export default function RecipeGeneration() {
                         setPreparingSessionId(null);
                         setRecipeOptions([]);
                         setImageAnalysis(null);
-                        setIsImagePanelOpen(true);
                         setError(null);
                         setPrompt('');
                         setIngredients('');
@@ -108,7 +92,6 @@ export default function RecipeGeneration() {
                         setInputMethod('text');
                         setCurrentStep(1);
 
-                        // Navigate back to collection if there's a collection context
                         if (collectionContext?.collectionId) {
                                 navigate(`/app/collection/${collectionContext.collectionId}`);
                         }
@@ -123,7 +106,6 @@ export default function RecipeGeneration() {
                                         imageKey: analysis.image_key,
                                         analyzedIngredients: analysis.analyzed_ingredients || '',
                                 });
-                                setIsImagePanelOpen(true);
                                 return;
                         }
                         setImageAnalysis(null);
@@ -138,6 +120,10 @@ export default function RecipeGeneration() {
         }, []);
 
         const handleGenerateRecipes = async ({ ingredientsOverride, imageKeyOverride } = {}) => {
+                if (loading) {
+                        return;
+                }
+
                 const nextIngredients = typeof ingredientsOverride === 'string' ? ingredientsOverride : ingredients;
                 const nextImageKey = typeof imageKeyOverride === 'string' ? imageKeyOverride : imageKey;
                 const sanitizedIngredients = typeof nextIngredients === 'string' ? nextIngredients.trim() : '';
@@ -146,30 +132,31 @@ export default function RecipeGeneration() {
                 setIngredients(sanitizedIngredients);
                 setImageKey(sanitizedImageKey);
                 setError(null);
-                setSuccessMessage(null);
                 const hasUploadedImage = sanitizedImageKey.length > 0;
                 if (!hasUploadedImage) {
                         setImageAnalysis(null);
                 }
 
-                // Show 3 placeholder recipes immediately and navigate to step 3
                 setRecipeOptions([
                         { id: -1, title: '', description: '' },
                         { id: -2, title: '', description: '' },
-                        { id: -3, title: '', description: '' }
+                        { id: -3, title: '', description: '' },
                 ]);
                 goToStep(3);
 
                 try {
-                        // Call generateRecipes in background while user sees placeholders
-                        const sessionId = await generateRecipes(prompt, sanitizedIngredients, sanitizedImageKey, preparingSessionId);
+                        setLoading(true);
+                        const sessionId = await generateRecipes(
+                                prompt,
+                                sanitizedIngredients,
+                                sanitizedImageKey,
+                                preparingSessionId
+                        );
                         setPreparingSessionId(sessionId);
                         storeSessionId(sessionId);
 
-                        // Fetch actual recipe options and replace placeholders
                         await handleGetRecipeOptions(sessionId, false);
 
-                        // Fetch image analysis in background without blocking UI
                         if (hasUploadedImage) {
                                 handleFetchImageAnalysis(sessionId).catch(err => {
                                         console.error('Background image analysis fetch failed:', err);
@@ -198,9 +185,10 @@ export default function RecipeGeneration() {
                                 errorMessage = 'Invalid request. Please check your inputs.';
                         }
 
-                        // Remove placeholders and show error on step 3
                         setRecipeOptions([]);
                         setError(errorMessage);
+                } finally {
+                        setLoading(false);
                 }
         };
 
@@ -227,10 +215,8 @@ export default function RecipeGeneration() {
                         } else if (optionsError.response.status === 400) {
                                 errorMessage = 'Invalid request. Please check your inputs.';
                         }
-                        // Remove placeholders and show error
                         setRecipeOptions([]);
                         setError(errorMessage);
-                        setSuccessMessage(null);
                 }
         }, [goToStep]);
 
@@ -239,22 +225,15 @@ export default function RecipeGeneration() {
                 try {
                         await saveRecipe(recipeId);
 
-                        // If we have a collection context, add the recipe to that collection
                         if (collectionContext?.collectionId) {
                                 try {
-                                        // Get current collection to get existing recipe IDs
                                         const collection = await getCollectionById(collectionContext.collectionId);
                                         const existingRecipeIds = collection.recipes.map(r => r.id);
-
-                                        // Add new recipe to collection
                                         const updatedRecipeIds = [...existingRecipeIds, recipeId];
                                         await updateCollectionRecipes(collectionContext.collectionId, updatedRecipeIds);
-
-                                        // Navigate back to the collection view
                                         navigate(`/app/collection/${collectionContext.collectionId}`);
                                 } catch (collectionError) {
                                         console.error('Failed to add recipe to collection:', collectionError);
-                                        // Still navigate to the recipe view if collection update fails
                                         setError('Recipe saved, but failed to add to collection.');
                                 }
                         }
@@ -267,12 +246,7 @@ export default function RecipeGeneration() {
 
         const handleRetry = () => {
                 setError(null);
-                setSuccessMessage(null);
                 handleGenerateRecipes();
-        };
-
-        const handleRecipeSelect = (recipeId) => {
-                navigate(`/app/recipe/${recipeId}`);
         };
 
         const handleRegenerateRecipes = async () => {
@@ -318,55 +292,48 @@ export default function RecipeGeneration() {
         }, [clearStoredSession, handleGetRecipeOptions, handleFetchImageAnalysis]);
 
 
-        const analysisLines = imageAnalysis?.analyzedIngredients
-                ? imageAnalysis.analyzedIngredients
-                                .split(/\r?\n/)
-                                .map((line) => line.trim())
-                                .filter((line) => line.length > 0)
-                : [];
-
         return (
                 <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-                        <div className="max-w-4xl mx-auto">
+                        <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
                                 {/* Collection Context Banner */}
                                 {collectionContext?.collectionName && (
-                                        <div className="mb-6 p-4 bg-[#035035] bg-opacity-10 border border-[#035035] border-opacity-20 rounded-lg">
-                                                <p className="text-sm text-[#035035] text-center">
+                                        <div className="p-4 sm:p-5 bg-[#035035] bg-opacity-10 border border-[#035035] border-opacity-20 rounded-xl">
+                                                <p className="text-sm sm:text-base text-[#035035] text-center">
                                                         <span className="font-semibold">Generiere Rezept für:</span> {collectionContext.collectionName}
                                                 </p>
                                         </div>
                                 )}
 
-                                <div className="mb-8">
-                                        <div className="flex items-center justify-center gap-4">
+                                <div className="space-y-4">
+                                        <div className="flex items-center justify-center gap-3 sm:gap-4">
                                                 {[1, 2, 3].map((step) => (
                                                         <div key={step} className="flex items-center">
                                                                 <div
-                                                                        className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${currentStep === step
+                                                                        className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm sm:text-base font-semibold transition-all ${currentStep === step
                                                                                 ? 'bg-[#035035] text-white'
                                                                                 : currentStep > step
-                                                                                ? 'bg-[#A8C9B8] text-white'
-                                                                                : 'bg-[#F5F5F5] text-[#2D2D2D] opacity-50'}`}
+                                                                                        ? 'bg-[#A8C9B8] text-white'
+                                                                                        : 'bg-[#F5F5F5] text-[#2D2D2D] opacity-50'}`}
                                                                         aria-current={currentStep === step ? 'step' : undefined}
                                                                 >
                                                                         {step}
                                                                 </div>
                                                                 {step < 3 && (
                                                                         <div
-                                                                                className={`w-16 h-1 mx-2 transition-all ${currentStep > step ? 'bg-[#A8C9B8]' : 'bg-[#F5F5F5]'}`}
+                                                                                className={`w-12 sm:w-16 h-1 mx-2 transition-all ${currentStep > step ? 'bg-[#A8C9B8]' : 'bg-[#F5F5F5]'}`}
                                                                         />
                                                                 )}
                                                         </div>
                                                 ))}
                                         </div>
-                                        <div className="text-center mt-4 text-sm text-[#2D2D2D] opacity-60">
+                                        <div className="text-center text-xs sm:text-sm text-[#2D2D2D] opacity-60">
                                                 {currentStep === 1 && 'Step 1: What do you want to cook?'}
                                                 {currentStep === 2 && 'Step 2: What ingredients do you have?'}
                                                 {currentStep === 3 && 'Step 3: Choose your recipe'}
                                         </div>
                                 </div>
 
-                                <div className="bg-white rounded-2xl border border-[#F5F5F5] p-8">
+                                <div className="bg-white rounded-2xl border border-[#F5F5F5] p-4 sm:p-6 lg:p-8">
                                         {currentStep === 1 && (
                                                 <PromptStep
                                                         onSubmit={(promptText) => {
@@ -395,13 +362,11 @@ export default function RecipeGeneration() {
                                                 />
                                         )}
 
-
                                         {currentStep === 2 && error && (
                                                 <div className="my-6" role="alert" aria-live="assertive">
                                                         <ErrorMessage message={error} onRetry={handleRetry} />
                                                 </div>
                                         )}
-
 
                                         {currentStep === 3 && !error && (
                                                 <RecipeOptionsStep
@@ -415,38 +380,12 @@ export default function RecipeGeneration() {
                                                 />
                                         )}
 
-
                                         {currentStep === 3 && error && (
                                                 <div className="my-6" role="alert" aria-live="assertive">
                                                         <ErrorMessage message={error} onRetry={handleRetry} />
                                                 </div>
                                         )}
-
-                                        {currentStep === 3 && successMessage && (
-                                                <div className="flex justify-center mb-4" role="status" aria-live="polite">
-                                                        <div className="flex items-center gap-2 bg-[#035035] bg-opacity-10 text-[#035035] px-4 py-2 rounded-full">
-                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                </svg>
-                                                                <span className="text-sm font-medium">{successMessage}</span>
-                                                        </div>
-                                                </div>
-                                        )}
                                 </div>
-
-                                {process.env.NODE_ENV === 'development' && (
-                                        <div className="mt-4 p-4 bg-[#F5F5F5] rounded-lg text-xs">
-                                                <div className="font-semibold mb-2">Debug State:</div>
-                                                <div>Current Step: {currentStep}</div>
-                                                <div>Prompt: {prompt || '(empty)'}</div>
-                                                <div>Ingredients: {ingredients || '(empty)'}</div>
-                                                <div>Input Method: {inputMethod}</div>
-                                                <div>Session ID: {preparingSessionId || '(none)'}</div>
-                                                <div>Recipe Options: {recipeOptions.length} items</div>
-                                                <div>Loading: {loading ? 'Yes' : 'No'}</div>
-                                                <div>Error: {error || '(none)'}</div>
-                                        </div>
-                                )}
                         </div>
                 </div>
         );
