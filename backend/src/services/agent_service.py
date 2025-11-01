@@ -193,10 +193,17 @@ class AgentService:
         return recipe_id
 
 
-    async def change_recipe(self, change_prompt: str, recipe_id: int,db : AsyncSession = Depends(get_db)):
+    async def change_recipe(self, change_prompt: str, recipe_id: int,db : AsyncSession = Depends(get_db), user_id: str = Depends(get_read_write_user_id)) -> Recipe:
         # Prompt/Kontext an Agent übergeben
         # Agent returned agents/recipe_agent/schema.py:Recipe
         recipe = await recipe_crud.get_recipe_by_id(db, recipe_id)
+
+        if not recipe:
+            raise HTTPException(status_code=404, detail="Recipe not found")
+        if recipe.user_id != user_id:
+            raise HTTPException(status_code=403, detail="Not authorized to modify this recipe")
+
+        return HTTPException(status_code=501, detail="Not implemented yet")
 
         agent_return = ... # Agent call
 

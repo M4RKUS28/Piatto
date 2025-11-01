@@ -35,13 +35,13 @@ function App() {
         <Route path="/" element={<LandingPage />} />
 
         {/* Auth pages with minimal AuthLayout (no auth buttons, no footer) */}
-        <Route path="/app" element={<AuthLayout />}>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
-          <Route path="/oauth/callback/login-failed" element={<OAuthLoginFailedPage />} />
-          <Route path="/login-failed" element={<LoginFailedPage />} />
-          <Route path="/register-failed" element={<RegisterFailedPage />} />
+        <Route path="/auth" element={<AuthLayout />}>
+          <Route path="login" element={<LoginPage />} />
+          <Route path="register" element={<RegisterPage />} />
+          <Route path="oauth/callback" element={<OAuthCallbackPage />} />
+          <Route path="oauth/callback/login-failed" element={<OAuthLoginFailedPage />} />
+          <Route path="login-failed" element={<LoginFailedPage />} />
+          <Route path="register-failed" element={<RegisterFailedPage />} />
         </Route>
 
         {/* Public info pages with full LandingLayout */}

@@ -22,7 +22,8 @@ router = APIRouter(
 
 @router.get("/{cooking_session_id}/get_session", response_model=CookingSession)
 async def get_session(cooking_session_id: int,
-                      db: AsyncSession = Depends(get_db)):
+                      db: AsyncSession = Depends(get_db),
+                    current_user_id: str = Depends(get_read_write_user_id)):
     """
     Retrieve a cooking session based on the provided session ID.
 
@@ -34,6 +35,11 @@ async def get_session(cooking_session_id: int,
     """
 
     session = await cooking_crud.get_cooking_session_by_id(db, cooking_session_id)
+    if session is None:
+        raise HTTPException(status_code=404, detail="Cooking session not found")
+    if session.user_id != current_user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this cooking session")
+
     result = CookingSession(
         id=session.id,
         recipe_id=session.recipe_id,
@@ -43,7 +49,8 @@ async def get_session(cooking_session_id: int,
 
 @router.get("{cooking_session_id}/get_prompt_history", response_model=PromptHistory)
 async def get_prompt_history(cooking_session_id: int,
-                            db: AsyncSession = Depends(get_db)
+                            db: AsyncSession = Depends(get_db),
+                            current_user_id: str = Depends(get_read_write_user_id)
 ):
     """
     Retrieve the prompt history based on the provided cooking session ID.
@@ -55,7 +62,11 @@ async def get_prompt_history(cooking_session_id: int,
         PromptHistory: The prompt history.
     """
 
-    history = await cooking_crud.get_prompt_history_by_cooking_session_id(db, cooking_session_id)
+    history = await cooking_crud.get_prompt_history_by_cooking_session_id(db, cooking_session_id, current_user_id)
+    
+    if history is None:
+        raise HTTPException(status_code=404, detail="Prompt history not found")
+
     prompts = json.loads(history.prompts)
     responses = json.loads(history.responses)
     result = PromptHistory(prompts=prompts, responses=responses)
@@ -79,7 +90,8 @@ async def start_recipe(recipe_id: int,
 
 @router.put("/change_state")
 async def change_state(request: ChangeStateRequest,
-                       db: AsyncSession = Depends(get_db)):
+                       db: AsyncSession = Depends(get_db),
+                        current_user_id: str = Depends(get_read_write_user_id)):
     """
     Change the state of a recipe session based on the provided session ID and state details.
 
@@ -87,11 +99,11 @@ async def change_state(request: ChangeStateRequest,
         request (ChangeStateRequest): The request containing the session ID and state details.
     """
 
-    await cooking_crud.update_cooking_session_state(db, request.cooking_session_id, request.new_state)
+    await cooking_crud.update_cooking_session_state(db, request.cooking_session_id, request.new_state, current_user_id)
     return
 
 @router.post("/ask_question", response_model=PromptHistory)
-async def ask_question(request: AskQuestionRequest, user_id: str = Depends(get_read_write_user_id)):
+async def ask_question(request: AskQuestionRequest, current_user_id: str = Depends(get_read_write_user_id)):
     """
     Ask a question during a cooking session based on the provided session ID, and prompt.
 
@@ -101,17 +113,18 @@ async def ask_question(request: AskQuestionRequest, user_id: str = Depends(get_r
     Returns:
         PromptHistory: The new prompt history entry.
     """
-    return agent_service.ask_question(user_id, request.cooking_session_id, request.prompt)
+    return agent_service.ask_question(current_user_id, request.cooking_session_id, request.prompt)
 
 @router.delete("/{cooking_session_id}/finish")
 async def finish_session(cooking_session_id: int,
-                            db: AsyncSession = Depends(get_db)):
+                            db: AsyncSession = Depends(get_db),
+                            current_user_id: str = Depends(get_read_write_user_id)):
         """
         Finish a cooking session based on the provided session ID.
     
         Args:
             cooking_session_id (int): The ID of the cooking session to finish.
         """
-    
-        await cooking_crud.delete_cooking_session(db, cooking_session_id)
+
+        await cooking_crud.delete_cooking_session(db, cooking_session_id, current_user_id)
         return
