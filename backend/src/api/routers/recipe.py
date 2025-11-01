@@ -107,7 +107,9 @@ async def get_all_recipes(user_id: str = Depends(get_read_only_user_id),
 
 
 @router.put("/change_ai", response_model=RecipeSchema)
-async def change_recipe_ai(request: ChangeRecipeAIRequest, user_id: str = Depends(get_read_write_user_id)):
+async def change_recipe_ai(request: ChangeRecipeAIRequest, 
+                           user_id: str = Depends(get_read_write_user_id),
+                           db: AsyncSession = Depends(get_db)):
     """
     Modify a recipe using AI based on the user ID, change prompt, and recipe ID.
 
@@ -117,7 +119,7 @@ async def change_recipe_ai(request: ChangeRecipeAIRequest, user_id: str = Depend
     Returns:
         Recipe: The modified recipe.
     """
-    return await agent_service.change_recipe(request.change_prompt, request.recipe_id, user_id=user_id)
+    return await agent_service.change_recipe(request.change_prompt, db=db, recipe_id=request.recipe_id, user_id=user_id)
 
 @router.put("/change_manual", response_model=RecipeSchema)
 async def change_recipe_manual(request: ChangeRecipeManualRequest,

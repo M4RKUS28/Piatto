@@ -193,7 +193,7 @@ class AgentService:
         return recipe_id
 
 
-    async def change_recipe(self, change_prompt: str, recipe_id: int,db : AsyncSession = Depends(get_db), user_id: str = Depends(get_read_write_user_id)) -> Recipe:
+    async def change_recipe(self, change_prompt: str, recipe_id: int,db, user_id: str) -> Recipe:
         # Prompt/Kontext an Agent übergeben
         # Agent returned agents/recipe_agent/schema.py:Recipe
         recipe = await recipe_crud.get_recipe_by_id(db, recipe_id)
