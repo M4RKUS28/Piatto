@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Clock, Users, FolderOpen, Plus } from 'lucide-react';
+import { Clock, FolderOpen, Plus } from 'lucide-react';
 import { PiLeaf, PiEgg, PiCow } from 'react-icons/pi';
 import { getUserRecipes } from '../../api/recipeApi';
 import { getUserCollections, createCollection } from '../../api/collectionApi';
@@ -54,7 +54,7 @@ const formatDifficulty = (difficulty, t) => {
   if (lowerDifficulty === 'medium') return t('difficulty.medium', { ns: 'common', defaultValue: 'Medium' });
   if (lowerDifficulty === 'hard') return t('difficulty.hard', { ns: 'common', defaultValue: 'Hard' });
 
-  return difficulty.charAt(0).toUpperpper() + difficulty.slice(1);
+  return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 };
 
 // Helper function to get difficulty color classes
@@ -101,6 +101,7 @@ export default function RecipeLibrary() {
   const [selectedCollection, setSelectedCollection] = useState(null);
   const [showDeleteRecipeModal, setShowDeleteRecipeModal] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const queryString = searchParams.toString();
 
   const fetchRecipes = useCallback(async () => {
     setLoading(true);
@@ -250,8 +251,11 @@ export default function RecipeLibrary() {
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <h2 className="text-2xl sm:text-3xl font-bold text-[#035035]">{t("library.latestRecipes", "Latest Recipes")}</h2>
-                  <Link to="/app/generate" className="text-sm font-semibold text-[#FF9B7B] hover:text-[#035035] transition-colors">
-                    {t("library.generateMore", "Generate more")}
+                  <Link
+                    to={queryString ? `/app/recipes/all?${queryString}` : '/app/recipes/all'}
+                    className="text-sm font-semibold text-[#FF9B7B] hover:text-[#035035] transition-colors"
+                  >
+                    {t("library.viewAllRecipes", "View all recipes")}
                   </Link>
                 </div>
                 <div className="overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
