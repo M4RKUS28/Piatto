@@ -28,6 +28,10 @@ class Recipe(BaseModel):
         Field(description="Difficulty level of the recipe. Must be one of: 'easy', 'medium', or 'hard'"))
     food_category: Literal["vegan", "vegetarian", "beef", "pork", "chicken", "lamb", "fish", "seafood", "mixed-meat"] = (
         Field(description="Food category based on ingredients. 'vegan' if no animal products, 'vegetarian' if contains dairy/eggs but no meat, or specify the exact type of meat: 'beef', 'pork', 'chicken', 'lamb', 'fish', 'seafood', or 'mixed-meat' if contains multiple types of meat"))
+    important_notes: str = (
+        Field(description="Critical preparation notes, required tools, or cautions expressed as a short paragraph."))
+    cooking_overview: str = (
+        Field(description="Brief high-level summary of the cooking flow in 3-4 steps."))
 
 class Recipes(BaseModel):
     recipes: List[Recipe] = (

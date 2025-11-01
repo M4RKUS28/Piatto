@@ -114,7 +114,7 @@ async def get_all_recipes_by_user_id(db: AsyncSession, user_id: str) -> List[Rec
             selectinload(Recipe.ingredients),
             selectinload(Recipe.instruction_steps)
         )
-        .filter(Recipe.user_id == user_id)
+        .filter(Recipe.user_id == user_id, Recipe.is_permanent == True)
         .order_by(Recipe.created_at.desc())
     )
     return result.scalars().all()
@@ -130,7 +130,9 @@ async def create_recipe(db: AsyncSession,
                 is_permanent: bool = False,
                 total_time_minutes: Optional[int] = None,
                 difficulty: Optional[str] = None,
-                food_category: Optional[str] = None) -> Recipe:
+                food_category: Optional[str] = None,
+                important_notes: Optional[str] = None,
+                cooking_overview: Optional[str] = None) -> Recipe:
     """Create a new recipe in the database."""
     recipe = Recipe(
         user_id=user_id,
@@ -138,6 +140,8 @@ async def create_recipe(db: AsyncSession,
         description=description,
         prompt=prompt,
         instructions=instructions,
+    important_notes=important_notes or "No special notes provided.",
+    cooking_overview=cooking_overview or "Follow the instructions sequentially to complete the recipe.",
         image_url=image_url,
         is_permanent=is_permanent,
         total_time_minutes=total_time_minutes,
@@ -171,7 +175,9 @@ async def update_recipe(db: AsyncSession,
                 is_permanent: Optional[bool] = None,
                 total_time_minutes: Optional[int] = None,
                 difficulty: Optional[str] = None,
-                food_category: Optional[str] = None) -> Optional[Recipe]:
+                food_category: Optional[str] = None,
+                important_notes: Optional[str] = None,
+                cooking_overview: Optional[str] = None) -> Optional[Recipe]:
     """Update an existing recipe in the database."""
     result = await db.execute(
         select(Recipe)
@@ -204,6 +210,10 @@ async def update_recipe(db: AsyncSession,
         recipe.difficulty = difficulty
     if food_category is not None:
         recipe.food_category = food_category
+    if important_notes is not None:
+        recipe.important_notes = important_notes
+    if cooking_overview is not None:
+        recipe.cooking_overview = cooking_overview
 
     db.add(recipe)
     await db.commit()

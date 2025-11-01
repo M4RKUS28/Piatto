@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Loader, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranslation } from 'react-i18next'
 
 export default function OAuthCallbackPage() {
+  const { t } = useTranslation('auth');
   const navigate = useNavigate();
   const location = useLocation();
   const { fetchAndSetCurrentUser } = useAuth();
@@ -74,8 +76,8 @@ export default function OAuthCallbackPage() {
           {status === 'processing' && (
             <>
               <div className="w-16 h-16 border-4 border-[#A8C9B8] border-t-[#035035] rounded-full animate-spin mx-auto mb-6"></div>
-              <h2 className="text-2xl font-bold text-[#035035] mb-3">Signing you in...</h2>
-              <p className="text-[#2D2D2D]">Please wait while we complete your authentication</p>
+              <h2 className="text-2xl font-bold text-[#035035] mb-3">{t('oauth.processing', 'Signing you in...')}</h2>
+              <p className="text-[#2D2D2D]">{t('oauth.processingMessage', 'Please wait while we complete your authentication')}</p>
             </>
           )}
 
@@ -84,8 +86,8 @@ export default function OAuthCallbackPage() {
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <CheckCircle className="w-10 h-10 text-green-600" />
               </div>
-              <h2 className="text-2xl font-bold text-[#035035] mb-3">Success!</h2>
-              <p className="text-[#2D2D2D]">Redirecting you to your dashboard...</p>
+              <h2 className="text-2xl font-bold text-[#035035] mb-3">{t('oauth.success', 'Success!')}</h2>
+              <p className="text-[#2D2D2D]">{t('oauth.successMessage', 'Redirecting you to your dashboard...')}</p>
             </>
           )}
 
@@ -94,8 +96,8 @@ export default function OAuthCallbackPage() {
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <AlertCircle className="w-10 h-10 text-red-600" />
               </div>
-              <h2 className="text-2xl font-bold text-[#035035] mb-3">Something went wrong</h2>
-              <p className="text-[#2D2D2D]">Redirecting you to error details...</p>
+              <h2 className="text-2xl font-bold text-[#035035] mb-3">{t('oauth.error', 'Something went wrong')}</h2>
+              <p className="text-[#2D2D2D]">{t('oauth.errorMessage', 'Redirecting you to error details...')}</p>
             </>
           )}
         </div>

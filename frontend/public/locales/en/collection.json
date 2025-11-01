@@ -1,0 +1,91 @@
+{
+  "actions": {
+    "edit": "Edit",
+    "delete": "Delete",
+    "optionsAriaLabel": "Collection options"
+  },
+  "deleteModal": {
+    "title": "Delete Collection",
+    "message": "Do you really want to delete the collection \"{name}\"?",
+    "warning": "This action cannot be undone. The collection will be deleted, but the recipes within it will remain.",
+    "recipeCount": {
+      "singular": "Recipe",
+      "plural": "Recipes",
+      "inCollection": "in this collection"
+    },
+    "error": "Delete failed. Please try again.",
+    "cancel": "Cancel",
+    "deleting": "Deleting...",
+    "delete": "Delete"
+  },
+  "editModal": {
+    "title": "Edit Collection",
+    "errorEmpty": "Name cannot be empty",
+    "errorSave": "Save failed. Please try again.",
+    "nameLabel": "Name",
+    "namePlaceholder": "Collection name",
+    "descriptionLabel": "Description (optional)",
+    "descriptionPlaceholder": "Describe your collection...",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "save": "Save"
+  },
+  "saveModal": {
+    "title": "Save to Collection",
+    "step": "Step {current} of {total}",
+    "searchPlaceholder": "Search collections...",
+    "createNew": "Create New Collection",
+    "newCollectionTitle": "New Collection",
+    "namePlaceholder": "Name",
+    "descriptionPlaceholder": "Description (optional)",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "create": "Create",
+    "noResults": "No collections found",
+    "empty": "No collections yet",
+    "errorMinSelection": "Please select at least one collection",
+    "errorMinSelectionFor": "Please select at least one collection for \"{title}\"",
+    "errorSave": "Save failed. Please try again.",
+    "back": "Back",
+    "next": "Next",
+    "saving": "Saving...",
+    "save": "Save"
+  },
+  "editCollectionsModal": {
+    "title": "Edit Collection",
+    "errorLoad": "Error loading collections",
+    "errorSave": "Save failed. Please try again.",
+    "errorDelete": "Delete failed. Please try again.",
+    "deleteRecipeConfirm": "Do you really want to delete this recipe?",
+    "searchPlaceholder": "Search collections...",
+    "createNew": "Create New Collection",
+    "newCollectionTitle": "New Collection",
+    "namePlaceholder": "Name",
+    "descriptionPlaceholder": "Description (optional)",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "create": "Create",
+    "noResults": "No collections found",
+    "empty": "No collections",
+    "deleting": "Deleting...",
+    "delete": "Delete",
+    "saving": "Saving...",
+    "save": "Save"
+  },
+  "view": {
+    "backToLibrary": "Back to Library",
+    "recipe": "Recipe",
+    "recipes": "Recipes",
+    "searchPlaceholder": "Search recipes...",
+    "filter": "Filter",
+    "noResults": "No results found",
+    "noResultsSubtitle": "Try different search terms",
+    "empty": "No recipes in this collection",
+    "emptySubtitle": "Add recipes to this collection by using the recipe menu to add them to a collection.",
+    "generateRecipe": "Generate Recipe",
+    "notFound": "Collection not found.",
+    "serverError": "Server error. Please try again later.",
+    "networkError": "Network error. Please check your connection.",
+    "loadFailed": "Failed to load collection. Please try again."
+  }
+}

@@ -62,6 +62,10 @@ async def get_recipe_options(preparing_session_id: int,
             id=recipe.id,
             title=recipe.title,
             description=recipe.description,
+            image_url=getattr(recipe, "image_url", None),
+            total_time_minutes=getattr(recipe, "total_time_minutes", None),
+            difficulty=getattr(recipe, "difficulty", None),
+            food_category=getattr(recipe, "food_category", None),
         ))
     return result
 

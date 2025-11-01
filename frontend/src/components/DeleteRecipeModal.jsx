@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 import { deleteRecipe } from '../api/recipeApi';
+import { useTranslation } from 'react-i18next';
 
 /**
  * DeleteRecipeModal component shows a confirmation dialog before deleting a recipe
  * Permanently deletes the recipe from the database
  */
 export default function DeleteRecipeModal({ recipe, isOpen, onClose, onDeleted }) {
+  const { t } = useTranslation('recipe');
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -20,7 +22,7 @@ export default function DeleteRecipeModal({ recipe, isOpen, onClose, onDeleted }
       onClose();
     } catch (err) {
       console.error('Failed to delete recipe:', err);
-      setError('Löschen fehlgeschlagen. Bitte versuche es erneut.');
+      setError(t('deleteModal.error', 'Delete failed. Please try again.'));
     } finally {
       setDeleting(false);
     }
@@ -33,7 +35,7 @@ export default function DeleteRecipeModal({ recipe, isOpen, onClose, onDeleted }
       <div className="bg-white rounded-2xl max-w-md w-full overflow-hidden flex flex-col">
         {/* Header */}
         <div className="p-6 border-b border-[#F5F5F5] flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-red-600">Rezept löschen</h2>
+          <h2 className="text-2xl font-bold text-red-600">{t('deleteModal.title', 'Delete Recipe')}</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-[#F5F5F5] rounded-full transition-colors"
@@ -51,10 +53,13 @@ export default function DeleteRecipeModal({ recipe, isOpen, onClose, onDeleted }
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-[#2D2D2D] mb-2">
-                Möchtest du das Rezept "{recipe?.name || recipe?.title}" wirklich löschen?
+                {t('deleteModal.message', {
+                  name: recipe?.name || recipe?.title || '',
+                  defaultValue: `Do you really want to delete the recipe "${recipe?.name || recipe?.title || ''}"?`,
+                })}
               </h3>
               <p className="text-sm text-[#2D2D2D] opacity-60 mb-2">
-                Diese Aktion kann nicht rückgängig gemacht werden. Das Rezept wird dauerhaft aus allen Sammlungen entfernt.
+                {t('deleteModal.warning', 'This action cannot be undone. The recipe will be permanently removed from all collections.')}
               </p>
             </div>
           </div>
@@ -74,14 +79,14 @@ export default function DeleteRecipeModal({ recipe, isOpen, onClose, onDeleted }
             className="flex-1 px-6 py-3 rounded-full border-2 border-[#2D2D2D]/20 text-[#2D2D2D] font-semibold hover:bg-[#F5F5F5] transition-all"
             disabled={deleting}
           >
-            Abbrechen
+            {t('deleteModal.cancel', 'Cancel')}
           </button>
           <button
             onClick={handleDelete}
             className="flex-1 px-6 py-3 rounded-full bg-red-500 text-white font-semibold hover:bg-red-600 transition-all disabled:opacity-50"
             disabled={deleting}
           >
-            {deleting ? 'Löschen...' : 'Löschen'}
+            {deleting ? t('deleteModal.deleting', 'Deleting...') : t('deleteModal.delete', 'Delete')}
           </button>
         </div>
       </div>

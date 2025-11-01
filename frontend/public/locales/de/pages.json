@@ -1,0 +1,308 @@
+{
+  "about": {
+    "title": "Unsere Geschichte",
+    "heading": "Über Piatto",
+    "intro": "Dein KI-gestützter kulinarischer Begleiter, entstanden aus der Leidenschaft, das Kochen für jeden zugänglich, angenehm und personalisiert zu gestalten.",
+    "mission": {
+      "title": "Unsere Mission",
+      "paragraph1": "Bei Piatto glauben wir, dass Kochen ein angenehmes Erlebnis sein sollte, keine tägliche Pflicht. Unsere Mission ist es, Hobbyköche aller Könnensstufen mit KI-gestützter Anleitung, personalisierten Rezeptvorschlägen und einer intuitiven Plattform zu befähigen, die die Essensplanung mühelos macht.",
+      "paragraph2": "Egal ob du ein erfahrener Koch bist oder gerade deine kulinarische Reise beginnst, Piatto passt sich an deine Vorlieben, Ernährungsbedürfnisse und verfügbaren Zutaten an, um dir zu helfen, jeden Tag köstliche Mahlzeiten zu kreieren."
+    },
+    "hackathon": {
+      "title": "Google Cloud Run Hackathon",
+      "description": "Piatto ist stolz Teil des Google Cloud Run Hackathon auf Devpost",
+      "viewDevpost": "Auf Devpost ansehen"
+    },
+    "team": {
+      "title": "Lerne das Team kennen",
+      "subtitle": "Die leidenschaftlichen Schöpfer hinter Piatto",
+      "members": {
+        "markus": {
+          "name": "Markus Huber",
+          "role": "Full-Stack-Entwickler",
+          "bio": "Leidenschaftlich für nahtlose Benutzererfahrungen und robuste Backend-Systeme."
+        },
+        "paul": {
+          "name": "Paul Vorderbruegge",
+          "role": "KI/ML-Ingenieur",
+          "bio": "Spezialisiert auf KI-gestützte Lösungen und Machine-Learning-Integration."
+        },
+        "luca": {
+          "name": "Luca Bozzetti",
+          "role": "Frontend-Entwickler & UX-Designer",
+          "bio": "Erstellt schöne, intuitive Benutzeroberflächen, die Benutzer lieben."
+        },
+        "sebastian": {
+          "name": "Sebastian Rogg",
+          "role": "Frontend und Datenanalyse",
+          "bio": "Baut responsive Oberflächen und analysiert Daten für wertvolle Erkenntnisse."
+        }
+      },
+      "linkedin": "LinkedIn"
+    },
+    "technology": {
+      "title": "Mit moderner Technologie gebaut",
+      "subtitle": "Nutzung modernster Tools und Plattformen",
+      "frontend": {
+        "title": "Frontend",
+        "items": ["React & Vite", "TailwindCSS", "React Router"]
+      },
+      "backend": {
+        "title": "Backend & Infrastruktur",
+        "items": ["Python & FastAPI", "Google Cloud Run", "OpenAI API"]
+      }
+    },
+    "cta": {
+      "title": "Werde Teil unserer kulinarischen Community",
+      "subtitle": "Starte noch heute deine Reise mit Piatto und entdecke die Freude am KI-gestützten Kochen",
+      "button": "Kostenlos starten"
+    },
+    "contactUs": "Kontaktiere uns",
+    "backToHome": "← Zurück zur Startseite"
+  },
+  "contact": {
+    "title": "Kontaktiere uns",
+    "heading": "Kontakt",
+    "intro": "Hast du eine Frage, Feedback oder möchtest einfach Hallo sagen? Wir würden gerne von dir hören!",
+    "form": {
+      "title": "Sende uns eine Nachricht",
+      "successTitle": "Nachricht gesendet!",
+      "successMessage": "Wir melden uns so schnell wie möglich bei dir.",
+      "errorTitle": "Fehler",
+      "errorMessage": "Nachricht konnte nicht gesendet werden. Bitte versuche es erneut.",
+      "name": {
+        "label": "Dein Name",
+        "placeholder": "Max Mustermann"
+      },
+      "email": {
+        "label": "E-Mail-Adresse",
+        "placeholder": "max@beispiel.de"
+      },
+      "subject": {
+        "label": "Betreff",
+        "placeholder": "Wie können wir helfen?"
+      },
+      "message": {
+        "label": "Nachricht",
+        "placeholder": "Erzähl uns mehr über deine Anfrage..."
+      },
+      "sending": "Wird gesendet...",
+      "submit": "Nachricht senden"
+    },
+    "directContact": {
+      "title": "Direkter Kontakt",
+      "subtitle": "Möchtest du lieber direkt Kontakt aufnehmen? Kontaktiere unsere Teammitglieder:",
+      "members": {
+        "markus": "Markus Huber",
+        "paul": "Paul Vorderbruegge",
+        "luca": "Luca Bozzetti"
+      }
+    },
+    "generalInquiries": {
+      "title": "Allgemeine Anfragen",
+      "subtitle": "Für allgemeine Fragen und Support:"
+    },
+    "supportHours": {
+      "title": "Support-Zeiten",
+      "subtitle": "Wir antworten normalerweise innerhalb von 24-48 Stunden an Werktagen.",
+      "weekdays": "Montag - Freitag: 9:00 - 18:00 Uhr (EST)",
+      "weekend": "Wochenende: Eingeschränkter Support"
+    },
+    "faq": {
+      "title": "Suchst du schnelle Antworten?",
+      "link": "Schau dir unsere häufig gestellten Fragen an"
+    },
+    "learnMore": "Erfahre mehr über uns",
+    "backToHome": "← Zurück zur Startseite"
+  },
+  "privacy": {
+    "title": "Datenschutz & Sicherheit",
+    "heading": "Datenschutzrichtlinie",
+    "lastUpdated": "Zuletzt aktualisiert: {date}",
+    "intro": {
+      "paragraph1": "Bei Piatto nehmen wir deinen Datenschutz ernst. Diese Datenschutzrichtlinie erklärt, wie wir deine Informationen sammeln, verwenden, offenlegen und schützen, wenn du unsere KI-gestützte Kochassistenten-Anwendung nutzt. Bitte lies diese Datenschutzrichtlinie sorgfältig durch.",
+      "paragraph2": "Durch die Nutzung von Piatto stimmst du der Erfassung und Nutzung von Informationen gemäß dieser Richtlinie zu. Wenn du mit unseren Richtlinien und Praktiken nicht einverstanden bist, nutze bitte unsere Dienste nicht."
+    },
+    "sections": {
+      "informationCollection": {
+        "title": "Informationen, die wir sammeln",
+        "personal": {
+          "title": "Persönliche Informationen",
+          "intro": "Wenn du ein Konto erstellst, sammeln wir:",
+          "items": ["E-Mail-Adresse", "Benutzername", "Profilinformationen (optional)", "Authentifizierungsdaten (verschlüsselt)"]
+        },
+        "usage": {
+          "title": "Nutzungsdaten",
+          "intro": "Wir sammeln Informationen darüber, wie du mit unserem Service interagierst:",
+          "items": ["Rezeptsuchen und Kochanfragen, die du machst", "Bilder, die du zur Rezeptanalyse hochlädst", "Gespeicherte Rezepte und Vorlieben", "Geräteinformationen und Browsertyp"]
+        }
+      },
+      "howWeUse": {
+        "title": "Wie wir deine Informationen verwenden",
+        "intro": "Wir verwenden die gesammelten Informationen für folgende Zwecke:",
+        "items": {
+          "serviceDelivery": "Servicebereitstellung: Um unsere KI-gestützten Rezeptvorschläge und Kochassistenz bereitzustellen, zu warten und zu verbessern",
+          "personalization": "Personalisierung: Um deine Erfahrung anzupassen und maßgeschneiderte Rezeptempfehlungen zu bieten",
+          "communication": "Kommunikation: Um dir Updates, Sicherheitswarnungen und Support-Nachrichten zu senden",
+          "analytics": "Analysen: Um zu verstehen, wie Benutzer mit unserem Service interagieren und die Funktionalität zu verbessern",
+          "security": "Sicherheit: Um technische Probleme und betrügerische Aktivitäten zu erkennen, zu verhindern und zu beheben"
+        },
+        "important": "Wichtig: Wir verarbeiten deine Daten nur für die Zwecke, die zur Bereitstellung unserer Dienste erforderlich sind. Deine hochgeladenen Bilder und Rezeptanfragen werden ausschließlich zur Generierung personalisierter Kochempfehlungen verwendet und nicht zu Marketingzwecken an Dritte weitergegeben."
+      },
+      "dataSecurity": {
+        "title": "Datenspeicherung und Sicherheit",
+        "serverLocation": {
+          "title": "Serverstandort",
+          "content": "Unsere Server und Dateninfrastruktur befinden sich in den Vereinigten Staaten. Durch die Nutzung von Piatto stimmst du der Übertragung und Verarbeitung deiner Daten in den Vereinigten Staaten zu, unabhängig von deinem Standort."
+        },
+        "measures": {
+          "title": "Sicherheitsmaßnahmen",
+          "intro": "Wir implementieren branchenübliche Sicherheitsmaßnahmen zum Schutz deiner Daten:",
+          "items": ["Verschlüsselung der Daten während der Übertragung (HTTPS/TLS)", "Sichere Passwort-Hashing und Authentifizierung", "Regelmäßige Sicherheitsüberprüfungen und Updates", "Zugriffskontrollen und Überwachung"]
+        },
+        "retention": {
+          "title": "Datenspeicherung",
+          "content": "Wir speichern deine persönlichen Informationen nur so lange, wie es zur Bereitstellung unserer Dienste und zur Erfüllung gesetzlicher Verpflichtungen erforderlich ist. Du kannst jederzeit die Löschung deines Kontos und der zugehörigen Daten beantragen, indem du uns kontaktierst."
+        }
+      },
+      "international": {
+        "title": "Internationale Nutzer",
+        "content": "Piatto ist weltweit zugänglich, einschließlich Europa und Asien. Wenn du von außerhalb der Vereinigten Staaten auf unsere Dienste zugreifst, beachte bitte, dass deine Informationen in die Vereinigten Staaten übertragen, dort gespeichert und verarbeitet werden, wo sich unsere Server befinden.",
+        "gdpr": {
+          "title": "DSGVO-Konformität (EU-Nutzer)",
+          "intro": "Für Nutzer in der Europäischen Union hast du folgende Rechte gemäß DSGVO:",
+          "items": ["Recht auf Zugang: Anforderung einer Kopie deiner personenbezogenen Daten", "Recht auf Berichtigung: Korrektur ungenauer personenbezogener Daten", "Recht auf Löschung: Anforderung der Löschung deiner personenbezogenen Daten", "Recht auf Datenübertragbarkeit: Erhalt deiner Daten in einem strukturierten Format", "Widerspruchsrecht: Widerspruch gegen die Verarbeitung deiner personenbezogenen Daten"]
+        }
+      },
+      "cookies": {
+        "title": "Cookies und Tracking",
+        "intro": "Wir verwenden Cookies und ähnliche Tracking-Technologien, um deine Sitzung aufrechtzuerhalten und die Benutzererfahrung zu verbessern:",
+        "items": ["Essenzielle Cookies: Erforderlich für Authentifizierung und Kernfunktionalität", "Analyse-Cookies: Helfen uns zu verstehen, wie du unseren Service nutzt"]
+      },
+      "thirdParty": {
+        "title": "Drittanbieterdienste",
+        "intro": "Wir nutzen folgende Drittanbieterdienste:",
+        "items": ["Google OAuth: Für Authentifizierung (unterliegt Googles Datenschutzrichtlinie)", "OpenAI API: Für KI-gestützte Rezeptgenerierung (Datenverarbeitung gemäß OpenAIs Richtlinien)", "Cloud-Speicher: Für die Speicherung hochgeladener Bilder und Benutzerdaten"]
+      },
+      "children": {
+        "title": "Datenschutz für Kinder",
+        "content": "Unser Service richtet sich nicht an Kinder unter 13 Jahren. Wir sammeln wissentlich keine persönlichen Informationen von Kindern unter 13 Jahren. Wenn du glaubst, dass wir Informationen von einem Kind unter 13 Jahren gesammelt haben, kontaktiere uns bitte umgehend."
+      },
+      "changes": {
+        "title": "Änderungen dieser Datenschutzrichtlinie",
+        "content": "Wir können unsere Datenschutzrichtlinie von Zeit zu Zeit aktualisieren. Wir werden dich über Änderungen informieren, indem wir die neue Datenschutzrichtlinie auf dieser Seite veröffentlichen und das Datum \"Zuletzt aktualisiert\" aktualisieren. Es wird empfohlen, diese Datenschutzrichtlinie regelmäßig auf Änderungen zu überprüfen."
+      },
+      "contactUs": {
+        "title": "Kontaktiere uns",
+        "content": "Wenn du Fragen zu dieser Datenschutzrichtlinie hast oder deine Datenrechte ausüben möchtest, kontaktiere uns bitte:",
+        "button": "Support kontaktieren"
+      }
+    },
+    "backToHome": "← Zurück zur Startseite"
+  },
+  "profileSettings": {
+    "title": "Profileinstellungen",
+    "subtitle": "Verwalte deine Kontoinformationen",
+    "username": "Benutzername",
+    "email": "E-Mail",
+    "avatarHint": "Klicke auf dein Avatar, um ein neues Profilbild hochzuladen.",
+    "uploading": "Wird hochgeladen...",
+    "imageUploaded": "Bild hochgeladen. Klicke auf \"Änderungen speichern\", um es auf dein Profil anzuwenden.",
+    "noChanges": "Keine Änderungen zum Speichern",
+    "updateSuccess": "Profil erfolgreich aktualisiert!",
+    "updateFailed": "Aktualisierung des Profils fehlgeschlagen. Bitte versuche es erneut.",
+    "uploadFailed": "Hochladen des Bildes fehlgeschlagen. Bitte versuche es erneut.",
+    "saveChanges": "Änderungen speichern",
+    "saving": "Wird gespeichert...",
+    "uploadingImage": "Bild wird hochgeladen...",
+    "language": {
+      "title": "Sprache",
+      "subtitle": "Wähle deine bevorzugte Sprache"
+    },
+    "accountInfo": {
+      "title": "Kontoinformationen",
+      "created": "Konto erstellt",
+      "lastLogin": "Letzte Anmeldung",
+      "streak": "Anmeldeserie",
+      "days": "Tage"
+    },
+    "loading": "Wird geladen..."
+  },
+  "recipeView": {
+    "recipeLabel": "REZEPT"
+  },
+  "recipe": {
+    "totalTime": "Gesamtzeit",
+    "difficultyLabel": "Schwierigkeit",
+    "editCollection": "Sammlung bearbeiten",
+    "deleteRecipe": "Rezept löschen",
+    "deleteConfirm": "Möchtest du dieses Rezept wirklich löschen?",
+    "deleteFailed": "Fehler beim Löschen des Rezepts",
+    "forServings": "Für {{count}} Portion",
+    "forServings_plural": "Für {{count}} Portionen",
+    "tabs": {
+      "ingredients": "Zutaten",
+      "nutrition": "Nährwerte"
+    },
+    "nutrition": {
+      "title": "Nährwertangaben",
+      "servingsPerRecipe": "{{count}} Portionen pro Rezept",
+      "servingSize": "Die Portionsgröße wird aus dem Rezept berechnet",
+      "amountPerServing": "Menge pro Portion",
+      "dailyValue": "% Tageswert*",
+      "totalFat": "Gesamtfett",
+      "saturatedFat": "Gesättigte Fettsäuren",
+      "trans": "Trans",
+      "fat": "Fett",
+      "cholesterol": "Cholesterin",
+      "sodium": "Natrium",
+      "totalCarbohydrate": "Gesamtkohlenhydrate",
+      "dietaryFiber": "Ballaststoffe",
+      "totalSugars": "Gesamtzucker",
+      "protein": "Protein",
+      "vitaminD": "Vitamin D",
+      "calcium": "Kalzium",
+      "iron": "Eisen",
+      "potassium": "Kalium",
+      "disclaimer": "* Der % Tageswert (DV) gibt an, wie viel ein Nährstoff in einer Portion Nahrung zu einer täglichen Ernährung beiträgt. 2.000 Kalorien pro Tag werden für allgemeine Ernährungsempfehlungen verwendet."
+    },
+    "errors": {
+      "noId": "Keine Rezept-ID angegeben",
+      "notFound": "Rezept nicht gefunden. Es wurde möglicherweise gelöscht.",
+      "serverError": "Serverfehler. Bitte versuche es später erneut.",
+      "networkError": "Netzwerkfehler. Bitte überprüfe deine Verbindung.",
+      "loadFailed": "Fehler beim Laden des Rezepts. Bitte versuche es erneut.",
+      "dataNotAvailable": "Rezeptdaten nicht verfügbar"
+    }
+  },
+  "instructions": {
+    "title": "Kochanleitungen",
+    "subtitle": "Folge den Schritten entlang des Pfads, um dein Rezept zu vervollständigen.",
+    "generating": "Anleitungen werden erstellt...",
+    "generatingDescription": "Unser KI-Koch bereitet detaillierte Kochanleitungen für dein Rezept vor. Dies dauert normalerweise nur wenige Augenblicke.",
+    "errorTitle": "Hoppla! Etwas ist schief gelaufen",
+    "errorLoading": "Fehler beim Laden der Anleitungen. Bitte versuche es erneut."
+  },
+  "editCollectionsModal": {
+    "title": "Sammlung bearbeiten",
+    "searchPlaceholder": "Sammlungen durchsuchen...",
+    "createNew": "Neue Sammlung erstellen",
+    "newCollection": "Neue Sammlung",
+    "namePlaceholder": "Name",
+    "descriptionPlaceholder": "Beschreibung (optional)",
+    "cancel": "Abbrechen",
+    "create": "Erstellen",
+    "creating": "Erstellen...",
+    "noCollectionsFound": "Keine Sammlungen gefunden",
+    "noCollections": "Noch keine Sammlungen",
+    "save": "Speichern",
+    "saving": "Speichern...",
+    "delete": "Löschen",
+    "deleting": "Löschen...",
+    "deleteConfirm": "Möchtest du dieses Rezept wirklich löschen?",
+    "errorLoading": "Fehler beim Laden der Sammlungen",
+    "errorSaving": "Speichern fehlgeschlagen. Bitte versuche es erneut.",
+    "errorDeleting": "Löschen fehlgeschlagen. Bitte versuche es erneut.",
+    "errorCreating": "Sammlung konnte nicht erstellt werden"
+  }
+}

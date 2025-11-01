@@ -11,27 +11,28 @@ import EditCollectionsModal from '../../components/EditCollectionsModal';
 import DeleteRecipeModal from '../../components/DeleteRecipeModal';
 import CollectionImageCollage from '../../components/CollectionImageCollage';
 import { getImageUrl } from '../../utils/imageUtils';
+import { useTranslation } from 'react-i18next'
 
 // Helper function to get food category display (icon and label)
-const getFoodCategoryDisplay = (category) => {
+const getFoodCategoryDisplay = (category, t) => {
   if (!category) return null;
 
   if (category === 'vegan') {
-    return { icon: PiLeaf, label: 'Vegan' };
+    return { icon: PiLeaf, label: t('foodCategory.vegan', { ns: 'common', defaultValue: 'Vegan' }) };
   }
   if (category === 'vegetarian') {
-    return { icon: PiEgg, label: 'Vegetarian' };
+    return { icon: PiEgg, label: t('foodCategory.vegetarian', { ns: 'common', defaultValue: 'Vegetarian' }) };
   }
 
   // Meat categories
   const meatLabels = {
-    'beef': 'Beef',
-    'pork': 'Pork',
-    'chicken': 'Chicken',
-    'lamb': 'Lamb',
-    'fish': 'Fish',
-    'seafood': 'Seafood',
-    'mixed-meat': 'Mixed Meat',
+    'beef': t('foodCategory.beef', { ns: 'common', defaultValue: 'Beef' }),
+    'pork': t('foodCategory.pork', { ns: 'common', defaultValue: 'Pork' }),
+    'chicken': t('foodCategory.chicken', { ns: 'common', defaultValue: 'Chicken' }),
+    'lamb': t('foodCategory.lamb', { ns: 'common', defaultValue: 'Lamb' }),
+    'fish': t('foodCategory.fish', { ns: 'common', defaultValue: 'Fish' }),
+    'seafood': t('foodCategory.seafood', { ns: 'common', defaultValue: 'Seafood' }),
+    'mixed-meat': t('foodCategory.mixedMeat', { ns: 'common', defaultValue: 'Mixed Meat' }),
   };
 
   if (meatLabels[category]) {
@@ -42,8 +43,14 @@ const getFoodCategoryDisplay = (category) => {
 };
 
 // Helper function to format difficulty
-const formatDifficulty = (difficulty) => {
-  if (!difficulty) return 'Medium';
+const formatDifficulty = (difficulty, t) => {
+  if (!difficulty) return t('difficulty.medium', { ns: 'common', defaultValue: 'Medium' });
+  const lowerDifficulty = difficulty.toLowerCase();
+
+  if (lowerDifficulty === 'easy') return t('difficulty.easy', { ns: 'common', defaultValue: 'Easy' });
+  if (lowerDifficulty === 'medium') return t('difficulty.medium', { ns: 'common', defaultValue: 'Medium' });
+  if (lowerDifficulty === 'hard') return t('difficulty.hard', { ns: 'common', defaultValue: 'Hard' });
+
   return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 };
 
@@ -73,6 +80,7 @@ const formatTime = (minutes) => {
 };
 
 export default function CollectionRecipesView() {
+  const { t } = useTranslation(['collection', 'common']);
   const { collectionId } = useParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [collection, setCollection] = useState(null);
@@ -109,13 +117,13 @@ export default function CollectionRecipesView() {
       console.error('Failed to fetch collection:', err);
 
       if (err.response?.status === 404) {
-        setError('Collection not found.');
+        setError(t('view.notFound', 'Collection not found.'));
       } else if (err.response?.status >= 500) {
-        setError('Server error. Please try again later.');
+        setError(t('view.serverError', 'Server error. Please try again later.'));
       } else if (!err.response) {
-        setError('Network error. Please check your connection.');
+        setError(t('view.networkError', 'Network error. Please check your connection.'));
       } else {
-        setError('Failed to load collection. Please try again.');
+        setError(t('view.loadFailed', 'Failed to load collection. Please try again.'));
       }
     } finally {
       setLoading(false);
@@ -164,7 +172,7 @@ export default function CollectionRecipesView() {
             className="flex items-center gap-2 text-[#035035] hover:underline mb-4"
           >
             <ArrowLeft className="w-5 h-5" />
-            <span>Zurück zur Bibliothek</span>
+            <span>{t('view.backToLibrary', 'Back to Library')}</span>
           </button>
 
           {collection && (
@@ -183,7 +191,7 @@ export default function CollectionRecipesView() {
                   <p className="text-base text-[#2D2D2D] opacity-60">{collection.description}</p>
                 )}
                 <p className="text-sm text-[#035035] font-semibold mt-2">
-                  {recipes.length} {recipes.length === 1 ? 'Rezept' : 'Rezepte'}
+                  {recipes.length} {recipes.length === 1 ? t('view.recipe', 'Recipe') : t('view.recipes', 'Recipes')}
                 </p>
               </div>
             </div>
@@ -205,9 +213,9 @@ export default function CollectionRecipesView() {
         {/* Empty State */}
         {!loading && !error && recipes.length === 0 && (
           <EmptyState
-            title="Keine Rezepte in dieser Sammlung"
-            message="Füge Rezepte zu dieser Sammlung hinzu, indem du sie im Rezept-Menü zur Sammlung hinzufügst."
-            actionLabel="Rezept generieren"
+            title={t('view.empty', 'No recipes in this collection')}
+            message={t('view.emptySubtitle', 'Add recipes to this collection by using the recipe menu to add them to a collection.')}
+            actionLabel={t('view.generateRecipe', 'Generate Recipe')}
             onAction={() => navigate('/app/generate', { state: { collectionId: parseInt(collectionId), collectionName: collection?.name } })}
           />
         )}
@@ -221,7 +229,7 @@ export default function CollectionRecipesView() {
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#2D2D2D] opacity-40" />
                 <input
                   type="text"
-                  placeholder="Rezepte durchsuchen..."
+                  placeholder={t('view.searchPlaceholder', 'Search recipes...')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 rounded-full border-2 border-[#F5F5F5] focus:border-[#035035] focus:outline-none transition-all text-base min-h-[44px]"
@@ -229,16 +237,16 @@ export default function CollectionRecipesView() {
               </div>
               <button className="bg-white border-2 border-[#035035] text-[#035035] px-6 py-3 rounded-full font-semibold hover:bg-[#035035] hover:text-white transition-all flex items-center justify-center gap-2 min-h-[44px] min-w-[120px]">
                 <Filter className="w-5 h-5" />
-                <span>Filter</span>
+                <span>{t('view.filter', 'Filter')}</span>
               </button>
             </div>
 
             {/* No Results Message */}
             {filteredRecipes.length === 0 && (
               <div className="text-center py-16">
-                <p className="text-xl text-[#2D2D2D] opacity-60 mb-2">Keine Ergebnisse gefunden</p>
+                <p className="text-xl text-[#2D2D2D] opacity-60 mb-2">{t('view.noResults', 'No results found')}</p>
                 <p className="text-sm text-[#2D2D2D] opacity-40">
-                  Versuche es mit anderen Suchbegriffen
+                  {t('view.noResultsSubtitle', 'Try different search terms')}
                 </p>
               </div>
             )}
@@ -279,7 +287,7 @@ export default function CollectionRecipesView() {
                       <div className="p-3">
                         <div className="flex items-center gap-1 mb-2 flex-wrap">
                           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${getDifficultyColorClasses(recipe.difficulty)}`}>
-                            {formatDifficulty(recipe.difficulty)}
+                            {formatDifficulty(recipe.difficulty, t)}
                           </span>
                         </div>
                         <h3 className="text-sm font-bold text-[#2D2D2D] mb-2 line-clamp-2">{recipe.name}</h3>
@@ -289,7 +297,7 @@ export default function CollectionRecipesView() {
                             <span className="whitespace-nowrap">{formatTime(recipe.total_time_minutes)}</span>
                           </div>
                           {(() => {
-                            const foodDisplay = getFoodCategoryDisplay(recipe.food_category);
+                            const foodDisplay = getFoodCategoryDisplay(recipe.food_category, t);
                             if (!foodDisplay) return null;
                             const FoodIcon = foodDisplay.icon;
                             return (

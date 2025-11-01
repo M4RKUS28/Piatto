@@ -1,0 +1,21 @@
+{
+  "title": "Kochanleitungen",
+  "subtitle": "Folge den Schritten entlang des Pfads, um dein Rezept zu vervollständigen.",
+  "generating": "Anleitungen werden erstellt...",
+  "generatingDescription": "Unser KI-Koch bereitet detaillierte Kochanleitungen für dein Rezept vor. Dies dauert normalerweise nur wenige Augenblicke.",
+  "errorTitle": "Hoppla! Etwas ist schief gelaufen",
+  "errorLoading": "Fehler beim Laden der Anleitungen. Bitte versuche es erneut.",
+  "timer": {
+    "running": "Läuft",
+    "paused": "Pausiert",
+    "start": "Start",
+    "pause": "Pause",
+    "reset": "Zurücksetzen",
+    "aria": {
+      "returnToStep": "Zurück zum Schritt",
+      "start": "Start",
+      "pause": "Pause",
+      "reset": "Zurücksetzen"
+    }
+  }
+}

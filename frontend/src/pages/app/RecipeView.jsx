@@ -3,9 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { PiX, PiCaretRight } from 'react-icons/pi';
 import Recipe from './Recipe';
 import CookingInstructions from "./Instructions";
+import { useTranslation } from 'react-i18next'
 
 // Main RecipeView component
 const RecipeView = () => {
+  const { t } = useTranslation('recipeView');
   const { recipeId } = useParams();
   const navigate = useNavigate();
   const [leftWidth, setLeftWidth] = useState(40);
@@ -75,7 +77,7 @@ const RecipeView = () => {
               className="text-white font-bold text-sm tracking-[0.35em]"
               style={{ writingMode: 'vertical-rl', textOrientation: 'upright' }}
             >
-              RECIPE
+              {t('recipeLabel', 'RECIPE')}
             </span>
             <PiCaretRight className="text-white text-2xl" />
           </div>

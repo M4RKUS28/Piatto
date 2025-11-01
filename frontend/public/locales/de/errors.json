@@ -1,0 +1,52 @@
+{
+  "generic": {
+    "title": "Hoppla! Etwas ist schiefgelaufen",
+    "tryAgain": "Erneut versuchen"
+  },
+  "emptyState": {
+    "defaultTitle": "Hier ist noch nichts",
+    "defaultMessage": "Beginne, indem du dein erstes Element erstellst."
+  },
+  "deleteRecipe": {
+    "title": "Rezept löschen",
+    "message": "Möchtest du das Rezept \"{name}\" wirklich löschen?",
+    "warning": "Diese Aktion kann nicht rückgängig gemacht werden. Das Rezept wird dauerhaft aus allen Sammlungen entfernt.",
+    "error": "Löschen fehlgeschlagen. Bitte versuche es erneut.",
+    "cancel": "Abbrechen",
+    "deleting": "Wird gelöscht...",
+    "delete": "Löschen"
+  },
+  "network": {
+    "serverError": "Serverfehler. Bitte versuche es später erneut.",
+    "networkError": "Netzwerkfehler. Bitte überprüfe deine Verbindung.",
+    "loadFailed": "Laden fehlgeschlagen. Bitte versuche es erneut."
+  },
+  "notFound": {
+    "code": "404",
+    "title": "Rezept nicht gefunden",
+    "subtitle": "Hoppla! Sieht so aus, als ob diese Seite von der Speisekarte verschwunden ist.",
+    "description": "Die Seite, die du suchst, existiert nicht oder wurde möglicherweise verschoben. Lass uns dich zurück zum Kochen köstlicher Mahlzeiten bringen!",
+    "goHome": "Zur Startseite",
+    "browseRecipes": "Rezepte durchsuchen",
+    "quickLinks": "Schnellzugriff:",
+    "dashboard": "Dashboard",
+    "about": "Über uns",
+    "contact": "Kontakt",
+    "privacy": "Datenschutzrichtlinie"
+  },
+  "profileSettings": {
+    "uploadFailed": "Hochladen des Bildes fehlgeschlagen. Bitte versuche es erneut.",
+    "noChanges": "Keine Änderungen zum Speichern",
+    "updateSuccess": "Profil erfolgreich aktualisiert!",
+    "updateFailed": "Aktualisierung des Profils fehlgeschlagen. Bitte versuche es erneut."
+  },
+  "wakeWord": {
+    "micPermissionDenied": "Mikrofon-Berechtigung verweigert. Bitte erlaube den Mikrofonzugriff und versuche es erneut.",
+    "noMicrophone": "Kein Mikrofon gefunden. Bitte schließe ein Mikrofon an und versuche es erneut.",
+    "onnxLoadFailed": "Laden von ONNX Runtime fehlgeschlagen. Dies könnte folgende Gründe haben: (1) Keine Internetverbindung zum Laden der WASM-Dateien vom CDN, oder (2) Browser-Einschränkungen. Versuche die Seite zu aktualisieren oder überprüfe deine Internetverbindung.",
+    "modelNotFound": "Wake-Word-Modell nicht gefunden! Du musst zuerst dein benutzerdefiniertes „Hey Piatto“-Modell trainieren. Sieh dir die Setup-Anweisungen unten an oder prüfe QUICK_START.md für die Trainingsschritte.",
+    "modelLoadFailed": "Laden des Wake-Word-Modells fehlgeschlagen. Stelle sicher, dass wakeword_model.onnx im public-Ordner liegt. Siehe CUSTOM_WAKE_WORD_TRAINING.md für die Einrichtung.",
+    "wasmFailed": "Laden von WebAssembly fehlgeschlagen. Bitte aktualisiere die Seite. Wenn das Problem weiterhin besteht, überprüfe deine Internetverbindung (WASM-Dateien werden vom CDN geladen).",
+    "startFailed": "Start fehlgeschlagen: {{message}}. Siehe Browser-Konsole für Details."
+  }
+}

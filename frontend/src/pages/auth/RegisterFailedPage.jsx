@@ -1,9 +1,11 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { AlertCircle, Home, ArrowLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next'
 
 export default function RegisterFailedPage() {
+  const { t } = useTranslation('auth');
   const [searchParams] = useSearchParams();
-  const reason = searchParams.get('reason') || 'An unknown error occurred during registration';
+  const reason = searchParams.get('reason') || t('registerFailed.defaultReason', 'An unknown error occurred during registration');
 
   return (
     <div className="bg-gradient-to-br from-[#FFF8F0] via-white to-[#F5F5F5] flex items-center justify-center px-6 py-12 relative overflow-hidden">
@@ -18,13 +20,13 @@ export default function RegisterFailedPage() {
             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="w-12 h-12 text-red-600" />
             </div>
-            <h1 className="text-3xl font-bold text-[#035035] mb-3">Registration Failed</h1>
-            <p className="text-[#2D2D2D] text-lg">We couldn't create your account</p>
+            <h1 className="text-3xl font-bold text-[#035035] mb-3">{t('registerFailed.title', 'Registration Failed')}</h1>
+            <p className="text-[#2D2D2D] text-lg">{t('registerFailed.subtitle', "We couldn't create your account")}</p>
           </div>
 
           {/* Error Details */}
           <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
-            <p className="text-sm font-medium text-red-800 mb-1">Error Details:</p>
+            <p className="text-sm font-medium text-red-800 mb-1">{t('registerFailed.errorDetails', 'Error Details:')}</p>
             <p className="text-sm text-red-600">{reason}</p>
           </div>
 
@@ -35,45 +37,45 @@ export default function RegisterFailedPage() {
               className="w-full bg-[#035035] text-white py-3 rounded-full font-semibold text-lg hover:scale-105 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
             >
               <ArrowLeft className="w-5 h-5" />
-              Try Again
+              {t('registerFailed.tryAgain', 'Try Again')}
             </Link>
-            
+
             <Link
               to="/"
               className="w-full bg-white border-2 border-[#F5F5F5] text-[#2D2D2D] py-3 rounded-full font-semibold text-lg hover:border-[#035035] hover:scale-105 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
             >
               <Home className="w-5 h-5" />
-              Go Home
+              {t('registerFailed.goHome', 'Go Home')}
             </Link>
           </div>
 
           {/* Help Section */}
           <div className="mt-8 pt-6 border-t border-[#F5F5F5] text-center">
-            <p className="text-sm text-[#2D2D2D] mb-3">Common issues:</p>
+            <p className="text-sm text-[#2D2D2D] mb-3">{t('registerFailed.commonIssues', 'Common issues:')}</p>
             <ul className="text-sm text-[#2D2D2D] space-y-2 text-left">
               <li className="flex items-start gap-2">
                 <span className="text-[#FF9B7B] mt-1">•</span>
-                <span>Email address may already be registered</span>
+                <span>{t('registerFailed.issue1', 'Email address may already be registered')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#FF9B7B] mt-1">•</span>
-                <span>Password must meet security requirements</span>
+                <span>{t('registerFailed.issue2', 'Password must meet security requirements')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#FF9B7B] mt-1">•</span>
-                <span>Username may already be taken</span>
+                <span>{t('registerFailed.issue3', 'Username may already be taken')}</span>
               </li>
             </ul>
             <p className="text-sm text-[#2D2D2D] mt-4">
-              Already have an account?{' '}
+              {t('registerFailed.hasAccount', 'Already have an account?')}{' '}
               <Link to="/login" className="text-[#FF9B7B] hover:text-[#035035] font-semibold">
-                Sign In
+                {t('registerFailed.signIn', 'Sign In')}
               </Link>
             </p>
             <p className="text-sm text-[#2D2D2D] mt-2">
-              Need help?{' '}
+              {t('registerFailed.needHelp', 'Need help?')}{' '}
               <Link to="/contact" className="text-[#FF9B7B] hover:text-[#035035] font-semibold">
-                Contact Support
+                {t('registerFailed.contactSupport', 'Contact Support')}
               </Link>
             </p>
           </div>

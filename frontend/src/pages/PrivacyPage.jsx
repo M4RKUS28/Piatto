@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Shield, Lock, Database, Globe, Mail, FileText } from 'lucide-react';
+import { useTranslation } from 'react-i18next'
 
 export default function PrivacyPage() {
   const lastUpdated = 'October 17, 2025';

@@ -1,19 +1,40 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Mail, Lock, AlertCircle, Sparkles } from 'lucide-react';
+import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranslation } from 'react-i18next'
+import useMediaQuery from '../../hooks/useMediaQuery';
 
 export default function LoginPage() {
+  const { t } = useTranslation('auth')
   const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+  const isMobile = useMediaQuery('(max-width: 768px)');
+
   const from = location.state?.from?.pathname || '/app';
+
+  const containerPadding = isMobile ? 'px-4 py-10' : 'px-6 py-12';
+  const headingSize = isMobile ? 'text-2xl' : 'text-3xl';
+  const subheadingSize = isMobile ? 'text-sm' : 'text-base';
+  const cardPadding = isMobile ? 'p-6' : 'p-8';
+  const labelSize = isMobile ? 'text-xs' : 'text-sm';
+  const iconClass = isMobile
+    ? 'absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#A8C9B8]'
+    : 'absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#A8C9B8]';
+  const inputPadding = isMobile
+    ? 'pl-10 pr-3 py-2.5 text-sm placeholder:text-sm'
+    : 'pl-12 pr-4 py-3 text-base placeholder:text-base';
+  const helperTextSize = isMobile ? 'text-xs' : 'text-sm';
+  const buttonPadding = isMobile ? 'py-2.5' : 'py-3';
+  const buttonTextSize = isMobile ? 'text-base' : 'text-lg';
+  const googleGap = isMobile ? 'gap-2' : 'gap-3';
+  const googleIconSize = isMobile ? 'w-4 h-4' : 'w-5 h-5';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +42,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     if (!emailOrUsername || !password) {
-      setError('Please fill in all fields');
+      setError(t('login.errors.fillAllFields', 'Please fill in all fields'));
       setIsLoading(false);
       return;
     }
@@ -42,20 +63,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-[#FFF8F0] via-white to-[#F5F5F5] flex items-center justify-center px-6 py-12 relative overflow-hidden">
+    <div className={`bg-gradient-to-br from-[#FFF8F0] via-white to-[#F5F5F5] flex items-center justify-center ${containerPadding} relative overflow-hidden`}
+    >
       {/* Decorative background elements */}
-      <div className="absolute top-20 right-20 w-64 h-64 rounded-full bg-[#A8C9B8] opacity-10 blur-3xl"></div>
-      <div className="absolute bottom-40 left-10 w-80 h-80 rounded-full bg-[#FF9B7B] opacity-10 blur-3xl"></div>
+      <div className={`${isMobile ? 'hidden' : 'absolute top-20 right-20 w-64 h-64 rounded-full bg-[#A8C9B8] opacity-10 blur-3xl'}`}></div>
+      <div className={`${isMobile ? 'hidden' : 'absolute bottom-40 left-10 w-80 h-80 rounded-full bg-[#FF9B7B] opacity-10 blur-3xl'}`}></div>
 
       <div className="w-full max-w-md relative z-10 mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-[#035035] mb-2">Welcome Back!</h1>
-          <p className="text-[#2D2D2D]">Sign in to continue your culinary journey</p>
+          <h1 className={`${headingSize} font-bold text-[#035035] mb-2`}>{t('login.title', 'Welcome Back!')}</h1>
+          <p className={`text-[#2D2D2D] ${subheadingSize}`}>{t('login.subtitle', 'Sign in to continue your culinary journey')}</p>
         </div>
 
         {/* Login Form Card */}
-        <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#F5F5F5]">
+        <div className={`bg-white rounded-3xl shadow-xl border border-[#F5F5F5] ${cardPadding}`}>
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Error Message */}
             {error && (
@@ -80,18 +102,18 @@ export default function LoginPage() {
 
             {/* Email or Username Input */}
             <div>
-              <label htmlFor="emailOrUsername" className="block text-sm font-semibold text-[#035035] mb-2">
-                Email or Username
+              <label htmlFor="emailOrUsername" className={`block font-semibold text-[#035035] mb-2 ${labelSize}`}>
+                {t('login.emailOrUsername', 'Email or Username')}
               </label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#A8C9B8]" />
+                <Mail className={iconClass} />
                 <input
                   id="emailOrUsername"
                   type="text"
                   value={emailOrUsername}
                   onChange={(e) => setEmailOrUsername(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 border-2 border-[#F5F5F5] rounded-2xl focus:outline-none focus:border-[#035035] transition-colors text-[#2D2D2D]"
-                  placeholder="your@email.com or username"
+                  className={`w-full border-2 border-[#F5F5F5] rounded-2xl focus:outline-none focus:border-[#035035] transition-colors text-[#2D2D2D] ${inputPadding}`}
+                  placeholder={t('login.emailOrUsernamePlaceholder', 'your@email.com or username')}
                   disabled={isLoading}
                   autoComplete="username"
                 />
@@ -100,30 +122,30 @@ export default function LoginPage() {
 
             {/* Password Input */}
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-[#035035] mb-2">
-                Password
+              <label htmlFor="password" className={`block font-semibold text-[#035035] mb-2 ${labelSize}`}>
+                {t('login.password', 'Password')}
               </label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#A8C9B8]" />
+                <Lock className={iconClass} />
                 <input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 border-2 border-[#F5F5F5] rounded-2xl focus:outline-none focus:border-[#035035] transition-colors text-[#2D2D2D]"
-                  placeholder="Enter your password"
+                  className={`w-full border-2 border-[#F5F5F5] rounded-2xl focus:outline-none focus:border-[#035035] transition-colors text-[#2D2D2D] ${inputPadding}`}
+                  placeholder={t('login.passwordPlaceholder', 'Enter your password')}
                   disabled={isLoading}
                 />
               </div>
             </div>
 
             {/* Forgot Password Link */}
-            <div className="text-right">
+            <div className={`text-right ${helperTextSize}`}>
               <Link
                 to="/forgot-password"
                 className="text-sm text-[#FF9B7B] hover:text-[#035035] transition-colors font-medium"
               >
-                Forgot Password?
+                {t('login.forgotPassword', 'Forgot Password?')}
               </Link>
             </div>
 
@@ -131,15 +153,15 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#035035] text-white py-3 rounded-full font-semibold text-lg hover:scale-105 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className={`w-full bg-[#035035] text-white rounded-full font-semibold hover:scale-105 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 ${buttonPadding} ${buttonTextSize}`}
             >
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Signing in...
+                  {t('login.signingIn', 'Signing in...')}
                 </span>
               ) : (
-                'Sign In'
+                t('login.signIn', 'Sign In')
               )}
             </button>
           </form>
@@ -149,8 +171,8 @@ export default function LoginPage() {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-[#F5F5F5]"></div>
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-[#2D2D2D]">Or continue with</span>
+            <div className={`relative flex justify-center ${helperTextSize}`}>
+              <span className="px-4 bg-white text-[#2D2D2D]">{t('login.orContinueWith', 'Or continue with')}</span>
             </div>
           </div>
 
@@ -159,9 +181,9 @@ export default function LoginPage() {
             type="button"
             onClick={handleGoogleLogin}
             disabled={isLoading}
-            className="w-full bg-white border-2 border-[#F5F5F5] text-[#2D2D2D] py-3 rounded-full font-semibold text-lg hover:border-[#035035] hover:scale-105 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
+            className={`w-full bg-white border-2 border-[#F5F5F5] text-[#2D2D2D] rounded-full font-semibold hover:border-[#035035] hover:scale-105 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center ${googleGap} ${buttonPadding} ${buttonTextSize}`}
           >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <svg className={googleIconSize} viewBox="0 0 24 24">
               <path
                 fill="#4285F4"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -179,15 +201,15 @@ export default function LoginPage() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            Continue with Google
+            {t('login.continueWithGoogle', 'Continue with Google')}
           </button>
 
           {/* Sign Up Link */}
           <div className="mt-8 text-center">
-            <p className="text-[#2D2D2D]">
-              Don't have an account?{' '}
+            <p className={`text-[#2D2D2D] ${helperTextSize}`}>
+              {t('login.noAccount', "Don't have an account?")}{' '}
               <Link to="/register" className="text-[#FF9B7B] hover:text-[#035035] transition-colors font-semibold">
-                Sign Up
+                {t('login.signUp', 'Sign Up')}
               </Link>
             </p>
           </div>

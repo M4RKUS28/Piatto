@@ -1,0 +1,12 @@
+{
+  "welcome": "Welcome back",
+  "subtitle": "Let's cook something delicious today",
+  "chef": "Chef",
+  "stats": {
+    "recipesSaved": "Recipes Saved",
+    "cookedThisWeek": "Cooked This Week",
+    "avgCookTime": "Avg Cook Time",
+    "streakDays": "Streak Days"
+  },
+  "recentRecipes": "Recent Recipes"
+}

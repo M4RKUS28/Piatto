@@ -1,0 +1,28 @@
+{
+  "title": "Profileinstellungen",
+  "subtitle": "Verwalte deine Kontoinformationen",
+  "username": "Benutzername",
+  "email": "E-Mail",
+  "avatarHint": "Klicke auf dein Avatar, um ein neues Profilbild hochzuladen.",
+  "uploading": "Wird hochgeladen...",
+  "imageUploaded": "Bild hochgeladen. Klicke auf \"Änderungen speichern\", um es auf dein Profil anzuwenden.",
+  "noChanges": "Keine Änderungen zum Speichern",
+  "updateSuccess": "Profil erfolgreich aktualisiert!",
+  "updateFailed": "Aktualisierung des Profils fehlgeschlagen. Bitte versuche es erneut.",
+  "uploadFailed": "Hochladen des Bildes fehlgeschlagen. Bitte versuche es erneut.",
+  "saveChanges": "Änderungen speichern",
+  "saving": "Wird gespeichert...",
+  "uploadingImage": "Bild wird hochgeladen...",
+  "language": {
+    "title": "Sprache",
+    "subtitle": "Wähle deine bevorzugte Sprache"
+  },
+  "accountInfo": {
+    "title": "Kontoinformationen",
+    "created": "Konto erstellt",
+    "lastLogin": "Letzte Anmeldung",
+    "streak": "Anmeldeserie",
+    "days": "Tage"
+  },
+  "loading": "Wird geladen..."
+}

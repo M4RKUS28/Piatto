@@ -1,5 +1,6 @@
 import './RecipePreviewCard.css';
 import { getImageUrl } from '../utils/imageUtils';
+import { useTranslation } from 'react-i18next';
 
 /**
  * RecipePreviewCard component displays a preview of a recipe option
@@ -10,6 +11,7 @@ import { getImageUrl } from '../utils/imageUtils';
  * @param {Function} props.onClick - Callback function when card is clicked
  */
 const RecipePreviewCard = ({ recipe, onClick }) => {
+        const { t } = useTranslation('recipe');
         const handleClick = () => {
                 if (onClick) {
                         onClick(recipe.id);
@@ -31,11 +33,18 @@ const RecipePreviewCard = ({ recipe, onClick }) => {
                         onKeyDown={handleKeyDown}
                         role="button"
                         tabIndex={0}
-                        aria-label={`Select recipe: ${recipe.title}. ${recipe.description}`}
+                        aria-label={t('preview.ariaLabel', {
+                                title: recipe.title,
+                                description: recipe.description,
+                                defaultValue: `Select recipe: ${recipe.title}. ${recipe.description ?? ''}`,
+                        })}
                 >
                         <img
                                 src={getImageUrl(recipe.image_url)}
-                                alt={`${recipe.title} - Recipe preview image`}
+                                alt={t('preview.imageAlt', {
+                                        title: recipe.title,
+                                        defaultValue: `${recipe.title} - Recipe preview image`,
+                                })}
                                 className="recipe-preview-card__image"
                                 loading="lazy"
                         />

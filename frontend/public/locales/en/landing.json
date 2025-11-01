@@ -1,0 +1,63 @@
+{
+  "hero": {
+    "badge": "AI-Powered Cooking Assistant",
+    "title": "Your Personal Chef, Right in Your Pocket",
+    "description": "Discover personalized recipes, get step-by-step cooking guidance, and turn your kitchen into a culinary playground with AI-powered creativity.",
+    "aiRecipeGenerator": "AI Recipe Generator",
+    "aiRecipeGeneratorDesc": "Custom recipes for your taste",
+    "interactiveGuide": "Interactive Guide",
+    "interactiveGuideDesc": "Step-by-step instructions"
+  },
+  "mockup": {
+    "discover": "Discover",
+    "whatToCook": "What would you like to cook today?",
+    "startCooking": "Start Cooking →"
+  },
+  "exampleRecipes": {
+    "mediterraneanBowl": {
+      "name": "Mediterranean Sunset Bowl",
+      "description": "Fresh quinoa with roasted vegetables, feta, and lemon herb dressing"
+    },
+    "tuscanChicken": {
+      "name": "Creamy Tuscan Chicken",
+      "description": "Pan-seared chicken in sun-dried tomato cream sauce with spinach"
+    },
+    "smoothieBowl": {
+      "name": "Berry Bliss Smoothie Bowl",
+      "description": "Antioxidant-rich blend topped with granola, fresh berries & coconut"
+    }
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "subtitle": "From idea to delicious meal in three simple steps",
+    "step1": {
+      "title": "Share Your Preferences",
+      "description": "Tell us what you're craving, dietary restrictions, available ingredients, or cooking time. Our AI understands your needs."
+    },
+    "step2": {
+      "title": "Get Personalized Recipes",
+      "description": "Receive custom recipes tailored to your taste, skill level, and kitchen setup. Save favorites to your personal collection."
+    },
+    "step3": {
+      "title": "Cook with Confidence",
+      "description": "Follow interactive step-by-step guidance with tips, timers, and voice assistance. Create amazing dishes every time."
+    }
+  },
+  "features": {
+    "title": "Cooking Made Simple & Fun",
+    "subtitle": "From inspiration to the final dish, we guide you every step of the way",
+    "aiBrainstorming": {
+      "title": "AI Recipe Brainstorming",
+      "description": "Tell us your preferences, dietary needs, or what's in your fridge. Our AI creates personalized recipes just for you, tailored to your taste and skill level."
+    },
+    "cookingGuide": {
+      "title": "Interactive Cooking Guide",
+      "description": "Follow along with step-by-step instructions, helpful tips, and voice assistance. Cook with confidence, no matter your experience level."
+    }
+  },
+  "cta": {
+    "title": "Ready to Transform Your Cooking?",
+    "subtitle": "Join thousands of home chefs discovering the joy of personalized, guided cooking",
+    "button": "Download Piatto Free"
+  }
+}

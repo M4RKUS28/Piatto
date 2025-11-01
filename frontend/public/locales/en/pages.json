@@ -1,0 +1,308 @@
+{
+  "about": {
+    "title": "Our Story",
+    "heading": "About Piatto",
+    "intro": "Your AI-powered culinary companion, born from a passion for making cooking accessible, enjoyable, and personalized for everyone.",
+    "mission": {
+      "title": "Our Mission",
+      "paragraph1": "At Piatto, we believe cooking should be a delightful experience, not a daily chore. Our mission is to empower home cooks of all skill levels with AI-powered guidance, personalized recipe suggestions, and an intuitive platform that makes meal planning effortless.",
+      "paragraph2": "Whether you're a seasoned chef or just starting your culinary journey, Piatto adapts to your preferences, dietary needs, and available ingredients to help you create delicious meals every day."
+    },
+    "hackathon": {
+      "title": "Google Cloud Run Hackathon",
+      "description": "Piatto is proudly part of the Google Cloud Run Hackathon on Devpost",
+      "viewDevpost": "View on Devpost"
+    },
+    "team": {
+      "title": "Meet the Team",
+      "subtitle": "The passionate creators behind Piatto",
+      "members": {
+        "markus": {
+          "name": "Markus Huber",
+          "role": "Full-Stack Developer",
+          "bio": "Passionate about creating seamless user experiences and robust backend systems."
+        },
+        "paul": {
+          "name": "Paul Vorderbruegge",
+          "role": "AI/ML Engineer",
+          "bio": "Specializing in AI-powered solutions and machine learning integration."
+        },
+        "luca": {
+          "name": "Luca Bozzetti",
+          "role": "Frontend Developer & UX Designer",
+          "bio": "Crafting beautiful, intuitive interfaces that users love."
+        },
+        "sebastian": {
+          "name": "Sebastian Rogg",
+          "role": "Frontend and Data Analytics",
+          "bio": "Building responsive interfaces and analyzing data to drive insights."
+        }
+      },
+      "linkedin": "LinkedIn"
+    },
+    "technology": {
+      "title": "Built with Modern Technology",
+      "subtitle": "Leveraging cutting-edge tools and platforms",
+      "frontend": {
+        "title": "Frontend",
+        "items": ["React & Vite", "TailwindCSS", "React Router"]
+      },
+      "backend": {
+        "title": "Backend & Infrastructure",
+        "items": ["Python & FastAPI", "Google Cloud Run", "OpenAI API"]
+      }
+    },
+    "cta": {
+      "title": "Join Our Culinary Community",
+      "subtitle": "Start your journey with Piatto today and discover the joy of AI-powered cooking",
+      "button": "Get Started Free"
+    },
+    "contactUs": "Contact Us",
+    "backToHome": "← Back to Home"
+  },
+  "contact": {
+    "title": "Get in Touch",
+    "heading": "Contact Us",
+    "intro": "Have a question, feedback, or just want to say hello? We'd love to hear from you!",
+    "form": {
+      "title": "Send us a Message",
+      "successTitle": "Message Sent!",
+      "successMessage": "We'll get back to you as soon as possible.",
+      "errorTitle": "Error",
+      "errorMessage": "Failed to send message. Please try again.",
+      "name": {
+        "label": "Your Name",
+        "placeholder": "John Doe"
+      },
+      "email": {
+        "label": "Email Address",
+        "placeholder": "john@example.com"
+      },
+      "subject": {
+        "label": "Subject",
+        "placeholder": "How can we help?"
+      },
+      "message": {
+        "label": "Message",
+        "placeholder": "Tell us more about your inquiry..."
+      },
+      "sending": "Sending...",
+      "submit": "Send Message"
+    },
+    "directContact": {
+      "title": "Direct Contact",
+      "subtitle": "Prefer to reach out directly? Contact our team members:",
+      "members": {
+        "markus": "Markus Huber",
+        "paul": "Paul Vorderbruegge",
+        "luca": "Luca Bozzetti"
+      }
+    },
+    "generalInquiries": {
+      "title": "General Inquiries",
+      "subtitle": "For general questions and support:"
+    },
+    "supportHours": {
+      "title": "Support Hours",
+      "subtitle": "We typically respond within 24-48 hours during business days.",
+      "weekdays": "Monday - Friday: 9:00 AM - 6:00 PM (EST)",
+      "weekend": "Weekend: Limited support"
+    },
+    "faq": {
+      "title": "Looking for Quick Answers?",
+      "link": "Check out our frequently asked questions"
+    },
+    "learnMore": "Learn More About Us",
+    "backToHome": "← Back to Home"
+  },
+  "privacy": {
+    "title": "Privacy & Security",
+    "heading": "Privacy Policy",
+    "lastUpdated": "Last updated: {date}",
+    "intro": {
+      "paragraph1": "At Piatto, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our AI-powered cooking assistant application. Please read this privacy policy carefully.",
+      "paragraph2": "By using Piatto, you agree to the collection and use of information in accordance with this policy. If you do not agree with our policies and practices, please do not use our services."
+    },
+    "sections": {
+      "informationCollection": {
+        "title": "Information We Collect",
+        "personal": {
+          "title": "Personal Information",
+          "intro": "When you register for an account, we collect:",
+          "items": ["Email address", "Username", "Profile information (optional)", "Authentication credentials (encrypted)"]
+        },
+        "usage": {
+          "title": "Usage Data",
+          "intro": "We collect information about how you interact with our service:",
+          "items": ["Recipe searches and cooking requests you make", "Images you upload for recipe analysis", "Saved recipes and preferences", "Device information and browser type"]
+        }
+      },
+      "howWeUse": {
+        "title": "How We Use Your Information",
+        "intro": "We use the collected information for the following purposes:",
+        "items": {
+          "serviceDelivery": "Service Delivery: To provide, maintain, and improve our AI-powered recipe suggestions and cooking assistance",
+          "personalization": "Personalization: To customize your experience and provide tailored recipe recommendations",
+          "communication": "Communication: To send you updates, security alerts, and support messages",
+          "analytics": "Analytics: To understand how users interact with our service and improve functionality",
+          "security": "Security: To detect, prevent, and address technical issues and fraudulent activity"
+        },
+        "important": "Important: We only process your data for the purposes necessary to provide our services. Your uploaded images and recipe requests are used solely for generating personalized cooking recommendations and are not shared with third parties for marketing purposes."
+      },
+      "dataSecurity": {
+        "title": "Data Storage and Security",
+        "serverLocation": {
+          "title": "Server Location",
+          "content": "Our servers and data infrastructure are located in the United States. By using Piatto, you consent to the transfer and processing of your data in the United States, regardless of your location."
+        },
+        "measures": {
+          "title": "Security Measures",
+          "intro": "We implement industry-standard security measures to protect your data:",
+          "items": ["Encryption of data in transit (HTTPS/TLS)", "Secure password hashing and authentication", "Regular security audits and updates", "Access controls and monitoring"]
+        },
+        "retention": {
+          "title": "Data Retention",
+          "content": "We retain your personal information only as long as necessary to provide our services and comply with legal obligations. You can request deletion of your account and associated data at any time by contacting us."
+        }
+      },
+      "international": {
+        "title": "International Users",
+        "content": "Piatto is accessible globally, including in Europe and Asia. If you are accessing our services from outside the United States, please be aware that your information will be transferred to, stored, and processed in the United States where our servers are located.",
+        "gdpr": {
+          "title": "GDPR Compliance (EU Users)",
+          "intro": "For users in the European Union, you have the following rights under GDPR:",
+          "items": ["Right to access: Request a copy of your personal data", "Right to rectification: Correct inaccurate personal data", "Right to erasure: Request deletion of your personal data", "Right to data portability: Receive your data in a structured format", "Right to object: Object to processing of your personal data"]
+        }
+      },
+      "cookies": {
+        "title": "Cookies and Tracking",
+        "intro": "We use cookies and similar tracking technologies to maintain your session and improve user experience:",
+        "items": ["Essential cookies: Required for authentication and core functionality", "Analytics cookies: Help us understand how you use our service"]
+      },
+      "thirdParty": {
+        "title": "Third-Party Services",
+        "intro": "We use the following third-party services:",
+        "items": ["Google OAuth: For authentication (subject to Google's Privacy Policy)", "OpenAI API: For AI-powered recipe generation (data processed according to OpenAI's policies)", "Cloud Storage: For storing uploaded images and user data"]
+      },
+      "children": {
+        "title": "Children's Privacy",
+        "content": "Our service is not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If you believe we have collected information from a child under 13, please contact us immediately."
+      },
+      "changes": {
+        "title": "Changes to This Privacy Policy",
+        "content": "We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the \"Last updated\" date. You are advised to review this Privacy Policy periodically for any changes."
+      },
+      "contactUs": {
+        "title": "Contact Us",
+        "content": "If you have any questions about this Privacy Policy or wish to exercise your data rights, please contact us:",
+        "button": "Contact Support"
+      }
+    },
+    "backToHome": "← Back to Home"
+  },
+  "profileSettings": {
+    "title": "Profile Settings",
+    "subtitle": "Manage your account information",
+    "username": "Username",
+    "email": "Email",
+    "avatarHint": "Click your avatar to upload a new profile image.",
+    "uploading": "Uploading...",
+    "imageUploaded": "Image uploaded. Click \"Save Changes\" to apply it to your profile.",
+    "noChanges": "No changes to save",
+    "updateSuccess": "Profile updated successfully!",
+    "updateFailed": "Failed to update profile. Please try again.",
+    "uploadFailed": "Failed to upload image. Please try again.",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "uploadingImage": "Uploading image...",
+    "language": {
+      "title": "Language",
+      "subtitle": "Choose your preferred language"
+    },
+    "accountInfo": {
+      "title": "Account Information",
+      "created": "Account Created",
+      "lastLogin": "Last Login",
+      "streak": "Login Streak",
+      "days": "days"
+    },
+    "loading": "Loading..."
+  },
+  "recipeView": {
+    "recipeLabel": "RECIPE"
+  },
+  "recipe": {
+    "totalTime": "Total Time",
+    "difficultyLabel": "Difficulty",
+    "editCollection": "Edit Collection",
+    "deleteRecipe": "Delete Recipe",
+    "deleteConfirm": "Are you sure you want to delete this recipe?",
+    "deleteFailed": "Failed to delete recipe",
+    "forServings": "For {{count}} serving",
+    "forServings_plural": "For {{count}} servings",
+    "tabs": {
+      "ingredients": "Ingredients",
+      "nutrition": "Nutrition"
+    },
+    "nutrition": {
+      "title": "Nutrition Facts",
+      "servingsPerRecipe": "{{count}} servings per recipe",
+      "servingSize": "Serving size is calculated from the recipe",
+      "amountPerServing": "Amount per serving",
+      "dailyValue": "% Daily Value*",
+      "totalFat": "Total Fat",
+      "saturatedFat": "Saturated Fat",
+      "trans": "Trans",
+      "fat": "Fat",
+      "cholesterol": "Cholesterol",
+      "sodium": "Sodium",
+      "totalCarbohydrate": "Total Carbohydrate",
+      "dietaryFiber": "Dietary Fiber",
+      "totalSugars": "Total Sugars",
+      "protein": "Protein",
+      "vitaminD": "Vitamin D",
+      "calcium": "Calcium",
+      "iron": "Iron",
+      "potassium": "Potassium",
+      "disclaimer": "* The % Daily Value (DV) tells you how much a nutrient in a serving of food contributes to a daily diet. 2,000 calories a day is used for general nutrition advice."
+    },
+    "errors": {
+      "noId": "No recipe ID provided",
+      "notFound": "Recipe not found. It may have been deleted.",
+      "serverError": "Server error. Please try again later.",
+      "networkError": "Network error. Please check your connection.",
+      "loadFailed": "Failed to load recipe. Please try again.",
+      "dataNotAvailable": "Recipe data not available"
+    }
+  },
+  "instructions": {
+    "title": "Cooking Instructions",
+    "subtitle": "Follow the steps along the path to complete your recipe.",
+    "generating": "Generating Instructions...",
+    "generatingDescription": "Our AI chef is preparing detailed cooking instructions for your recipe. This usually takes just a few moments.",
+    "errorTitle": "Oops! Something went wrong",
+    "errorLoading": "Failed to load instructions. Please try again."
+  },
+  "editCollectionsModal": {
+    "title": "Edit Collection",
+    "searchPlaceholder": "Search collections...",
+    "createNew": "Create New Collection",
+    "newCollection": "New Collection",
+    "namePlaceholder": "Name",
+    "descriptionPlaceholder": "Description (optional)",
+    "cancel": "Cancel",
+    "create": "Create",
+    "creating": "Creating...",
+    "noCollectionsFound": "No collections found",
+    "noCollections": "No collections yet",
+    "save": "Save",
+    "saving": "Saving...",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "deleteConfirm": "Are you sure you want to delete this recipe?",
+    "errorLoading": "Failed to load collections",
+    "errorSaving": "Failed to save. Please try again.",
+    "errorDeleting": "Failed to delete. Please try again.",
+    "errorCreating": "Failed to create collection"
+  }
+}

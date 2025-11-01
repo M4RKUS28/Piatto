@@ -1,0 +1,105 @@
+{
+  "appName": "Piatto",
+  "navigation": {
+    "features": "Features",
+    "howItWorks": "How It Works",
+    "recipes": "Recipes",
+    "about": "About",
+    "dashboard": "Dashboard",
+    "signIn": "Sign In",
+    "getStartedFree": "Get Started Free"
+  },
+  "footer": {
+    "tagline": "Your AI-powered cooking companion for delicious everyday meals",
+    "product": "Product",
+    "company": "Company",
+    "connect": "Connect",
+    "aboutUs": "About Us",
+    "contact": "Contact",
+    "privacyPolicy": "Privacy Policy",
+    "copyright": "© 2025 Piatto. Cooking made delightful, one recipe at a time."
+  },
+  "buttons": {
+    "startCooking": "Start Cooking",
+    "exploreRecipes": "Explore Recipes",
+    "generateRecipe": "Generate Recipe",
+    "findNewRecipes": "Find New Recipes",
+    "profileSettings": "Profile Settings",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish"
+  },
+  "time": {
+    "na": "N/A",
+    "min": "Min.",
+    "minutes": "minutes",
+    "hours": "hours",
+    "h": "h"
+  },
+  "difficulty": {
+    "na": "N/A",
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "foodCategory": {
+    "na": "N/A",
+    "vegan": "Vegan",
+    "veganSub": "Plant-based",
+    "vegetarian": "Vegetarian",
+    "vegetarianSub": "Contains dairy/eggs",
+    "beef": "Beef",
+    "beefSub": "Beef-based",
+    "pork": "Pork",
+    "porkSub": "Pork-based",
+    "chicken": "Chicken",
+    "chickenSub": "Poultry",
+    "lamb": "Lamb",
+    "lambSub": "Lamb-based",
+    "fish": "Fish",
+    "fishSub": "Fish-based",
+    "seafood": "Seafood",
+    "seafoodSub": "Seafood-based",
+    "mixedMeat": "Mixed Meat",
+    "mixedMeatSub": "Multiple meats"
+  },
+  "language": {
+    "label": "Language",
+    "english": "English",
+    "german": "German"
+  },
+  "wakeWord": {
+    "messages": {
+      "unknownError": "Unknown error"
+    },
+    "headerTitle": "Custom Wake Word Detection",
+    "headerSubtitle": "Listening for: \"{{phrase}}\"",
+    "statusListening": "Listening",
+    "controls": {
+      "start": "\u25b6 Start Listening",
+      "stop": "\u23f9 Stop Listening"
+    },
+    "feedback": {
+      "detected": "\"{{phrase}}\" detected!",
+      "confidence": "Confidence: {{value}}%",
+      "total": "Total: {{count}}"
+    },
+    "setup": {
+      "title": "First time setup required:",
+      "step1": "Train your custom \"{{phrase}}\" model (see CUSTOM_WAKE_WORD_TRAINING.md)",
+      "step2": "Place <code>{{file}}</code> in <code>{{folder}}</code>",
+      "step3": "Click \"Start Listening\" to begin detection"
+    },
+    "debug": {
+      "description": "\ud83d\udca1 Using custom-trained ONNX model for \"{{phrase}}\" detection.",
+      "currentConfidence": "Current confidence: {{value}}%",
+      "logs": "Check browser console for detailed detection logs."
+    }
+  }
+}

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import useHeyPiattoDetection from '../hooks/useHeyPiattoDetection';
+import { Trans, useTranslation } from 'react-i18next';
 
 /**
  * Visual component for Custom "Hey Piatto" Wake Word Detection
  * Uses trained ONNX model with @p0llen/wakeword-react
  */
 const WakeWordDetection = () => {
+  const { t } = useTranslation(['common', 'errors']);
   const {
     detected,
     confidence,
@@ -41,19 +43,55 @@ const WakeWordDetection = () => {
 
       // Check for specific error types
       if (err.name === 'NotAllowedError') {
-        setError('Microphone permission denied. Please allow microphone access and try again.');
+        setError(
+          t('errors:wakeWord.micPermissionDenied', {
+            defaultValue: 'Microphone permission denied. Please allow microphone access and try again.',
+          }),
+        );
       } else if (err.name === 'NotFoundError') {
-        setError('No microphone found. Please connect a microphone and try again.');
+        setError(
+          t('errors:wakeWord.noMicrophone', {
+            defaultValue: 'No microphone found. Please connect a microphone and try again.',
+          }),
+        );
       } else if (err.message?.includes('no available backend') || err.message?.includes('initWasm() failed')) {
-        setError('Failed to load ONNX Runtime. This might be due to: (1) No internet connection to load WASM files from CDN, or (2) Browser restrictions. Try refreshing the page or check your internet connection.');
+        setError(
+          t('errors:wakeWord.onnxLoadFailed', {
+            defaultValue:
+              'Failed to load ONNX Runtime. This might be due to: (1) No internet connection to load WASM files from CDN, or (2) Browser restrictions. Try refreshing the page or check your internet connection.',
+          }),
+        );
       } else if (err.message?.includes('protobuf') || err.message?.includes('ERROR_CODE: 7')) {
-        setError('Wake word model not found! You need to train your custom "Hey Piatto" model first. See the setup instructions below or check QUICK_START.md for training steps.');
+        setError(
+          t('errors:wakeWord.modelNotFound', {
+            defaultValue:
+              'Wake word model not found! You need to train your custom "Hey Piatto" model first. See the setup instructions below or check QUICK_START.md for training steps.',
+          }),
+        );
       } else if (err.message?.includes('model') || err.message?.includes('onnx')) {
-        setError('Failed to load wake word model. Make sure wakeword_model.onnx is in the public folder. See CUSTOM_WAKE_WORD_TRAINING.md for setup.');
+        setError(
+          t('errors:wakeWord.modelLoadFailed', {
+            defaultValue:
+              'Failed to load wake word model. Make sure wakeword_model.onnx is in the public folder. See CUSTOM_WAKE_WORD_TRAINING.md for setup.',
+          }),
+        );
       } else if (err.message?.includes('wasm') || err.message?.includes('backend') || err.message?.includes('dynamically imported module')) {
-        setError('WebAssembly loading failed. Please refresh the page. If this persists, check your internet connection (WASM files load from CDN).');
+        setError(
+          t('errors:wakeWord.wasmFailed', {
+            defaultValue:
+              'WebAssembly loading failed. Please refresh the page. If this persists, check your internet connection (WASM files load from CDN).',
+          }),
+        );
       } else {
-        setError(`Failed to start: ${err.message || 'Unknown error'}. Check browser console for details.`);
+        setError(
+          t('errors:wakeWord.startFailed', {
+            message: err.message ||
+              t('common:wakeWord.messages.unknownError', {
+                defaultValue: 'Unknown error',
+              }),
+            defaultValue: 'Failed to start: {{message}}. Check browser console for details.',
+          }),
+        );
       }
     }
   };
@@ -72,10 +110,15 @@ const WakeWordDetection = () => {
           <div className="text-2xl">🎤</div>
           <div>
             <h3 className="font-semibold text-[#2D2D2D] text-sm sm:text-base">
-              Custom Wake Word Detection
+              {t('common:wakeWord.headerTitle', {
+                defaultValue: 'Custom Wake Word Detection',
+              })}
             </h3>
             <p className="text-xs text-gray-600 mt-0.5">
-              Listening for: "Hey Piatto"
+              {t('common:wakeWord.headerSubtitle', {
+                phrase: 'Hey Piatto',
+                defaultValue: 'Listening for: "{{phrase}}"',
+              })}
             </p>
           </div>
         </div>
@@ -85,7 +128,11 @@ const WakeWordDetection = () => {
           {isListening && (
             <div className="flex items-center gap-2 px-3 py-1 bg-green-100 rounded-full">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-xs font-medium text-green-700">Listening</span>
+              <span className="text-xs font-medium text-green-700">
+                {t('common:wakeWord.statusListening', {
+                  defaultValue: 'Listening',
+                })}
+              </span>
             </div>
           )}
         </div>
@@ -104,7 +151,13 @@ const WakeWordDetection = () => {
             }
           `}
         >
-          {isListening ? '⏹ Stop Listening' : '▶ Start Listening'}
+          {isListening
+            ? t('common:wakeWord.controls.stop', {
+                defaultValue: '⏹ Stop Listening',
+              })
+            : t('common:wakeWord.controls.start', {
+                defaultValue: '▶ Start Listening',
+              })}
         </button>
       </div>
 
@@ -125,13 +178,27 @@ const WakeWordDetection = () => {
             <span className="text-2xl">🎯</span>
             <div className="flex-1">
               <p className="text-sm font-semibold text-green-800">
-                "Hey Piatto" detected!
+                {t('common:wakeWord.feedback.detected', {
+                  phrase: 'Hey Piatto',
+                  defaultValue: '"{{phrase}}" detected!',
+                })}
               </p>
               <p className="text-xs text-green-600 mt-1">
-                Confidence: {(confidence * 100).toFixed(1)}%
+                {t('common:wakeWord.feedback.confidence', {
+                  value: (confidence * 100).toFixed(1),
+                  defaultValue: 'Confidence: {{value}}%',
+                })}
                 {' • '}
                 {lastDetectedTime.toLocaleTimeString()}
-                {detectionCount > 1 && ` • Total: ${detectionCount}`}
+                {detectionCount > 1 && (
+                  <>
+                    {' • '}
+                    {t('common:wakeWord.feedback.total', {
+                      count: detectionCount,
+                      defaultValue: 'Total: {{count}}',
+                    })}
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -144,11 +211,34 @@ const WakeWordDetection = () => {
           <div className="flex items-start gap-2">
             <span className="text-blue-500 text-sm">ℹ️</span>
             <div className="flex-1 text-xs text-blue-700">
-              <p className="font-semibold mb-1">First time setup required:</p>
+              <p className="font-semibold mb-1">
+                {t('common:wakeWord.setup.title', {
+                  defaultValue: 'First time setup required:',
+                })}
+              </p>
               <ol className="list-decimal ml-4 space-y-1">
-                <li>Train your custom "Hey Piatto" model (see CUSTOM_WAKE_WORD_TRAINING.md)</li>
-                <li>Place <code className="bg-blue-100 px-1 rounded">wakeword_model.onnx</code> in <code className="bg-blue-100 px-1 rounded">frontend/public/</code></li>
-                <li>Click "Start Listening" to begin detection</li>
+                <li>
+                  {t('common:wakeWord.setup.step1', {
+                    phrase: 'Hey Piatto',
+                    defaultValue:
+                      'Train your custom "{{phrase}}" model (see CUSTOM_WAKE_WORD_TRAINING.md)',
+                  })}
+                </li>
+                <li>
+                  <Trans
+                    i18nKey="common:wakeWord.setup.step2"
+                    values={{ file: 'wakeword_model.onnx', folder: 'frontend/public/' }}
+                    components={{
+                      code: <code className="bg-blue-100 px-1 rounded" />,
+                    }}
+                    defaults="Place <code>{{file}}</code> in <code>{{folder}}</code>"
+                  />
+                </li>
+                <li>
+                  {t('common:wakeWord.setup.step3', {
+                    defaultValue: 'Click "Start Listening" to begin detection',
+                  })}
+                </li>
               </ol>
             </div>
           </div>
@@ -159,11 +249,24 @@ const WakeWordDetection = () => {
       {isListening && (
         <div className="mt-4 pt-4 border-t border-gray-200">
           <p className="text-xs text-gray-500">
-            💡 Using custom-trained ONNX model for "Hey Piatto" detection.
-            {confidence > 0 && ` Current confidence: ${(confidence * 100).toFixed(1)}%`}
+            {t('common:wakeWord.debug.description', {
+              phrase: 'Hey Piatto',
+              defaultValue: '💡 Using custom-trained ONNX model for "{{phrase}}" detection.',
+            })}
+            {confidence > 0 && (
+              <>
+                {' '}
+                {t('common:wakeWord.debug.currentConfidence', {
+                  value: (confidence * 100).toFixed(1),
+                  defaultValue: 'Current confidence: {{value}}%',
+                })}
+              </>
+            )}
           </p>
           <p className="text-xs text-gray-400 mt-1">
-            Check browser console for detailed detection logs.
+            {t('common:wakeWord.debug.logs', {
+              defaultValue: 'Check browser console for detailed detection logs.',
+            })}
           </p>
         </div>
       )}

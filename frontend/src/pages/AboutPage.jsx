@@ -1,5 +1,56 @@
 import { Link } from 'react-router-dom';
-import { Award, Users, Sparkles, Linkedin, Mail, Github } from 'lucide-react';
+import { useState } from 'react';
+import { Award, Users, Sparkles, Linkedin, Mail } from 'lucide-react';
+
+function TeamMemberCard({ member }) {
+  const [imageError, setImageError] = useState(false);
+
+  return (
+    <div className="bg-white rounded-3xl shadow-lg border border-[#F5F5F5] overflow-hidden hover:shadow-xl transition-shadow">
+      <div className="h-64 bg-gradient-to-br from-[#F4F7F4] via-[#E6EFE9] to-[#D6E7DE] flex items-center justify-center">
+        <div className="relative w-60 h-60 rounded-full bg-white shadow-lg ring-4 ring-white/60 flex items-center justify-center overflow-hidden">
+          {member.image && !imageError ? (
+            <img
+              src={member.image}
+              alt={member.name}
+              loading="lazy"
+              className="w-full h-full object-cover"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <Users className="w-16 h-16 text-[#035035]" />
+          )}
+        </div>
+      </div>
+
+      <div className="p-6">
+        <h3 className="text-2xl font-bold text-[#035035] mb-2">{member.name}</h3>
+        <p className="text-[#FF9B7B] font-semibold mb-3">{member.role}</p>
+        <p className="text-[#2D2D2D] mb-6 leading-relaxed">{member.description}</p>
+
+        <div className="flex gap-3">
+          <a
+            href={member.linkedin}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 flex items-center justify-center gap-2 bg-[#0077B5] text-white py-2 rounded-xl hover:scale-105 transition-all"
+            title="LinkedIn"
+          >
+            <Linkedin className="w-4 h-4" />
+            <span className="text-sm font-medium">LinkedIn</span>
+          </a>
+          <a
+            href={`mailto:${member.email}`}
+            className="flex items-center justify-center bg-[#FFF8F0] border border-[#A8C9B8] text-[#035035] w-10 h-10 rounded-xl hover:scale-105 transition-all"
+            title="Email"
+          >
+            <Mail className="w-4 h-4" />
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function AboutPage() {
   const teamMembers = [
@@ -7,24 +58,24 @@ export default function AboutPage() {
       name: 'Markus Huber',
       role: 'Full-Stack Developer',
       description: 'Passionate about creating seamless user experiences and robust backend systems.',
-      linkedin: 'https://linkedin.com/in/markus-huber',
-      email: 'markus@piatto.app',
-      image: '/team/markus.jpg', // Placeholder
+      linkedin: 'https://linkedin.com/in/markus-huber-0132282bb/',
+      email: 'piatto+markus@obermui.de',
+      image: '/team/markus.png', // Placeholder
     },
     {
       name: 'Paul Vorderbruegge',
       role: 'AI/ML Engineer',
       description: 'Specializing in AI-powered solutions and machine learning integration.',
-      linkedin: 'https://linkedin.com/in/paul-vorderbruegge',
-      email: 'paul@piatto.app',
+      linkedin: 'https://www.linkedin.com/in/paul-vorderbrügge-193bb6207/',
+      email: 'paul.vorderbruegge@tum.de',
       image: '/team/paul.jpg', // Placeholder
     },
     {
       name: 'Luca Bozzetti',
       role: 'Frontend Developer & UX Designer',
       description: 'Crafting beautiful, intuitive interfaces that users love.',
-      linkedin: 'https://linkedin.com/in/luca-bozzetti',
-      email: 'luca@piatto.app',
+      linkedin: 'https://www.linkedin.com/in/luca-bozzetti-371379282/',
+      email: 'luca.bozzetti@tum.de',
       image: '/team/luca.jpg', // Placeholder
     },
     {
@@ -32,8 +83,8 @@ export default function AboutPage() {
       role: 'Frontend and Data Analytics',
       description: 'Building responsive interfaces and analyzing data to drive insights.',
       linkedin: 'https://linkedin.com/in/sebastian-rogg',
-      email: 'sebastian@piatto.app',
-      image: '/team/sebastian.jpg', // Placeholder
+      email: 'sebastian.rogg@tum.de',
+      image: '/team/sebi.jpg', // Placeholder
     },
   ];
 
@@ -86,7 +137,7 @@ export default function AboutPage() {
                 Piatto is proudly part of the Google Cloud Run Hackathon on Devpost
               </p>
               <a
-                href="https://devpost.com"
+                href="https://run.devpost.com/?ref_feature=challenge&ref_medium=homepage-recommended-hackathons"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block bg-white text-[#035035] px-8 py-3 rounded-full font-semibold hover:scale-105 transition-all shadow-lg"
@@ -105,46 +156,9 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {teamMembers.map((member, index) => (
-                <div
-                  key={index}
-                  className="bg-white rounded-3xl shadow-lg border border-[#F5F5F5] overflow-hidden hover:shadow-xl transition-shadow"
-                >
-                  {/* Profile Image Placeholder */}
-                  <div className="h-64 bg-gradient-to-br from-[#A8C9B8] to-[#035035] flex items-center justify-center">
-                    <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center">
-                      <Users className="w-16 h-16 text-[#035035]" />
-                    </div>
-                  </div>
-
-                  <div className="p-6">
-                    <h3 className="text-2xl font-bold text-[#035035] mb-2">{member.name}</h3>
-                    <p className="text-[#FF9B7B] font-semibold mb-3">{member.role}</p>
-                    <p className="text-[#2D2D2D] mb-6 leading-relaxed">{member.description}</p>
-
-                    {/* Social Links */}
-                    <div className="flex gap-3">
-                      <a
-                        href={member.linkedin}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 flex items-center justify-center gap-2 bg-[#0077B5] text-white py-2 rounded-xl hover:scale-105 transition-all"
-                        title="LinkedIn"
-                      >
-                        <Linkedin className="w-4 h-4" />
-                        <span className="text-sm font-medium">LinkedIn</span>
-                      </a>
-                      <a
-                        href={`mailto:${member.email}`}
-                        className="flex items-center justify-center bg-[#FFF8F0] border border-[#A8C9B8] text-[#035035] w-10 h-10 rounded-xl hover:scale-105 transition-all"
-                        title="Email"
-                      >
-                        <Mail className="w-4 h-4" />
-                      </a>
-                    </div>
-                  </div>
-                </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
+              {teamMembers.map((member) => (
+                <TeamMemberCard key={member.email} member={member} />
               ))}
             </div>
           </div>

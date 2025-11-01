@@ -1,0 +1,52 @@
+{
+  "generic": {
+    "title": "Oops! Something went wrong",
+    "tryAgain": "Try Again"
+  },
+  "emptyState": {
+    "defaultTitle": "Nothing here yet",
+    "defaultMessage": "Get started by creating your first item."
+  },
+  "deleteRecipe": {
+    "title": "Delete Recipe",
+    "message": "Do you really want to delete the recipe \"{name}\"?",
+    "warning": "This action cannot be undone. The recipe will be permanently removed from all collections.",
+    "error": "Delete failed. Please try again.",
+    "cancel": "Cancel",
+    "deleting": "Deleting...",
+    "delete": "Delete"
+  },
+  "network": {
+    "serverError": "Server error. Please try again later.",
+    "networkError": "Network error. Please check your connection.",
+    "loadFailed": "Failed to load. Please try again."
+  },
+  "notFound": {
+    "code": "404",
+    "title": "Recipe Not Found",
+    "subtitle": "Oops! Looks like this page went off the menu.",
+    "description": "The page you're looking for doesn't exist or may have been moved. Let's get you back to cooking delicious meals!",
+    "goHome": "Go Home",
+    "browseRecipes": "Browse Recipes",
+    "quickLinks": "Quick Links:",
+    "dashboard": "Dashboard",
+    "about": "About Us",
+    "contact": "Contact",
+    "privacy": "Privacy Policy"
+  },
+  "profileSettings": {
+    "uploadFailed": "Failed to upload image. Please try again.",
+    "noChanges": "No changes to save",
+    "updateSuccess": "Profile updated successfully!",
+    "updateFailed": "Failed to update profile. Please try again."
+  },
+  "wakeWord": {
+    "micPermissionDenied": "Microphone permission denied. Please allow microphone access and try again.",
+    "noMicrophone": "No microphone found. Please connect a microphone and try again.",
+    "onnxLoadFailed": "Failed to load ONNX Runtime. This might be due to: (1) No internet connection to load WASM files from CDN, or (2) Browser restrictions. Try refreshing the page or check your internet connection.",
+    "modelNotFound": "Wake word model not found! You need to train your custom \"Hey Piatto\" model first. See the setup instructions below or check QUICK_START.md for training steps.",
+    "modelLoadFailed": "Failed to load wake word model. Make sure wakeword_model.onnx is in the public folder. See CUSTOM_WAKE_WORD_TRAINING.md for setup.",
+    "wasmFailed": "WebAssembly loading failed. Please refresh the page. If this persists, check your internet connection (WASM files load from CDN).",
+    "startFailed": "Failed to start: {{message}}. Check browser console for details."
+  }
+}

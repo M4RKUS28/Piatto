@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, User, MessageSquare, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next'
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({

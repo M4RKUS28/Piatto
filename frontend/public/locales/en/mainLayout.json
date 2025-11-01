@@ -1,0 +1,19 @@
+{
+  "navigation": {
+    "dashboard": "Dashboard",
+    "generate": "Generate",
+    "recipeLibrary": "Recipe Library",
+    "settings": "Settings"
+  },
+  "profile": {
+    "logout": "Logout"
+  },
+  "aria": {
+    "openProfileMenu": "Open profile menu",
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar"
+  },
+  "footer": {
+    "copyright": "© 2025 Piatto. Cooking made delightful, one recipe at a time."
+  }
+}

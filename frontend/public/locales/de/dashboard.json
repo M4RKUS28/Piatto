@@ -1,0 +1,12 @@
+{
+  "welcome": "Willkommen zurück",
+  "subtitle": "Lass uns heute etwas Köstliches kochen",
+  "chef": "Koch",
+  "stats": {
+    "recipesSaved": "Gespeicherte Rezepte",
+    "cookedThisWeek": "Diese Woche gekocht",
+    "avgCookTime": "Durchschn. Kochzeit",
+    "streakDays": "Serie (Tage)"
+  },
+  "recentRecipes": "Letzte Rezepte"
+}

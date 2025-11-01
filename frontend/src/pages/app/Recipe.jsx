@@ -10,30 +10,64 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorMessage from '../../components/ErrorMessage';
 import EditCollectionsModal from '../../components/EditCollectionsModal';
 import { getImageUrl } from '../../utils/imageUtils';
+import { useTranslation } from 'react-i18next'
 
 // Helper function to get food category icon and label
-const getFoodCategoryDisplay = (category) => {
+const getFoodCategoryDisplay = (category, t) => {
   if (!category) {
-    return { icon: PiCookingPot, label: 'N/A', sublabel: '' };
+    return {
+      icon: PiCookingPot,
+      label: t('foodCategory.na', { ns: 'common', defaultValue: 'N/A' }),
+      sublabel: ''
+    };
   }
 
   // Vegan and vegetarian
   if (category === 'vegan') {
-    return { icon: PiLeaf, label: 'Vegan', sublabel: 'Plant-based' };
+    return {
+      icon: PiLeaf,
+      label: t('foodCategory.vegan', { ns: 'common', defaultValue: 'Vegan' }),
+      sublabel: t('foodCategory.veganSub', { ns: 'common', defaultValue: 'Plant-based' })
+    };
   }
   if (category === 'vegetarian') {
-    return { icon: PiEgg, label: 'Vegetarian', sublabel: 'Contains dairy/eggs' };
+    return {
+      icon: PiEgg,
+      label: t('foodCategory.vegetarian', { ns: 'common', defaultValue: 'Vegetarian' }),
+      sublabel: t('foodCategory.vegetarianSub', { ns: 'common', defaultValue: 'Contains dairy/eggs' })
+    };
   }
 
   // All meat types use the same icon but display the specific meat type
   const meatLabels = {
-    'beef': { label: 'Beef', sublabel: 'Beef-based' },
-    'pork': { label: 'Pork', sublabel: 'Pork-based' },
-    'chicken': { label: 'Chicken', sublabel: 'Poultry' },
-    'lamb': { label: 'Lamb', sublabel: 'Lamb-based' },
-    'fish': { label: 'Fish', sublabel: 'Fish-based' },
-    'seafood': { label: 'Seafood', sublabel: 'Seafood-based' },
-    'mixed-meat': { label: 'Mixed Meat', sublabel: 'Multiple meats' },
+    'beef': {
+      label: t('foodCategory.beef', { ns: 'common', defaultValue: 'Beef' }),
+      sublabel: t('foodCategory.beefSub', { ns: 'common', defaultValue: 'Beef-based' })
+    },
+    'pork': {
+      label: t('foodCategory.pork', { ns: 'common', defaultValue: 'Pork' }),
+      sublabel: t('foodCategory.porkSub', { ns: 'common', defaultValue: 'Pork-based' })
+    },
+    'chicken': {
+      label: t('foodCategory.chicken', { ns: 'common', defaultValue: 'Chicken' }),
+      sublabel: t('foodCategory.chickenSub', { ns: 'common', defaultValue: 'Poultry' })
+    },
+    'lamb': {
+      label: t('foodCategory.lamb', { ns: 'common', defaultValue: 'Lamb' }),
+      sublabel: t('foodCategory.lambSub', { ns: 'common', defaultValue: 'Lamb-based' })
+    },
+    'fish': {
+      label: t('foodCategory.fish', { ns: 'common', defaultValue: 'Fish' }),
+      sublabel: t('foodCategory.fishSub', { ns: 'common', defaultValue: 'Fish-based' })
+    },
+    'seafood': {
+      label: t('foodCategory.seafood', { ns: 'common', defaultValue: 'Seafood' }),
+      sublabel: t('foodCategory.seafoodSub', { ns: 'common', defaultValue: 'Seafood-based' })
+    },
+    'mixed-meat': {
+      label: t('foodCategory.mixedMeat', { ns: 'common', defaultValue: 'Mixed Meat' }),
+      sublabel: t('foodCategory.mixedMeatSub', { ns: 'common', defaultValue: 'Multiple meats' })
+    },
   };
 
   const meatInfo = meatLabels[category];
@@ -42,13 +76,24 @@ const getFoodCategoryDisplay = (category) => {
   }
 
   // Fallback
-  return { icon: PiCookingPot, label: 'N/A', sublabel: '' };
+  return {
+    icon: PiCookingPot,
+    label: t('foodCategory.na', { ns: 'common', defaultValue: 'N/A' }),
+    sublabel: ''
+  };
 };
 
 // Helper function to format difficulty
-const formatDifficulty = (difficulty) => {
-  if (!difficulty) return 'N/A';
-  return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+const formatDifficulty = (difficulty, t) => {
+  if (!difficulty) return t('difficulty.na', { ns: 'common', defaultValue: 'N/A' });
+
+  const difficultyMap = {
+    'easy': t('difficulty.easy', { ns: 'common', defaultValue: 'Easy' }),
+    'medium': t('difficulty.medium', { ns: 'common', defaultValue: 'Medium' }),
+    'hard': t('difficulty.hard', { ns: 'common', defaultValue: 'Hard' })
+  };
+
+  return difficultyMap[difficulty.toLowerCase()] || difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 };
 
 // Helper function to get difficulty text color
@@ -68,12 +113,12 @@ const getDifficultyTextColor = (difficulty) => {
 };
 
 // Helper function to format time
-const formatTime = (minutes) => {
-  if (!minutes) return 'N/A';
-  if (minutes < 60) return `${minutes} Min.`;
+const formatTime = (minutes, t) => {
+  if (!minutes) return t('time.na', { ns: 'common', defaultValue: 'N/A' });
+  if (minutes < 60) return `${minutes} ${t('time.min', { ns: 'common', defaultValue: 'Min.' })}`;
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+  return mins > 0 ? `${hours}${t('time.h', { ns: 'common', defaultValue: 'h' })} ${mins}${t('time.min', { ns: 'common', defaultValue: 'min' })}` : `${hours}${t('time.h', { ns: 'common', defaultValue: 'h' })}`;
 };
 
 const nutritionData = {
@@ -95,6 +140,7 @@ const nutritionData = {
 };
 
 const Recipe = ({ recipeId }) => {
+  const { t } = useTranslation(['recipe', 'common']);
   const navigate = useNavigate();
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -108,7 +154,7 @@ const Recipe = ({ recipeId }) => {
   useEffect(() => {
     const fetchRecipe = async () => {
       if (!recipeId) {
-        setError('No recipe ID provided');
+        setError(t('errors.noId', 'No recipe ID provided'));
         setLoading(false);
         return;
       }
@@ -125,13 +171,13 @@ const Recipe = ({ recipeId }) => {
         console.error('Failed to fetch recipe:', err);
 
         if (err.response?.status === 404) {
-          setError('Recipe not found. It may have been deleted.');
+          setError(t('errors.notFound', 'Recipe not found. It may have been deleted.'));
         } else if (err.response?.status >= 500) {
-          setError('Server error. Please try again later.');
+          setError(t('errors.serverError', 'Server error. Please try again later.'));
         } else if (!err.response) {
-          setError('Network error. Please check your connection.');
+          setError(t('errors.networkError', 'Network error. Please check your connection.'));
         } else {
-          setError('Failed to load recipe. Please try again.');
+          setError(t('errors.loadFailed', 'Failed to load recipe. Please try again.'));
         }
       } finally {
         setLoading(false);
@@ -163,7 +209,7 @@ const Recipe = ({ recipeId }) => {
   };
 
   const handleDeleteRecipe = async () => {
-    if (!window.confirm('Möchtest du dieses Rezept wirklich löschen?')) {
+    if (!window.confirm(t('deleteConfirm', 'Are you sure you want to delete this recipe?'))) {
       return;
     }
 
@@ -172,7 +218,7 @@ const Recipe = ({ recipeId }) => {
       navigate('/app/recipes');
     } catch (err) {
       console.error('Failed to delete recipe:', err);
-      alert('Fehler beim Löschen des Rezepts');
+      alert(t('deleteFailed', 'Failed to delete recipe'));
     }
   };
 
@@ -182,69 +228,69 @@ const Recipe = ({ recipeId }) => {
 
   const NutritionLabel = ({ servingCount }) => (
     <div className="border-2 border-black p-4 font-sans max-w-sm mx-auto">
-      <h2 className="font-black text-4xl font-serif">Nutrition Facts</h2>
+      <h2 className="font-black text-4xl font-serif">{t('nutrition.title', 'Nutrition Facts')}</h2>
       <div className="border-b border-gray-400 pb-1 mb-1">
-        <p>{servingCount} servings per recipe</p>
-        <p className="font-bold">Serving size is calculated from the recipe</p>
+        <p>{t('nutrition.servingsPerRecipe', { count: servingCount, defaultValue: `${servingCount} servings per recipe` })}</p>
+        <p className="font-bold">{t('nutrition.servingSize', 'Serving size is calculated from the recipe')}</p>
       </div>
       <div className="flex justify-between items-end border-b-8 border-black py-1">
-        <p className="font-bold">Amount per serving</p>
+        <p className="font-bold">{t('nutrition.amountPerServing', 'Amount per serving')}</p>
         <p className="font-black text-5xl">{nutritionData.calories}</p>
       </div>
-      <div className="text-right font-bold border-b border-gray-400 py-1">% Daily Value*</div>
+      <div className="text-right font-bold border-b border-gray-400 py-1">{t('nutrition.dailyValue', '% Daily Value*')}</div>
 
       <div className="flex justify-between border-b border-gray-400 py-1">
-        <p><span className="font-bold">Total Fat</span> {nutritionData.totalFat.amount}g</p>
+        <p><span className="font-bold">{t('nutrition.totalFat', 'Total Fat')}</span> {nutritionData.totalFat.amount}g</p>
         <p className="font-bold">{nutritionData.totalFat.dv}%</p>
       </div>
       <div className="flex justify-between border-b border-gray-400 py-1 ml-4">
-        <p>Saturated Fat {nutritionData.saturatedFat.amount}g</p>
+        <p>{t('nutrition.saturatedFat', 'Saturated Fat')} {nutritionData.saturatedFat.amount}g</p>
         <p className="font-bold">{nutritionData.saturatedFat.dv}%</p>
       </div>
       <div className="border-b border-gray-400 py-1 ml-4">
-        <p><i>Trans</i> Fat {nutritionData.transFat.amount}g</p>
+        <p><i>{t('nutrition.trans', 'Trans')}</i> {t('nutrition.fat', 'Fat')} {nutritionData.transFat.amount}g</p>
       </div>
       <div className="flex justify-between border-b border-gray-400 py-1">
-        <p><span className="font-bold">Cholesterol</span> {nutritionData.cholesterol.amount}mg</p>
+        <p><span className="font-bold">{t('nutrition.cholesterol', 'Cholesterol')}</span> {nutritionData.cholesterol.amount}mg</p>
         <p className="font-bold">{nutritionData.cholesterol.dv}%</p>
       </div>
       <div className="flex justify-between border-b border-gray-400 py-1">
-        <p><span className="font-bold">Sodium</span> {nutritionData.sodium.amount}mg</p>
+        <p><span className="font-bold">{t('nutrition.sodium', 'Sodium')}</span> {nutritionData.sodium.amount}mg</p>
         <p className="font-bold">{nutritionData.sodium.dv}%</p>
       </div>
       <div className="flex justify-between border-b-4 border-black py-1">
-        <p><span className="font-bold">Total Carbohydrate</span> {nutritionData.totalCarbohydrate.amount}g</p>
+        <p><span className="font-bold">{t('nutrition.totalCarbohydrate', 'Total Carbohydrate')}</span> {nutritionData.totalCarbohydrate.amount}g</p>
         <p className="font-bold">{nutritionData.totalCarbohydrate.dv}%</p>
       </div>
       <div className="flex justify-between border-b border-gray-400 py-1 ml-4">
-        <p>Dietary Fiber {nutritionData.dietaryFiber.amount}g</p>
+        <p>{t('nutrition.dietaryFiber', 'Dietary Fiber')} {nutritionData.dietaryFiber.amount}g</p>
         <p className="font-bold">{nutritionData.dietaryFiber.dv}%</p>
       </div>
       <div className="border-b border-gray-400 py-1 ml-4">
-        <p>Total Sugars {nutritionData.totalSugars.amount}g</p>
+        <p>{t('nutrition.totalSugars', 'Total Sugars')} {nutritionData.totalSugars.amount}g</p>
       </div>
       <div className="border-b-8 border-black py-1">
-        <p><span className="font-bold">Protein</span> {nutritionData.protein.amount}g</p>
+        <p><span className="font-bold">{t('nutrition.protein', 'Protein')}</span> {nutritionData.protein.amount}g</p>
       </div>
 
       <div className="flex justify-between border-b border-gray-400 py-1">
-        <p>Vitamin D {nutritionData.vitaminD.amount}mcg</p>
+        <p>{t('nutrition.vitaminD', 'Vitamin D')} {nutritionData.vitaminD.amount}mcg</p>
         <span>{nutritionData.vitaminD.dv}%</span>
       </div>
       <div className="flex justify-between border-b border-gray-400 py-1">
-        <p>Calcium {nutritionData.calcium.amount}mg</p>
+        <p>{t('nutrition.calcium', 'Calcium')} {nutritionData.calcium.amount}mg</p>
         <span>{nutritionData.calcium.dv}%</span>
       </div>
       <div className="flex justify-between border-b border-gray-400 py-1">
-        <p>Iron {nutritionData.iron.amount}mg</p>
+        <p>{t('nutrition.iron', 'Iron')} {nutritionData.iron.amount}mg</p>
         <span>{nutritionData.iron.dv}%</span>
       </div>
       <div className="flex justify-between border-b border-gray-400 py-1">
-        <p>Potassium {nutritionData.potassium.amount}mg</p>
+        <p>{t('nutrition.potassium', 'Potassium')} {nutritionData.potassium.amount}mg</p>
         <span>{nutritionData.potassium.dv}%</span>
       </div>
 
-      <p className="text-sm mt-2">* The % Daily Value (DV) tells you how much a nutrient in a serving of food contributes to a daily diet. 2,000 calories a day is used for general nutrition advice.</p>
+      <p className="text-sm mt-2">{t('nutrition.disclaimer', '* The % Daily Value (DV) tells you how much a nutrient in a serving of food contributes to a daily diet. 2,000 calories a day is used for general nutrition advice.')}</p>
     </div>
   );
 
@@ -274,7 +320,7 @@ const Recipe = ({ recipeId }) => {
     return (
       <div className="h-full flex items-center justify-center">
         <ErrorMessage
-          message="Recipe data not available"
+          message={t('errors.dataNotAvailable', 'Recipe data not available')}
           onRetry={() => navigate('/app/library')}
         />
       </div>
@@ -341,7 +387,7 @@ const Recipe = ({ recipeId }) => {
                     className="w-full px-4 py-3 text-left hover:bg-[#F5F5F5] transition-colors flex items-center gap-3"
                   >
                     <FolderOpen className="w-5 h-5 text-[#035035]" />
-                    <span className="text-[#2D2D2D] font-medium">Sammlung bearbeiten</span>
+                    <span className="text-[#2D2D2D] font-medium">{t('editCollection', 'Edit Collection')}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -351,7 +397,7 @@ const Recipe = ({ recipeId }) => {
                     className="w-full px-4 py-3 text-left hover:bg-red-50 transition-colors flex items-center gap-3"
                   >
                     <PiTrash className="w-5 h-5 text-red-500" />
-                    <span className="text-red-500 font-medium">Rezept löschen</span>
+                    <span className="text-red-500 font-medium">{t('deleteRecipe', 'Delete Recipe')}</span>
                   </button>
                 </div>
               )}
@@ -374,17 +420,17 @@ const Recipe = ({ recipeId }) => {
         <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center mt-6 sm:mt-8 py-4 border-y border-[#F5F5F5]">
           <div className="flex flex-col items-center gap-1 sm:gap-2">
             <PiClock className="h-6 w-6 sm:h-7 sm:w-7 text-[#035035]" />
-            <span className="text-xs sm:text-sm font-medium">{formatTime(recipe.total_time_minutes)}</span>
-            <span className="text-xs text-gray-500 hidden sm:block">Total Time</span>
+            <span className="text-xs sm:text-sm font-medium">{formatTime(recipe.total_time_minutes, t)}</span>
+            <span className="text-xs text-gray-500 hidden sm:block">{t('totalTime', 'Total Time')}</span>
           </div>
           <div className="flex flex-col items-center gap-1 sm:gap-2">
             <PiCookingPot className="h-6 w-6 sm:h-7 sm:w-7 text-[#035035]" />
-            <span className={`text-xs sm:text-sm font-bold ${getDifficultyTextColor(recipe.difficulty)}`}>{formatDifficulty(recipe.difficulty)}</span>
-            <span className="text-xs text-gray-500 hidden sm:block">Difficulty</span>
+            <span className={`text-xs sm:text-sm font-bold ${getDifficultyTextColor(recipe.difficulty)}`}>{formatDifficulty(recipe.difficulty, t)}</span>
+            <span className="text-xs text-gray-500 hidden sm:block">{t('difficultyLabel', 'Difficulty')}</span>
           </div>
           <div className="flex flex-col items-center gap-1 sm:gap-2">
             {(() => {
-              const foodDisplay = getFoodCategoryDisplay(recipe.food_category);
+              const foodDisplay = getFoodCategoryDisplay(recipe.food_category, t);
               const IconComponent = foodDisplay.icon;
               return (
                 <>
@@ -407,7 +453,7 @@ const Recipe = ({ recipeId }) => {
                 : 'text-gray-500 hover:text-[#035035]'
                 }`}
             >
-              Ingredients
+              {t('tabs.ingredients', 'Ingredients')}
             </button>
             {recipe.nutrition && (
               <button
@@ -417,7 +463,7 @@ const Recipe = ({ recipeId }) => {
                   : 'text-gray-500 hover:text-[#035035]'
                   }`}
               >
-                Nutrition
+                {t('tabs.nutrition', 'Nutrition')}
               </button>
             )}
           </div>
@@ -426,7 +472,7 @@ const Recipe = ({ recipeId }) => {
             {activeTab === 'ingredients' && (
               <div>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-[#F5F5F5] p-3 sm:p-4 rounded-lg gap-3 sm:gap-0">
-                  <span className="font-medium text-sm sm:text-base">For {servings} serving{servings > 1 && 's'}</span>
+                  <span className="font-medium text-sm sm:text-base">{t('forServings', { count: servings, defaultValue: `For ${servings} serving${servings > 1 ? 's' : ''}` })}</span>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleServingChange(-1)}
