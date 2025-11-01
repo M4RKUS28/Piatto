@@ -64,6 +64,36 @@
       "generate": "Generate selected recipes"
     }
   },
+  "collectionsModal": {
+    "title": "Save to collection",
+    "stepIndicator": "Step {{current}} of {{total}} · Collection selection optional",
+    "searchPlaceholder": "Search collections...",
+    "optionalHint": "You can also save recipes without selecting a collection.",
+    "createButton": "Create new collection",
+    "createForm": {
+      "title": "New collection",
+      "namePlaceholder": "Name",
+      "descriptionPlaceholder": "Description (optional)",
+      "cancel": "Cancel",
+      "create": "Create",
+      "creating": "Creating..."
+    },
+    "empty": {
+      "noResults": "No collections found",
+      "noCollections": "No collections yet"
+    },
+    "buttons": {
+      "back": "Back",
+      "next": "Next",
+      "save": "Save",
+      "saving": "Saving..."
+    },
+    "errors": {
+      "fetchCollections": "Failed to load collections",
+      "createCollection": "Collection could not be created",
+      "save": "Failed to save. Please try again."
+    }
+  },
   "steps": {
     "step1": "Step 1: What do you want to cook?",
     "step2": "Step 2: What ingredients do you have?",

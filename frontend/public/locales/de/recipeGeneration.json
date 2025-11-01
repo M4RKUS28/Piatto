@@ -63,6 +63,36 @@
       "generate": "Ausgewählte Rezepte generieren"
     }
   },
+  "collectionsModal": {
+    "title": "In Sammlung speichern",
+    "stepIndicator": "Schritt {{current}} von {{total}} · Sammlungsauswahl optional",
+    "searchPlaceholder": "Sammlungen durchsuchen...",
+    "optionalHint": "Du kannst Rezepte auch ohne Sammlung speichern.",
+    "createButton": "Neue Sammlung erstellen",
+    "createForm": {
+      "title": "Neue Sammlung",
+      "namePlaceholder": "Name",
+      "descriptionPlaceholder": "Beschreibung (optional)",
+      "cancel": "Abbrechen",
+      "create": "Erstellen",
+      "creating": "Erstellen..."
+    },
+    "empty": {
+      "noResults": "Keine Sammlungen gefunden",
+      "noCollections": "Noch keine Sammlungen vorhanden"
+    },
+    "buttons": {
+      "back": "Zurück",
+      "next": "Weiter",
+      "save": "Speichern",
+      "saving": "Speichern..."
+    },
+    "errors": {
+      "fetchCollections": "Fehler beim Laden der Sammlungen",
+      "createCollection": "Sammlung konnte nicht erstellt werden",
+      "save": "Speichern fehlgeschlagen. Bitte versuche es erneut."
+    }
+  },
   "steps": {
     "step1": "Schritt 1: Was möchtest du kochen?",
     "step2": "Schritt 2: Welche Zutaten hast du?",
