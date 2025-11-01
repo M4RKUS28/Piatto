@@ -47,15 +47,19 @@ export default function IngredientsStep({
 
 
         return (
-                <div>
-                        <h2 className="text-3xl font-bold text-[#035035] mb-6 text-center">
-                                What ingredients do you have?
-                        </h2>
-                        <p className="text-center text-[#2D2D2D] opacity-60 mb-8">
-                                Tell us what's in your kitchen. You can also analyze a photo to extract ingredients.
-                        </p>
+                <div className="flex flex-col h-full">
+                        {/* Top Section - Heading */}
+                        <div>
+                                <h2 className="text-3xl font-bold text-[#035035] mb-6 text-center">
+                                        What ingredients do you have?
+                                </h2>
+                                <p className="text-center text-[#2D2D2D] opacity-60 mb-8">
+                                        Tell us what's in your kitchen. You can also analyze a photo to extract ingredients.
+                                </p>
+                        </div>
 
-                        <form onSubmit={handleSubmit} className="max-w-2xl mx-auto" aria-label="Ingredients input form">
+                        {/* Middle Section - Textbox */}
+                        <div className="flex-1 flex flex-col justify-center">
                                 <div className="mb-6 relative">
                                         <label htmlFor="ingredients-input" className="block text-sm font-medium text-[#2D2D2D] mb-2">
                                                 Enter your ingredients
@@ -175,13 +179,17 @@ export default function IngredientsStep({
                                                 {validationError}
                                         </p>
                                 )}
+                        </div>
 
-                                <div className="flex flex-col sm:flex-row justify-center gap-3 w-full sm:w-auto">
-                                        <button
-                                                type="button"
-                                                onClick={onBack}
-                                                disabled={loading || analyzing}
-                                                className="w-full sm:w-auto bg-white text-[#035035] border-2 border-[#035035] px-6 py-3 rounded-full font-semibold text-base
+                        {/* Bottom Section - Buttons */}
+                        <div>
+                                <form onSubmit={handleSubmit} aria-label="Ingredients input form">
+                                        <div className="flex justify-between gap-3">
+                                                <button
+                                                        type="button"
+                                                        onClick={onBack}
+                                                        disabled={loading || analyzing}
+                                                className="bg-white text-[#035035] border-2 border-[#035035] px-6 py-3 rounded-full font-semibold text-base
                                                         hover:bg-[#035035] hover:text-white transition-all duration-200
                                                         disabled:opacity-50 disabled:cursor-not-allowed
                                                         focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2
@@ -193,7 +201,7 @@ export default function IngredientsStep({
                                         <button
                                                 type="submit"
                                                 disabled={loading || analyzing}
-                                                className="w-full sm:w-auto bg-[#035035] text-white px-6 py-3 rounded-full font-semibold text-base
+                                                className="bg-[#035035] text-white px-6 py-3 rounded-full font-semibold text-base
                                                         hover:scale-105 active:scale-95 transition-all duration-200
                                                         disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
                                                         focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2
@@ -203,7 +211,8 @@ export default function IngredientsStep({
                                                 {loading ? 'Generating...' : analyzing ? 'Analyzing image...' : 'Generate Recipes'}
                                         </button>
                                 </div>
-                        </form>
+                                </form>
+                        </div>
                 </div>
         );
 }

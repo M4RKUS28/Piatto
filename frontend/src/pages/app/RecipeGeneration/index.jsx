@@ -339,10 +339,20 @@ export default function RecipeGeneration() {
                 : [];
 
         return (
-                <div className="fixed inset-0 z-40 flex items-center justify-center bg-[#02140c]/60 backdrop-blur-sm px-4 py-6 sm:px-6 lg:px-8">
-                        <div className="relative w-full max-w-4xl">
-                                <div className="relative rounded-3xl border border-[#E5ECE8] bg-white shadow-2xl">
-                                        <div className="max-h-[calc(100vh-4rem)] overflow-y-auto px-6 pb-8 pt-8 sm:px-10">
+                <div className="fixed inset-0 z-40 flex items-center justify-center bg-[#02140c]/60 backdrop-blur-sm px-4 py-6 sm:px-6 lg:px-8 overflow-y-auto">
+                        <div className="relative w-full max-w-5xl my-auto">
+                                <div
+                                        className="relative rounded-3xl border border-[#E5ECE8] bg-white shadow-2xl overflow-hidden"
+                                        style={{
+                                                backgroundImage: 'url(/cooking_background.jpg)',
+                                                backgroundSize: 'cover',
+                                                backgroundPosition: 'center',
+                                                backgroundRepeat: 'no-repeat',
+                                                height: currentStep === 3 ? 'auto' : '80vh',
+                                                minHeight: currentStep === 3 ? '80vh' : 'auto'
+                                        }}
+                                >
+                                        <div className="px-6 pb-8 pt-8 sm:px-10 h-full flex flex-col">
                                                 {/* Collection Context Banner */}
                                                 {collectionContext?.collectionName && (
                                                         <div className="mb-6 rounded-lg border border-[#035035]/20 bg-[#035035]/10 p-4">
@@ -352,37 +362,32 @@ export default function RecipeGeneration() {
                                                         </div>
                                                 )}
 
-                                                {currentStep !== 3 && (
-                                                        <div className="mb-6">
-                                                                <div className="flex items-center justify-center gap-4">
-                                                                        {[1, 2, 3].map((step) => (
-                                                                                <div key={step} className="flex items-center">
-                                                                                        <div
-                                                                                                className={`flex h-10 w-10 items-center justify-center rounded-full font-semibold transition-all ${currentStep === step
-                                                                                                        ? 'bg-[#035035] text-white shadow-[0_4px_12px_rgba(3,80,53,0.35)]'
-                                                                                                        : currentStep > step
-                                                                                                        ? 'bg-[#A8C9B8] text-white'
-                                                                                                        : 'bg-[#F5F5F5] text-[#2D2D2D] opacity-50'}`}
-                                                                                                aria-current={currentStep === step ? 'step' : undefined}
-                                                                                        >
-                                                                                                {step}
-                                                                                        </div>
-                                                                                        {step < 3 && (
-                                                                                                <div
-                                                                                                        className={`mx-2 h-1 w-16 transition-all ${currentStep > step ? 'bg-[#A8C9B8]' : 'bg-[#F5F5F5]'}`}
-                                                                                                />
-                                                                                        )}
-                                                                                </div>
-                                                                        ))}
-                                                                </div>
-                                                                <div className="mt-4 text-center text-sm text-[#2D2D2D] opacity-60">
-                                                                        {currentStep === 1 && 'Step 1: What do you want to cook?'}
-                                                                        {currentStep === 2 && 'Step 2: What ingredients do you have?'}
-                                                                </div>
+                                                {/* Progress Bar */}
+                                                <div className="mb-6">
+                                                        <div className="h-1 w-full bg-white/30 rounded-full overflow-hidden">
+                                                                <div
+                                                                        className="h-full bg-gradient-to-r from-[#035035] to-[#A8C9B8] transition-all duration-500 ease-out"
+                                                                        style={{ width: `${(currentStep / 3) * 100}%` }}
+                                                                        role="progressbar"
+                                                                        aria-valuenow={currentStep}
+                                                                        aria-valuemin={1}
+                                                                        aria-valuemax={3}
+                                                                        aria-label={`Step ${currentStep} of 3`}
+                                                                />
                                                         </div>
-                                                )}
+                                                </div>
 
-                                                <div className="rounded-2xl border border-[#EEF5F1] bg-white p-5 sm:p-7 shadow-[0_12px_32px_rgba(3,80,53,0.05)]">
+                                                <div className="flex flex-col flex-1">
+                                                        <div
+                                                                className="rounded-2xl px-5 sm:px-7 pt-8 sm:pt-10 pb-8 sm:pb-10 shadow-[0_12px_32px_rgba(3,80,53,0.05)] flex-1 flex flex-col"
+                                                                style={{
+                                                                        background: 'rgba(255, 255, 255, 0.7)',
+                                                                        backdropFilter: 'blur(20px)',
+                                                                        WebkitBackdropFilter: 'blur(20px)',
+                                                                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                                                                        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)'
+                                                                }}
+                                                        >
                                                         {currentStep === 1 && (
                                                                 <PromptStep
                                                                         onSubmit={(promptText) => {
@@ -448,6 +453,8 @@ export default function RecipeGeneration() {
                                                                         </div>
                                                                 </div>
                                                         )}
+                                                                </div>
+                                                        </div>
                                                 </div>
                                         </div>
                                 </div>
