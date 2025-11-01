@@ -36,25 +36,38 @@
     "finish": "Fertig"
   },
   "time": {
-    "min": "Min",
+    "na": "N/A",
+    "min": "Min.",
     "minutes": "Minuten",
-    "hours": "Stunden"
+    "hours": "Stunden",
+    "h": "Std"
   },
   "difficulty": {
+    "na": "N/A",
     "easy": "Einfach",
     "medium": "Mittel",
     "hard": "Schwierig"
   },
   "foodCategory": {
+    "na": "N/A",
     "vegan": "Vegan",
+    "veganSub": "Pflanzlich",
     "vegetarian": "Vegetarisch",
+    "vegetarianSub": "Enthält Milchprodukte/Eier",
     "beef": "Rind",
+    "beefSub": "Auf Rindfleisch basierend",
     "pork": "Schwein",
+    "porkSub": "Auf Schweinefleisch basierend",
     "chicken": "Huhn",
+    "chickenSub": "Geflügel",
     "lamb": "Lamm",
+    "lambSub": "Auf Lammfleisch basierend",
     "fish": "Fisch",
+    "fishSub": "Auf Fisch basierend",
     "seafood": "Meeresfrüchte",
-    "mixedMeat": "Gemischtes Fleisch"
+    "seafoodSub": "Auf Meeresfrüchten basierend",
+    "mixedMeat": "Gemischtes Fleisch",
+    "mixedMeatSub": "Mehrere Fleischsorten"
   },
   "language": {
     "label": "Sprache",

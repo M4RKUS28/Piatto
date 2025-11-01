@@ -36,25 +36,38 @@
     "finish": "Finish"
   },
   "time": {
-    "min": "min",
+    "na": "N/A",
+    "min": "Min.",
     "minutes": "minutes",
-    "hours": "hours"
+    "hours": "hours",
+    "h": "h"
   },
   "difficulty": {
+    "na": "N/A",
     "easy": "Easy",
     "medium": "Medium",
     "hard": "Hard"
   },
   "foodCategory": {
+    "na": "N/A",
     "vegan": "Vegan",
+    "veganSub": "Plant-based",
     "vegetarian": "Vegetarian",
+    "vegetarianSub": "Contains dairy/eggs",
     "beef": "Beef",
+    "beefSub": "Beef-based",
     "pork": "Pork",
+    "porkSub": "Pork-based",
     "chicken": "Chicken",
+    "chickenSub": "Poultry",
     "lamb": "Lamb",
+    "lambSub": "Lamb-based",
     "fish": "Fish",
+    "fishSub": "Fish-based",
     "seafood": "Seafood",
-    "mixedMeat": "Mixed Meat"
+    "seafoodSub": "Seafood-based",
+    "mixedMeat": "Mixed Meat",
+    "mixedMeatSub": "Multiple meats"
   },
   "language": {
     "label": "Language",

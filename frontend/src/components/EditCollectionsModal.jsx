@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next'
  * - Delete the recipe if no collections are selected
  */
 export default function EditCollectionsModal({ recipeId, isOpen, onClose, onRecipeDeleted }) {
+  const { t } = useTranslation(['pages']);
   const [collections, setCollections] = useState([]);
   const [selectedCollectionIds, setSelectedCollectionIds] = useState(new Set());
   const [initialCollectionIds, setInitialCollectionIds] = useState(new Set());
@@ -51,7 +52,7 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
       setInitialCollectionIds(recipeCollectionIds);
     } catch (err) {
       console.error('Failed to fetch collections:', err);
-      setError('Fehler beim Laden der Sammlungen');
+      setError(t('editCollectionsModal.errorLoading', 'Failed to load collections'));
     } finally {
       setLoading(false);
     }
@@ -105,14 +106,14 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
       onClose();
     } catch (err) {
       console.error('Failed to save collections:', err);
-      setError('Speichern fehlgeschlagen. Bitte versuche es erneut.');
+      setError(t('editCollectionsModal.errorSaving', 'Failed to save. Please try again.'));
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Möchtest du dieses Rezept wirklich löschen?')) {
+    if (!window.confirm(t('editCollectionsModal.deleteConfirm', 'Are you sure you want to delete this recipe?'))) {
       return;
     }
 
@@ -124,7 +125,7 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
       onRecipeDeleted();
     } catch (err) {
       console.error('Failed to delete recipe:', err);
-      setError('Löschen fehlgeschlagen. Bitte versuche es erneut.');
+      setError(t('editCollectionsModal.errorDeleting', 'Failed to delete. Please try again.'));
     } finally {
       setSaving(false);
     }
@@ -150,7 +151,7 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
       setNewCollectionDescription('');
     } catch (err) {
       console.error('Failed to create collection:', err);
-      setError('Sammlung konnte nicht erstellt werden');
+      setError(t('editCollectionsModal.errorCreating', 'Failed to create collection'));
     } finally {
       setCreatingCollection(false);
     }
@@ -167,7 +168,7 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
       <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="p-6 border-b border-[#F5F5F5] flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-[#035035]">Sammlung bearbeiten</h2>
+          <h2 className="text-2xl font-bold text-[#035035]">{t('editCollectionsModal.title', 'Edit Collection')}</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-[#F5F5F5] rounded-full transition-colors"
@@ -192,7 +193,7 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#2D2D2D] opacity-40" />
                 <input
                   type="text"
-                  placeholder="Sammlungen durchsuchen..."
+                  placeholder={t('editCollectionsModal.searchPlaceholder', 'Search collections...')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 rounded-full border-2 border-[#F5F5F5] focus:border-[#035035] focus:outline-none transition-all"
@@ -206,20 +207,20 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
                   className="w-full mb-4 py-3 rounded-full border-2 border-dashed border-[#035035] text-[#035035] font-semibold hover:bg-[#035035]/5 transition-all flex items-center justify-center gap-2"
                 >
                   <Plus className="w-5 h-5" />
-                  <span>Neue Sammlung erstellen</span>
+                  <span>{t('editCollectionsModal.createNew', 'Create New Collection')}</span>
                 </button>
               ) : (
                 <div className="mb-4 p-4 bg-[#F5F5F5] rounded-2xl">
-                  <h3 className="font-semibold text-[#035035] mb-3">Neue Sammlung</h3>
+                  <h3 className="font-semibold text-[#035035] mb-3">{t('editCollectionsModal.newCollection', 'New Collection')}</h3>
                   <input
                     type="text"
-                    placeholder="Name"
+                    placeholder={t('editCollectionsModal.namePlaceholder', 'Name')}
                     value={newCollectionName}
                     onChange={(e) => setNewCollectionName(e.target.value)}
                     className="w-full px-4 py-2 rounded-full border-2 border-white focus:border-[#035035] focus:outline-none transition-all mb-2"
                   />
                   <textarea
-                    placeholder="Beschreibung (optional)"
+                    placeholder={t('editCollectionsModal.descriptionPlaceholder', 'Description (optional)')}
                     value={newCollectionDescription}
                     onChange={(e) => setNewCollectionDescription(e.target.value)}
                     rows={2}
@@ -235,14 +236,14 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
                       className="flex-1 py-2 rounded-full border-2 border-[#2D2D2D]/20 text-[#2D2D2D] font-semibold hover:bg-white transition-all"
                       disabled={creatingCollection}
                     >
-                      Abbrechen
+                      {t('editCollectionsModal.cancel', 'Cancel')}
                     </button>
                     <button
                       onClick={handleCreateCollection}
                       className="flex-1 py-2 rounded-full bg-[#035035] text-white font-semibold hover:scale-105 transition-all disabled:opacity-50"
                       disabled={!newCollectionName.trim() || creatingCollection}
                     >
-                      {creatingCollection ? 'Erstellen...' : 'Erstellen'}
+                      {creatingCollection ? t('editCollectionsModal.creating', 'Creating...') : t('editCollectionsModal.create', 'Create')}
                     </button>
                   </div>
                 </div>
@@ -252,7 +253,7 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
               <div className="space-y-2">
                 {filteredCollections.length === 0 ? (
                   <p className="text-center py-8 text-[#2D2D2D] opacity-60">
-                    {searchQuery ? 'Keine Sammlungen gefunden' : 'Noch keine Sammlungen'}
+                    {searchQuery ? t('editCollectionsModal.noCollectionsFound', 'No collections found') : t('editCollectionsModal.noCollections', 'No collections yet')}
                   </p>
                 ) : (
                   filteredCollections.map((collection) => (
@@ -296,7 +297,7 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
               disabled={saving || loading}
             >
               <Trash2 className="w-5 h-5" />
-              <span>{saving ? 'Löschen...' : 'Löschen'}</span>
+              <span>{saving ? t('editCollectionsModal.deleting', 'Deleting...') : t('editCollectionsModal.delete', 'Delete')}</span>
             </button>
           ) : (
             <button
@@ -304,7 +305,7 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
               className="flex-1 px-6 py-3 rounded-full bg-[#035035] text-white font-semibold hover:scale-105 transition-all disabled:opacity-50"
               disabled={saving || loading}
             >
-              {saving ? 'Speichern...' : 'Speichern'}
+              {saving ? t('editCollectionsModal.saving', 'Saving...') : t('editCollectionsModal.save', 'Save')}
             </button>
           )}
         </div>

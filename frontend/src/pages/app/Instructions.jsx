@@ -110,6 +110,7 @@ const StepDiv = React.forwardRef(({ instruction, content, index, circleRef, circ
 const CookingInstructions = ({
   instructions: instructionsProp
 }) => {
+  const { t } = useTranslation(['pages']);
   const { recipeId } = useParams();
   const [instructions, setInstructions] = React.useState(instructionsProp || null);
   const [loading, setLoading] = React.useState(!instructionsProp);
@@ -275,7 +276,7 @@ const CookingInstructions = ({
         } else {
           // Other errors - stop polling and show error
           console.error('Error fetching instructions:', err);
-          setError('Failed to load instructions. Please try again.');
+          setError(t('instructions.errorLoading', 'Failed to load instructions. Please try again.'));
           setLoading(false);
           if (pollIntervalRef.current) {
             clearInterval(pollIntervalRef.current);
@@ -359,10 +360,10 @@ const CookingInstructions = ({
             <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-[#A8C9B8] border-t-[#035035]"></div>
           </div>
           <h2 className="font-['Poppins',_sans-serif] font-bold text-[#035035] text-2xl sm:text-3xl mb-3">
-            Generating Instructions...
+            {t('instructions.generating', 'Generating Instructions...')}
           </h2>
           <p className="text-[#2D2D2D] opacity-75 text-sm sm:text-base">
-            Our AI chef is preparing detailed cooking instructions for your recipe. This usually takes just a few moments.
+            {t('instructions.generatingDescription', 'Our AI chef is preparing detailed cooking instructions for your recipe. This usually takes just a few moments.')}
           </p>
         </div>
       </div>
@@ -376,7 +377,7 @@ const CookingInstructions = ({
         <div className="text-center max-w-md">
           <div className="mb-6 text-6xl">⚠️</div>
           <h2 className="font-['Poppins',_sans-serif] font-bold text-[#FF9B7B] text-2xl sm:text-3xl mb-3">
-            Oops! Something went wrong
+            {t('instructions.errorTitle', 'Oops! Something went wrong')}
           </h2>
           <p className="text-[#2D2D2D] opacity-75 text-sm sm:text-base">
             {error}
@@ -392,10 +393,10 @@ const CookingInstructions = ({
       {/* Header */}
       <div className="p-3 sm:p-4 md:p-8 text-center">
         <h1 className="font-['Poppins',_sans-serif] font-bold text-[#2D2D2D] text-2xl sm:text-3xl md:text-4xl lg:text-[2.5rem]">
-          Cooking Instructions
+          {t('instructions.title', 'Cooking Instructions')}
         </h1>
         <p className="text-[#2D2D2D] mt-3 sm:mt-4 max-w-lg text-sm sm:text-base">
-          Follow the steps along the path to complete your recipe.
+          {t('instructions.subtitle', 'Follow the steps along the path to complete your recipe.')}
         </p>
       </div>
 

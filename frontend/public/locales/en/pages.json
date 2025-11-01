@@ -227,5 +227,82 @@
       "days": "days"
     },
     "loading": "Loading..."
+  },
+  "recipeView": {
+    "recipeLabel": "RECIPE"
+  },
+  "recipe": {
+    "totalTime": "Total Time",
+    "difficultyLabel": "Difficulty",
+    "editCollection": "Edit Collection",
+    "deleteRecipe": "Delete Recipe",
+    "deleteConfirm": "Are you sure you want to delete this recipe?",
+    "deleteFailed": "Failed to delete recipe",
+    "forServings": "For {{count}} serving",
+    "forServings_plural": "For {{count}} servings",
+    "tabs": {
+      "ingredients": "Ingredients",
+      "nutrition": "Nutrition"
+    },
+    "nutrition": {
+      "title": "Nutrition Facts",
+      "servingsPerRecipe": "{{count}} servings per recipe",
+      "servingSize": "Serving size is calculated from the recipe",
+      "amountPerServing": "Amount per serving",
+      "dailyValue": "% Daily Value*",
+      "totalFat": "Total Fat",
+      "saturatedFat": "Saturated Fat",
+      "trans": "Trans",
+      "fat": "Fat",
+      "cholesterol": "Cholesterol",
+      "sodium": "Sodium",
+      "totalCarbohydrate": "Total Carbohydrate",
+      "dietaryFiber": "Dietary Fiber",
+      "totalSugars": "Total Sugars",
+      "protein": "Protein",
+      "vitaminD": "Vitamin D",
+      "calcium": "Calcium",
+      "iron": "Iron",
+      "potassium": "Potassium",
+      "disclaimer": "* The % Daily Value (DV) tells you how much a nutrient in a serving of food contributes to a daily diet. 2,000 calories a day is used for general nutrition advice."
+    },
+    "errors": {
+      "noId": "No recipe ID provided",
+      "notFound": "Recipe not found. It may have been deleted.",
+      "serverError": "Server error. Please try again later.",
+      "networkError": "Network error. Please check your connection.",
+      "loadFailed": "Failed to load recipe. Please try again.",
+      "dataNotAvailable": "Recipe data not available"
+    }
+  },
+  "instructions": {
+    "title": "Cooking Instructions",
+    "subtitle": "Follow the steps along the path to complete your recipe.",
+    "generating": "Generating Instructions...",
+    "generatingDescription": "Our AI chef is preparing detailed cooking instructions for your recipe. This usually takes just a few moments.",
+    "errorTitle": "Oops! Something went wrong",
+    "errorLoading": "Failed to load instructions. Please try again."
+  },
+  "editCollectionsModal": {
+    "title": "Edit Collection",
+    "searchPlaceholder": "Search collections...",
+    "createNew": "Create New Collection",
+    "newCollection": "New Collection",
+    "namePlaceholder": "Name",
+    "descriptionPlaceholder": "Description (optional)",
+    "cancel": "Cancel",
+    "create": "Create",
+    "creating": "Creating...",
+    "noCollectionsFound": "No collections found",
+    "noCollections": "No collections yet",
+    "save": "Save",
+    "saving": "Saving...",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "deleteConfirm": "Are you sure you want to delete this recipe?",
+    "errorLoading": "Failed to load collections",
+    "errorSaving": "Failed to save. Please try again.",
+    "errorDeleting": "Failed to delete. Please try again.",
+    "errorCreating": "Failed to create collection"
   }
 }
