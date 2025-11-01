@@ -3,8 +3,9 @@ import { AlertCircle, Home, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next'
 
 export default function OAuthLoginFailedPage() {
+  const { t } = useTranslation('auth');
   const [searchParams] = useSearchParams();
-  const reason = searchParams.get('reason') || 'An unexpected error occurred during OAuth login';
+  const reason = searchParams.get('reason') || t('oauth.defaultReason', 'An unexpected error occurred during OAuth login');
 
   const handleRetryOAuth = () => {
     // Redirect to Google OAuth login
@@ -25,13 +26,13 @@ export default function OAuthLoginFailedPage() {
             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="w-12 h-12 text-red-600" />
             </div>
-            <h1 className="text-3xl font-bold text-[#035035] mb-3">OAuth Login Failed</h1>
-            <p className="text-[#2D2D2D] text-lg">We couldn't complete your Google sign-in</p>
+            <h1 className="text-3xl font-bold text-[#035035] mb-3">{t('oauth.loginFailedTitle', 'OAuth Login Failed')}</h1>
+            <p className="text-[#2D2D2D] text-lg">{t('oauth.loginFailedSubtitle', "We couldn't complete your Google sign-in")}</p>
           </div>
 
           {/* Error Details */}
           <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
-            <p className="text-sm font-medium text-red-800 mb-1">Error Details:</p>
+            <p className="text-sm font-medium text-red-800 mb-1">{t('oauth.errorDetails', 'Error Details:')}</p>
             <p className="text-sm text-red-600">{reason}</p>
           </div>
 
@@ -42,7 +43,7 @@ export default function OAuthLoginFailedPage() {
               className="w-full bg-[#035035] text-white py-3 rounded-full font-semibold text-lg hover:scale-105 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
             >
               <RefreshCw className="w-5 h-5" />
-              Retry with Google
+              {t('oauth.retryWithGoogle', 'Retry with Google')}
             </button>
 
             <Link
@@ -50,43 +51,43 @@ export default function OAuthLoginFailedPage() {
               className="w-full bg-white border-2 border-[#F5F5F5] text-[#2D2D2D] py-3 rounded-full font-semibold text-lg hover:border-[#035035] hover:scale-105 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
             >
               <ArrowLeft className="w-5 h-5" />
-              Back to Login
+              {t('oauth.backToLogin', 'Back to Login')}
             </Link>
-            
+
             <Link
               to="/"
               className="w-full bg-transparent border-2 border-[#A8C9B8] text-[#035035] py-3 rounded-full font-semibold text-lg hover:bg-[#A8C9B8] hover:text-white transition-all flex items-center justify-center gap-2"
             >
               <Home className="w-5 h-5" />
-              Go Home
+              {t('oauth.goHome', 'Go Home')}
             </Link>
           </div>
 
           {/* Help Section */}
           <div className="mt-8 pt-6 border-t border-[#F5F5F5] text-center">
-            <p className="text-sm text-[#2D2D2D] mb-3">Common OAuth issues:</p>
+            <p className="text-sm text-[#2D2D2D] mb-3">{t('oauth.commonOAuthIssues', 'Common OAuth issues:')}</p>
             <ul className="text-sm text-[#2D2D2D] space-y-2 text-left">
               <li className="flex items-start gap-2">
                 <span className="text-[#FF9B7B] mt-1">•</span>
-                <span>Make sure pop-ups are enabled in your browser</span>
+                <span>{t('oauth.issue1', 'Make sure pop-ups are enabled in your browser')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#FF9B7B] mt-1">•</span>
-                <span>Check that you're using a valid Google account</span>
+                <span>{t('oauth.issue2', "Check that you're using a valid Google account")}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#FF9B7B] mt-1">•</span>
-                <span>Try clearing your browser cache and cookies</span>
+                <span>{t('oauth.issue3', 'Try clearing your browser cache and cookies')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#FF9B7B] mt-1">•</span>
-                <span>Ensure third-party cookies are not blocked</span>
+                <span>{t('oauth.issue4', 'Ensure third-party cookies are not blocked')}</span>
               </li>
             </ul>
             <p className="text-sm text-[#2D2D2D] mt-4">
-              Still having trouble?{' '}
+              {t('oauth.stillTrouble', 'Still having trouble?')}{' '}
               <Link to="/contact" className="text-[#FF9B7B] hover:text-[#035035] font-semibold">
-                Contact Support
+                {t('oauth.contactSupport', 'Contact Support')}
               </Link>
             </p>
           </div>
@@ -94,13 +95,13 @@ export default function OAuthLoginFailedPage() {
           {/* Alternative Login */}
           <div className="mt-6 pt-6 border-t border-[#F5F5F5] text-center">
             <p className="text-sm text-[#2D2D2D] mb-3">
-              Prefer to use email and password instead?
+              {t('oauth.preferEmail', 'Prefer to use email and password instead?')}
             </p>
             <Link
               to="/login"
               className="inline-block text-[#FF9B7B] hover:text-[#035035] font-semibold text-sm"
             >
-              Sign in with Email →
+              {t('oauth.signInWithEmail', 'Sign in with Email →')}
             </Link>
           </div>
         </div>

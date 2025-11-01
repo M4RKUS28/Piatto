@@ -5,15 +5,16 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from 'react-i18next'
 
 export default function LoginPage() {
+  const { t } = useTranslation('auth')
   const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const from = location.state?.from?.pathname || '/app';
 
   const handleSubmit = async (e) => {
@@ -22,7 +23,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     if (!emailOrUsername || !password) {
-      setError('Please fill in all fields');
+      setError(t('login.errors.fillAllFields', 'Please fill in all fields'));
       setIsLoading(false);
       return;
     }
@@ -51,8 +52,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md relative z-10 mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-[#035035] mb-2">Welcome Back!</h1>
-          <p className="text-[#2D2D2D]">Sign in to continue your culinary journey</p>
+          <h1 className="text-3xl font-bold text-[#035035] mb-2">{t('login.title', 'Welcome Back!')}</h1>
+          <p className="text-[#2D2D2D]">{t('login.subtitle', 'Sign in to continue your culinary journey')}</p>
         </div>
 
         {/* Login Form Card */}
@@ -82,7 +83,7 @@ export default function LoginPage() {
             {/* Email or Username Input */}
             <div>
               <label htmlFor="emailOrUsername" className="block text-sm font-semibold text-[#035035] mb-2">
-                Email or Username
+                {t('login.emailOrUsername', 'Email or Username')}
               </label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#A8C9B8]" />
@@ -92,7 +93,7 @@ export default function LoginPage() {
                   value={emailOrUsername}
                   onChange={(e) => setEmailOrUsername(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 border-2 border-[#F5F5F5] rounded-2xl focus:outline-none focus:border-[#035035] transition-colors text-[#2D2D2D]"
-                  placeholder="your@email.com or username"
+                  placeholder={t('login.emailOrUsernamePlaceholder', 'your@email.com or username')}
                   disabled={isLoading}
                   autoComplete="username"
                 />
@@ -102,7 +103,7 @@ export default function LoginPage() {
             {/* Password Input */}
             <div>
               <label htmlFor="password" className="block text-sm font-semibold text-[#035035] mb-2">
-                Password
+                {t('login.password', 'Password')}
               </label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#A8C9B8]" />
@@ -112,7 +113,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 border-2 border-[#F5F5F5] rounded-2xl focus:outline-none focus:border-[#035035] transition-colors text-[#2D2D2D]"
-                  placeholder="Enter your password"
+                  placeholder={t('login.passwordPlaceholder', 'Enter your password')}
                   disabled={isLoading}
                 />
               </div>
@@ -124,7 +125,7 @@ export default function LoginPage() {
                 to="/forgot-password"
                 className="text-sm text-[#FF9B7B] hover:text-[#035035] transition-colors font-medium"
               >
-                Forgot Password?
+                {t('login.forgotPassword', 'Forgot Password?')}
               </Link>
             </div>
 
@@ -137,10 +138,10 @@ export default function LoginPage() {
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Signing in...
+                  {t('login.signingIn', 'Signing in...')}
                 </span>
               ) : (
-                'Sign In'
+                t('login.signIn', 'Sign In')
               )}
             </button>
           </form>
@@ -151,7 +152,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-[#F5F5F5]"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-[#2D2D2D]">Or continue with</span>
+              <span className="px-4 bg-white text-[#2D2D2D]">{t('login.orContinueWith', 'Or continue with')}</span>
             </div>
           </div>
 
@@ -180,15 +181,15 @@ export default function LoginPage() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            Continue with Google
+            {t('login.continueWithGoogle', 'Continue with Google')}
           </button>
 
           {/* Sign Up Link */}
           <div className="mt-8 text-center">
             <p className="text-[#2D2D2D]">
-              Don't have an account?{' '}
+              {t('login.noAccount', "Don't have an account?")}{' '}
               <Link to="/register" className="text-[#FF9B7B] hover:text-[#035035] transition-colors font-semibold">
-                Sign Up
+                {t('login.signUp', 'Sign Up')}
               </Link>
             </p>
           </div>

@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from 'react-i18next'
 
 export default function RegisterPage() {
+  const { t } = useTranslation('auth');
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -14,7 +15,7 @@ export default function RegisterPage() {
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
@@ -27,23 +28,23 @@ export default function RegisterPage() {
 
   const validateForm = () => {
     if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
-      return 'Please fill in all fields';
+      return t('register.errors.fillAllFields', 'Please fill in all fields');
     }
 
     if (formData.username.length < 3) {
-      return 'Username must be at least 3 characters long';
+      return t('register.errors.usernameLength', 'Username must be at least 3 characters long');
     }
 
     if (formData.password.length < 6) {
-      return 'Password must be at least 6 characters long';
+      return t('register.errors.passwordLength', 'Password must be at least 6 characters long');
     }
 
     if (formData.password !== formData.confirmPassword) {
-      return 'Passwords do not match';
+      return t('register.errors.passwordMismatch', 'Passwords do not match');
     }
 
     if (!acceptedPrivacy) {
-      return 'Please accept the Privacy Policy to continue';
+      return t('register.errors.acceptPrivacy', 'Please accept the Privacy Policy to continue');
     }
 
     return null;
@@ -74,7 +75,7 @@ export default function RegisterPage() {
 
   const handleGoogleSignup = () => {
     if (!acceptedPrivacy) {
-      setError('Please accept the Privacy Policy to continue');
+      setError(t('register.errors.acceptPrivacy', 'Please accept the Privacy Policy to continue'));
       return;
     }
     loginWithGoogle();
@@ -89,8 +90,8 @@ export default function RegisterPage() {
       <div className="w-full max-w-md relative z-10 mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-[#035035] mb-2">Create Your Account</h1>
-          <p className="text-[#2D2D2D]">Start your culinary adventure today</p>
+          <h1 className="text-3xl font-bold text-[#035035] mb-2">{t('register.title', 'Create Your Account')}</h1>
+          <p className="text-[#2D2D2D]">{t('register.subtitle', 'Start your culinary adventure today')}</p>
         </div>
 
         {/* Registration Form Card */}
@@ -120,7 +121,7 @@ export default function RegisterPage() {
             {/* Username Input */}
             <div>
               <label htmlFor="username" className="block text-sm font-semibold text-[#035035] mb-2">
-                Username
+                {t('register.username', 'Username')}
               </label>
               <div className="relative">
                 <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#A8C9B8]" />
@@ -131,7 +132,7 @@ export default function RegisterPage() {
                   value={formData.username}
                   onChange={handleChange}
                   className="w-full pl-12 pr-4 py-3 border-2 border-[#F5F5F5] rounded-2xl focus:outline-none focus:border-[#035035] transition-colors text-[#2D2D2D]"
-                  placeholder="Choose a username"
+                  placeholder={t('register.usernamePlaceholder', 'Choose a username')}
                   disabled={isLoading}
                 />
               </div>
@@ -140,7 +141,7 @@ export default function RegisterPage() {
             {/* Email Input */}
             <div>
               <label htmlFor="email" className="block text-sm font-semibold text-[#035035] mb-2">
-                Email Address
+                {t('register.email', 'Email Address')}
               </label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#A8C9B8]" />
@@ -151,7 +152,7 @@ export default function RegisterPage() {
                   value={formData.email}
                   onChange={handleChange}
                   className="w-full pl-12 pr-4 py-3 border-2 border-[#F5F5F5] rounded-2xl focus:outline-none focus:border-[#035035] transition-colors text-[#2D2D2D]"
-                  placeholder="your@email.com"
+                  placeholder={t('register.emailPlaceholder', 'your@email.com')}
                   disabled={isLoading}
                 />
               </div>
@@ -160,7 +161,7 @@ export default function RegisterPage() {
             {/* Password Input */}
             <div>
               <label htmlFor="password" className="block text-sm font-semibold text-[#035035] mb-2">
-                Password
+                {t('register.password', 'Password')}
               </label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#A8C9B8]" />
@@ -171,7 +172,7 @@ export default function RegisterPage() {
                   value={formData.password}
                   onChange={handleChange}
                   className="w-full pl-12 pr-4 py-3 border-2 border-[#F5F5F5] rounded-2xl focus:outline-none focus:border-[#035035] transition-colors text-[#2D2D2D]"
-                  placeholder="At least 6 characters"
+                  placeholder={t('register.passwordPlaceholder', 'At least 6 characters')}
                   disabled={isLoading}
                 />
               </div>
@@ -180,7 +181,7 @@ export default function RegisterPage() {
             {/* Confirm Password Input */}
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-semibold text-[#035035] mb-2">
-                Confirm Password
+                {t('register.confirmPassword', 'Confirm Password')}
               </label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#A8C9B8]" />
@@ -191,7 +192,7 @@ export default function RegisterPage() {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   className="w-full pl-12 pr-4 py-3 border-2 border-[#F5F5F5] rounded-2xl focus:outline-none focus:border-[#035035] transition-colors text-[#2D2D2D]"
-                  placeholder="Confirm your password"
+                  placeholder={t('register.confirmPasswordPlaceholder', 'Confirm your password')}
                   disabled={isLoading}
                 />
               </div>
@@ -212,11 +213,11 @@ export default function RegisterPage() {
                 {acceptedPrivacy && <CheckCircle className="w-4 h-4 text-white" />}
               </button>
               <label className="text-sm text-[#2D2D2D] cursor-pointer" onClick={() => setAcceptedPrivacy(!acceptedPrivacy)}>
-                I accept the{' '}
+                {t('register.privacyAccept', 'I accept the')}{' '}
                 <Link to="/privacy" className="text-[#FF9B7B] hover:text-[#035035] font-semibold">
-                  Privacy Policy
+                  {t('register.privacyPolicy', 'Privacy Policy')}
                 </Link>{' '}
-                and agree to the processing of my personal data
+                {t('register.privacyAgree', 'and agree to the processing of my personal data')}
               </label>
             </div>
 
@@ -229,10 +230,10 @@ export default function RegisterPage() {
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Creating account...
+                  {t('register.creatingAccount', 'Creating account...')}
                 </span>
               ) : (
-                'Create Account'
+                t('register.createAccount', 'Create Account')
               )}
             </button>
           </form>
@@ -243,7 +244,7 @@ export default function RegisterPage() {
               <div className="w-full border-t border-[#F5F5F5]"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-[#2D2D2D]">Or continue with</span>
+              <span className="px-4 bg-white text-[#2D2D2D]">{t('register.orContinueWith', 'Or continue with')}</span>
             </div>
           </div>
 
@@ -272,15 +273,15 @@ export default function RegisterPage() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            Sign up with Google
+            {t('register.signUpWithGoogle', 'Sign up with Google')}
           </button>
 
           {/* Login Link */}
           <div className="mt-6 text-center">
             <p className="text-[#2D2D2D]">
-              Already have an account?{' '}
+              {t('register.hasAccount', 'Already have an account?')}{' '}
               <Link to="/login" className="text-[#FF9B7B] hover:text-[#035035] transition-colors font-semibold">
-                Sign In
+                {t('register.signIn', 'Sign In')}
               </Link>
             </p>
           </div>
