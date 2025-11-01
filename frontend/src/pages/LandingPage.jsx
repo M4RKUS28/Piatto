@@ -5,26 +5,28 @@ import { useTranslation } from 'react-i18next'
 
 
 export default function LandingPage() {
+  const { t } = useTranslation(['landing', 'common'])
+
   const recipes = [
     {
-      name: 'Mediterranean Sunset Bowl',
-      description: 'Fresh quinoa with roasted vegetables, feta, and lemon herb dressing',
-      time: '25 min',
-      difficulty: 'Easy',
+      name: t('exampleRecipes.mediterraneanBowl.name', 'Mediterranean Sunset Bowl'),
+      description: t('exampleRecipes.mediterraneanBowl.description', 'Fresh quinoa with roasted vegetables, feta, and lemon herb dressing'),
+      time: '25 ' + t('time.min', { ns: 'common', defaultValue: 'min' }),
+      difficulty: t('difficulty.easy', { ns: 'common', defaultValue: 'Easy' }),
       color: '#FF9B7B'
     },
     {
-      name: 'Creamy Tuscan Chicken',
-      description: 'Pan-seared chicken in sun-dried tomato cream sauce with spinach',
-      time: '35 min',
-      difficulty: 'Medium',
+      name: t('exampleRecipes.tuscanChicken.name', 'Creamy Tuscan Chicken'),
+      description: t('exampleRecipes.tuscanChicken.description', 'Pan-seared chicken in sun-dried tomato cream sauce with spinach'),
+      time: '35 ' + t('time.min', { ns: 'common', defaultValue: 'min' }),
+      difficulty: t('difficulty.medium', { ns: 'common', defaultValue: 'Medium' }),
       color: '#035035'
     },
     {
-      name: 'Berry Bliss Smoothie Bowl',
-      description: 'Antioxidant-rich blend topped with granola, fresh berries & coconut',
-      time: '10 min',
-      difficulty: 'Easy',
+      name: t('exampleRecipes.smoothieBowl.name', 'Berry Bliss Smoothie Bowl'),
+      description: t('exampleRecipes.smoothieBowl.description', 'Antioxidant-rich blend topped with granola, fresh berries & coconut'),
+      time: '10 ' + t('time.min', { ns: 'common', defaultValue: 'min' }),
+      difficulty: t('difficulty.easy', { ns: 'common', defaultValue: 'Easy' }),
       color: '#A8C9B8'
     }
   ]
@@ -40,25 +42,25 @@ export default function LandingPage() {
             <div className="space-y-8">
               <div className="inline-flex items-center gap-2 bg-[#FFF8F0] px-4 py-2 rounded-full border border-[#A8C9B8]">
                 <Sparkles className="w-4 h-4 text-[#FF9B7B]" />
-                <span className="text-sm font-medium text-[#035035]">AI-Powered Cooking Assistant</span>
+                <span className="text-sm font-medium text-[#035035]">{t('hero.badge', 'AI-Powered Cooking Assistant')}</span>
               </div>
 
               <h1 className="text-5xl lg:text-6xl font-bold text-[#035035] leading-tight">
-                Your Personal Chef, Right in Your Pocket
+                {t('hero.title', 'Your Personal Chef, Right in Your Pocket')}
               </h1>
 
               <p className="text-xl text-[#2D2D2D] leading-relaxed">
-                Discover personalized recipes, get step-by-step cooking guidance, and turn your kitchen into a culinary playground with AI-powered creativity.
+                {t('hero.description', 'Discover personalized recipes, get step-by-step cooking guidance, and turn your kitchen into a culinary playground with AI-powered creativity.')}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <button className="bg-[#035035] text-white px-8 py-4 rounded-full font-semibold text-lg hover:scale-105 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
                   <ChefHat className="w-5 h-5" />
-                  Start Cooking
+                  {t('buttons.startCooking', { ns: 'common', defaultValue: 'Start Cooking' })}
                 </button>
                 <button className="bg-transparent border-2 border-[#FF9B7B] text-[#FF9B7B] px-8 py-4 rounded-full font-semibold text-lg hover:bg-[#FF9B7B] hover:text-white transition-all flex items-center justify-center gap-2">
                   <BookOpen className="w-5 h-5" />
-                  Explore Recipes
+                  {t('buttons.exploreRecipes', { ns: 'common', defaultValue: 'Explore Recipes' })}
                 </button>
               </div>
 
@@ -68,8 +70,8 @@ export default function LandingPage() {
                     <Sparkles className="w-5 h-5 text-[#035035]" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-[#035035]">AI Recipe Generator</h3>
-                    <p className="text-sm text-[#2D2D2D]">Custom recipes for your taste</p>
+                    <h3 className="font-semibold text-[#035035]">{t('hero.aiRecipeGenerator', 'AI Recipe Generator')}</h3>
+                    <p className="text-sm text-[#2D2D2D]">{t('hero.aiRecipeGeneratorDesc', 'Custom recipes for your taste')}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -77,8 +79,8 @@ export default function LandingPage() {
                     <BookOpen className="w-5 h-5 text-[#035035]" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-[#035035]">Interactive Guide</h3>
-                    <p className="text-sm text-[#2D2D2D]">Step-by-step instructions</p>
+                    <h3 className="font-semibold text-[#035035]">{t('hero.interactiveGuide', 'Interactive Guide')}</h3>
+                    <p className="text-sm text-[#2D2D2D]">{t('hero.interactiveGuideDesc', 'Step-by-step instructions')}</p>
                   </div>
                 </div>
               </div>
@@ -95,12 +97,12 @@ export default function LandingPage() {
                 <div className="w-full h-full bg-white rounded-[2.5rem] overflow-hidden">
                   <div className="bg-[#035035] text-white p-6 pb-8 rounded-b-3xl">
                     <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-2xl font-bold">Discover</h2>
+                      <h2 className="text-2xl font-bold">{t('mockup.discover', 'Discover')}</h2>
                       <div className="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
                         <ChefHat className="w-5 h-5" />
                       </div>
                     </div>
-                    <p className="text-sm opacity-90">What would you like to cook today?</p>
+                    <p className="text-sm opacity-90">{t('mockup.whatToCook', 'What would you like to cook today?')}</p>
                   </div>
 
                   <div className="p-4 space-y-4 -mt-4">
@@ -133,7 +135,7 @@ export default function LandingPage() {
                               {recipe.difficulty}
                             </span>
                             <button className="text-[#FF9B7B] font-semibold text-sm hover:text-[#035035] transition-colors">
-                              Start Cooking →
+                              {t('mockup.startCooking', 'Start Cooking →')}
                             </button>
                           </div>
                         </div>
@@ -150,10 +152,10 @@ export default function LandingPage() {
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">
               <h2 className="text-4xl lg:text-5xl font-bold text-[#035035] mb-4">
-                How It Works
+                {t('howItWorks.title', 'How It Works')}
               </h2>
               <p className="text-xl text-[#2D2D2D] max-w-2xl mx-auto">
-                From idea to delicious meal in three simple steps
+                {t('howItWorks.subtitle', 'From idea to delicious meal in three simple steps')}
               </p>
             </div>
 
@@ -163,9 +165,9 @@ export default function LandingPage() {
                   <div className="w-16 h-16 rounded-full bg-[#FF9B7B] flex items-center justify-center mb-6 text-white text-2xl font-bold">
                     1
                   </div>
-                  <h3 className="text-2xl font-bold text-[#035035] mb-4">Share Your Preferences</h3>
+                  <h3 className="text-2xl font-bold text-[#035035] mb-4">{t('howItWorks.step1.title', 'Share Your Preferences')}</h3>
                   <p className="text-[#2D2D2D] leading-relaxed">
-                    Tell us what you're craving, dietary restrictions, available ingredients, or cooking time. Our AI understands your needs.
+                    {t('howItWorks.step1.description', "Tell us what you're craving, dietary restrictions, available ingredients, or cooking time. Our AI understands your needs.")}
                   </p>
                 </div>
                 <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-[#A8C9B8]"></div>
@@ -176,9 +178,9 @@ export default function LandingPage() {
                   <div className="w-16 h-16 rounded-full bg-[#035035] flex items-center justify-center mb-6 text-white text-2xl font-bold">
                     2
                   </div>
-                  <h3 className="text-2xl font-bold text-[#035035] mb-4">Get Personalized Recipes</h3>
+                  <h3 className="text-2xl font-bold text-[#035035] mb-4">{t('howItWorks.step2.title', 'Get Personalized Recipes')}</h3>
                   <p className="text-[#2D2D2D] leading-relaxed">
-                    Receive custom recipes tailored to your taste, skill level, and kitchen setup. Save favorites to your personal collection.
+                    {t('howItWorks.step2.description', 'Receive custom recipes tailored to your taste, skill level, and kitchen setup. Save favorites to your personal collection.')}
                   </p>
                 </div>
                 <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-[#A8C9B8]"></div>
@@ -188,9 +190,9 @@ export default function LandingPage() {
                 <div className="w-16 h-16 rounded-full bg-[#A8C9B8] flex items-center justify-center mb-6 text-white text-2xl font-bold">
                   3
                 </div>
-                <h3 className="text-2xl font-bold text-[#035035] mb-4">Cook with Confidence</h3>
+                <h3 className="text-2xl font-bold text-[#035035] mb-4">{t('howItWorks.step3.title', 'Cook with Confidence')}</h3>
                 <p className="text-[#2D2D2D] leading-relaxed">
-                  Follow interactive step-by-step guidance with tips, timers, and voice assistance. Create amazing dishes every time.
+                  {t('howItWorks.step3.description', 'Follow interactive step-by-step guidance with tips, timers, and voice assistance. Create amazing dishes every time.')}
                 </p>
               </div>
             </div>
@@ -201,10 +203,10 @@ export default function LandingPage() {
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">
               <h2 className="text-4xl lg:text-5xl font-bold text-[#035035] mb-4">
-                Cooking Made Simple & Fun
+                {t('features.title', 'Cooking Made Simple & Fun')}
               </h2>
               <p className="text-xl text-[#2D2D2D] max-w-2xl mx-auto">
-                From inspiration to the final dish, we guide you every step of the way
+                {t('features.subtitle', 'From inspiration to the final dish, we guide you every step of the way')}
               </p>
             </div>
 
@@ -213,9 +215,9 @@ export default function LandingPage() {
                 <div className="w-16 h-16 rounded-full bg-[#FFF8F0] flex items-center justify-center mb-6">
                   <Sparkles className="w-8 h-8 text-[#FF9B7B]" />
                 </div>
-                <h3 className="text-2xl font-bold text-[#035035] mb-4">AI Recipe Brainstorming</h3>
+                <h3 className="text-2xl font-bold text-[#035035] mb-4">{t('features.aiBrainstorming.title', 'AI Recipe Brainstorming')}</h3>
                 <p className="text-[#2D2D2D] leading-relaxed">
-                  Tell us your preferences, dietary needs, or what's in your fridge. Our AI creates personalized recipes just for you, tailored to your taste and skill level.
+                  {t('features.aiBrainstorming.description', "Tell us your preferences, dietary needs, or what's in your fridge. Our AI creates personalized recipes just for you, tailored to your taste and skill level.")}
                 </p>
               </div>
 
@@ -223,9 +225,9 @@ export default function LandingPage() {
                 <div className="w-16 h-16 rounded-full bg-[#FFF8F0] flex items-center justify-center mb-6">
                   <BookOpen className="w-8 h-8 text-[#035035]" />
                 </div>
-                <h3 className="text-2xl font-bold text-[#035035] mb-4">Interactive Cooking Guide</h3>
+                <h3 className="text-2xl font-bold text-[#035035] mb-4">{t('features.cookingGuide.title', 'Interactive Cooking Guide')}</h3>
                 <p className="text-[#2D2D2D] leading-relaxed">
-                  Follow along with step-by-step instructions, helpful tips, and voice assistance. Cook with confidence, no matter your experience level.
+                  {t('features.cookingGuide.description', 'Follow along with step-by-step instructions, helpful tips, and voice assistance. Cook with confidence, no matter your experience level.')}
                 </p>
               </div>
             </div>
@@ -242,13 +244,13 @@ export default function LandingPage() {
             <div className="relative z-10 max-w-3xl mx-auto">
               <ChefHat className="w-16 h-16 mx-auto mb-6 animate-bounce" />
               <h2 className="text-4xl lg:text-5xl font-bold mb-6">
-                Ready to Transform Your Cooking?
+                {t('cta.title', 'Ready to Transform Your Cooking?')}
               </h2>
               <p className="text-xl mb-8 opacity-90">
-                Join thousands of home chefs discovering the joy of personalized, guided cooking
+                {t('cta.subtitle', 'Join thousands of home chefs discovering the joy of personalized, guided cooking')}
               </p>
               <button className="bg-[#FF9B7B] text-white px-10 py-4 rounded-full font-semibold text-lg hover:scale-105 transition-all shadow-lg hover:shadow-2xl inline-flex items-center gap-2">
-                Download Piatto Free
+                {t('cta.button', 'Download Piatto Free')}
                 <Sparkles className="w-5 h-5" />
               </button>
             </div>
