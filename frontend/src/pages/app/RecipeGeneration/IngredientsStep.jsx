@@ -45,19 +45,22 @@ export default function IngredientsStep({
 		}
 	};
 
-
 	return (
-		<div className="space-y-6">
-			<h2 className="text-2xl sm:text-3xl font-bold text-[#035035] text-center">
+		<div className="flex flex-col items-center">
+			<h2 className="text-3xl font-bold text-[#035035] text-center">
 				{t('ingredients.title', 'What ingredients do you have?')}
 			</h2>
-			<p className="text-sm sm:text-base text-center text-[#2D2D2D] opacity-70">
+			<p className="text-center text-[#2D2D2D] opacity-60 mt-4 max-w-2xl">
 				{t('ingredients.subtitle', 'Tell us what\'s in your kitchen. You can also analyze a photo to extract ingredients.')}
 			</p>
 
-			<form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6" aria-label={t('ingredients.aria.form', 'Ingredients input form')}>
+			<form
+				onSubmit={handleSubmit}
+				aria-label={t('ingredients.aria.form', 'Ingredients input form')}
+				className="w-full max-w-2xl mt-4"
+			>
 				<div className="relative">
-					<label htmlFor="ingredients-input" className="block text-xs sm:text-sm font-medium text-[#2D2D2D] mb-2">
+					<label htmlFor="ingredients-input" className="block text-sm font-medium text-[#2D2D2D] mb-2">
 						{t('ingredients.label', 'Enter your ingredients')}
 					</label>
 					<div className="relative">
@@ -68,7 +71,7 @@ export default function IngredientsStep({
 							placeholder={t('ingredients.placeholder', 'Enter your ingredients, separated by commas...')}
 							disabled={loading || analyzing}
 							rows={6}
-							className={`w-full px-3 sm:px-4 py-3 pr-12 rounded-xl border-2 transition-all resize-vertical font-['Inter'] text-sm sm:text-base min-h-[120px] focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${validationError ? 'border-[#FF9B7B] focus:border-[#FF9B7B]' : 'border-[#F5F5F5] focus:border-[#035035]'}`}
+							className={`w-full px-4 py-3 pr-12 rounded-xl border-2 transition-all resize-vertical font-['Inter'] text-base min-h-[120px] focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${validationError ? 'border-[#FF9B7B] focus:border-[#FF9B7B]' : 'border-[#F5F5F5] focus:border-[#035035]'}`}
 							aria-invalid={validationError ? 'true' : 'false'}
 							aria-describedby={validationError ? 'ingredients-error' : undefined}
 							aria-label={t('ingredients.aria.ingredientsInput', 'List of ingredients you have available')}
@@ -100,7 +103,9 @@ export default function IngredientsStep({
 							style={{ display: 'none' }}
 							onChange={async (event) => {
 								const file = event.target.files?.[0];
-								if (!file) return;
+								if (!file) {
+									return;
+								}
 								if (!user?.id) {
 									setValidationError(t('ingredients.validation.notLoggedIn', 'You must be logged in to analyze an image'));
 									return;
@@ -110,7 +115,6 @@ export default function IngredientsStep({
 								try {
 									const formData = new FormData();
 									formData.append('file', file);
-									// You may need to adjust the API base URL
 									const response = await axios.post('/api/preparing/image-analysis', formData, {
 										headers: {
 											'Content-Type': 'multipart/form-data',
@@ -122,12 +126,15 @@ export default function IngredientsStep({
 										(Array.isArray(result) && result.length === 0)
 									) {
 										setShowPopup(true);
-										if (popupTimeoutRef.current) clearTimeout(popupTimeoutRef.current);
+										if (popupTimeoutRef.current) {
+											clearTimeout(popupTimeoutRef.current);
+										}
 										popupTimeoutRef.current = setTimeout(() => setShowPopup(false), 3000);
 									} else if (typeof result === 'string' && result.length > 0) {
-										setIngredientsText((prev) => prev ? prev + ', ' + result : result);
+										setIngredientsText((prev) => (prev ? `${prev}, ${result}` : result));
 									} else if (Array.isArray(result)) {
-										setIngredientsText((prev) => prev ? prev + ', ' + result.join(', ') : result.join(', '));
+										const joined = result.join(', ');
+										setIngredientsText((prev) => (prev ? `${prev}, ${joined}` : joined));
 									} else {
 										setValidationError(t('ingredients.validation.noIngredients', 'Image analysis did not return ingredients'));
 									}
@@ -143,7 +150,7 @@ export default function IngredientsStep({
 							type="button"
 							onClick={() => document.getElementById('image-upload')?.click()}
 							disabled={loading || analyzing}
-							className="absolute bottom-3 left-3 bg-[#035035] rounded-full px-3 py-2 shadow-md hover:bg-[#046a47] focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+							className="absolute bottom-2 left-2 bg-[#035035] rounded-full px-3 py-2 shadow-md hover:bg-[#046a47] focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
 							aria-label={t('ingredients.aria.analyzeImage', 'Analyze image to extract ingredients')}
 						>
 							{analyzing ? (
@@ -152,8 +159,8 @@ export default function IngredientsStep({
 								</svg>
 							) : (
 								<>
-									<img src="/wired-outline-61-camera-in-reveal.gif" alt="Upload ingredients image" className="w-6 h-6" />
-									<span className="text-white font-semibold text-xs sm:text-sm">{t('ingredients.analyzeImage', 'Analyze Image')}</span>
+									<img src="/wired-outline-61-camera-in-reveal.gif" alt={t('ingredients.aria.analyzeImageIconAlt', 'Upload ingredients image')} className="w-7 h-7" />
+									<span className="text-white font-semibold text-sm">{t('ingredients.analyzeImage', 'Analyze Image')}</span>
 								</>
 							)}
 						</button>
@@ -168,7 +175,7 @@ export default function IngredientsStep({
 				{validationError && (
 					<p
 						id="ingredients-error"
-						className="mb-6 text-sm text-[#FF9B7B]"
+						className="mt-2 text-sm text-[#FF9B7B]"
 						role="alert"
 						aria-live="polite"
 					>
@@ -176,12 +183,12 @@ export default function IngredientsStep({
 					</p>
 				)}
 
-				<div className="flex flex-col sm:flex-row justify-center gap-3 w-full sm:w-auto">
+				<div className="flex justify-between gap-3 mt-4">
 					<button
 						type="button"
 						onClick={onBack}
 						disabled={loading || analyzing}
-						className="w-full sm:w-auto bg-white text-[#035035] border-2 border-[#035035] px-6 py-3 rounded-full font-semibold text-base
+						className="bg-white text-[#035035] border-2 border-[#035035] px-6 py-3 rounded-full font-semibold text-base
 							hover:bg-[#035035] hover:text-white transition-all duration-200
 							disabled:opacity-50 disabled:cursor-not-allowed
 							focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2
@@ -193,14 +200,18 @@ export default function IngredientsStep({
 					<button
 						type="submit"
 						disabled={loading || analyzing}
-						className="w-full sm:w-auto bg-[#035035] text-white px-6 py-3 rounded-full font-semibold text-base
+						className="bg-[#035035] text-white px-6 py-3 rounded-full font-semibold text-base
 							hover:scale-105 active:scale-95 transition-all duration-200
 							disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
 							focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2
 							min-w-[160px]"
 						aria-label={t('ingredients.aria.submit', 'Generate recipe options based on your ingredients')}
 					>
-						{loading ? t('ingredients.generating', 'Generating...') : analyzing ? t('ingredients.analyzing', 'Analyzing image...') : t('ingredients.generateRecipes', 'Generate Recipes')}
+						{loading
+							? t('ingredients.generating', 'Generating...')
+							: analyzing
+								? t('ingredients.analyzing', 'Analyzing image...')
+								: t('ingredients.generateRecipes', 'Generate Recipes')}
 					</button>
 				</div>
 			</form>

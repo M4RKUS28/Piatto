@@ -28,6 +28,7 @@ export default function RecipeGeneration() {
 	const [inputMethod, setInputMethod] = useState('text');
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
+	const [successMessage, setSuccessMessage] = useState(null);
 	const [preparingSessionId, setPreparingSessionId] = useState(null);
 	const [recipeOptions, setRecipeOptions] = useState([]);
 	const [, setImageAnalysis] = useState(null);
@@ -42,6 +43,13 @@ export default function RecipeGeneration() {
 			localStorage.setItem(SESSION_STORAGE_KEY, String(sessionId));
 		} catch (storageError) {
 			console.error('Unable to persist preparing session ID:', storageError);
+		}
+	}, []);
+
+	const showTemporarySuccess = useCallback((message) => {
+		setSuccessMessage(message);
+		if (typeof window !== 'undefined') {
+			window.setTimeout(() => setSuccessMessage(null), 3000);
 		}
 	}, []);
 
@@ -60,6 +68,7 @@ export default function RecipeGeneration() {
 		if (step >= 1 && step <= 3) {
 			setCurrentStep(step);
 			setError(null);
+			setSuccessMessage(null);
 		}
 	}, []);
 
@@ -67,6 +76,7 @@ export default function RecipeGeneration() {
 		if (currentStep > 1) {
 			setCurrentStep(currentStep - 1);
 			setError(null);
+			setSuccessMessage(null);
 		}
 	};
 
@@ -134,6 +144,7 @@ export default function RecipeGeneration() {
 		setIngredients(sanitizedIngredients);
 		setImageKey(sanitizedImageKey);
 		setError(null);
+		setSuccessMessage(null);
 		const hasUploadedImage = sanitizedImageKey.length > 0;
 		if (!hasUploadedImage) {
 			setImageAnalysis(null);
@@ -219,6 +230,7 @@ export default function RecipeGeneration() {
 			}
 			setRecipeOptions([]);
 			setError(errorMessage);
+			setSuccessMessage(null);
 		}
 	}, [goToStep, t]);
 
@@ -238,6 +250,8 @@ export default function RecipeGeneration() {
 					console.error('Failed to add recipe to collection:', collectionError);
 					setError(t('errors.savedButCollectionFailed', 'Recipe saved, but failed to add to collection.'));
 				}
+			} else {
+				showTemporarySuccess(t('options.saveSuccess', 'Recipe saved to your library.'));
 			}
 		} catch (saveError) {
 			console.error('Failed to save recipe option:', saveError);
@@ -257,6 +271,20 @@ export default function RecipeGeneration() {
 
 	useEffect(() => {
 		ensureFadeInStyles();
+	}, []);
+
+	useEffect(() => {
+		if (typeof document === 'undefined') {
+			return undefined;
+		}
+
+		const { body } = document;
+		const previousOverflow = body.style.overflow;
+		body.style.overflow = 'hidden';
+
+		return () => {
+			body.style.overflow = previousOverflow;
+		};
 	}, []);
 
 	useEffect(() => {
@@ -295,98 +323,123 @@ export default function RecipeGeneration() {
 
 
 	return (
-		<div className="min-h-screen p-4 sm:p-6 lg:p-8">
-			<div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
-				{/* Collection Context Banner */}
-				{collectionContext?.collectionName && (
-					<div className="p-4 sm:p-5 bg-[#035035] bg-opacity-10 border border-[#035035] border-opacity-20 rounded-xl">
-						<p className="text-sm sm:text-base text-[#035035] text-center">
-							<span className="font-semibold">{t('collectionBanner.generatingFor', 'Generating recipe for:')}</span> {collectionContext.collectionName}
-						</p>
-					</div>
-				)}
+		<div className="fixed inset-0 z-40 flex items-center justify-center bg-[#02140c]/60 backdrop-blur-sm px-4 py-6 sm:px-6 lg:px-8 overflow-y-auto">
+			<div className="relative w-full max-w-5xl my-auto">
+				<div
+					className="relative rounded-3xl border border-[#E5ECE8] bg-white shadow-2xl overflow-hidden"
+					style={{
+						backgroundImage: 'url(/cooking_background.jpg)',
+						backgroundSize: 'cover',
+						backgroundPosition: 'center',
+						backgroundRepeat: 'no-repeat',
+						height: currentStep === 3 ? 'auto' : '80vh',
+						minHeight: currentStep === 3 ? '80vh' : 'auto',
+					}}
+				>
+					<div className="flex h-full flex-col px-6 pb-8 pt-8 sm:px-10">
+						{collectionContext?.collectionName && (
+							<div className="mb-6 rounded-lg border border-[#035035]/20 bg-[#035035]/10 p-4">
+								<p className="text-center text-sm text-[#035035]">
+									<span className="font-semibold">{t('collectionBanner.generatingFor', 'Generating recipe for:')}</span> {collectionContext.collectionName}
+								</p>
+							</div>
+						)}
 
-				<div className="space-y-4">
-					<div className="flex items-center justify-center gap-3 sm:gap-4">
-						{[1, 2, 3].map((step) => (
-							<div key={step} className="flex items-center">
+						<div className="mb-6">
+							<div className="h-1 w-full overflow-hidden rounded-full bg-white/30">
 								<div
-									className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm sm:text-base font-semibold transition-all ${currentStep === step
-										? 'bg-[#035035] text-white'
-										: currentStep > step
-											? 'bg-[#A8C9B8] text-white'
-											: 'bg-[#F5F5F5] text-[#2D2D2D] opacity-50'}`}
-									aria-current={currentStep === step ? 'step' : undefined}
-								>
-									{step}
-								</div>
-								{step < 3 && (
-									<div
-										className={`w-12 sm:w-16 h-1 mx-2 transition-all ${currentStep > step ? 'bg-[#A8C9B8]' : 'bg-[#F5F5F5]'}`}
+									className="h-full bg-gradient-to-r from-[#035035] to-[#A8C9B8] transition-all duration-500 ease-out"
+									style={{ width: `${(currentStep / 3) * 100}%` }}
+									role="progressbar"
+									aria-valuenow={currentStep}
+									aria-valuemin={1}
+									aria-valuemax={3}
+									aria-label={t('progress.stepLabel', 'Step {{step}} of 3', { step: currentStep })}
+								/>
+							</div>
+							<div className="mt-3 text-center text-xs text-white/80 sm:text-sm">
+								{currentStep === 1 && t('steps.step1', 'Step 1: What do you want to cook?')}
+								{currentStep === 2 && t('steps.step2', 'Step 2: What ingredients do you have?')}
+								{currentStep === 3 && t('steps.step3', 'Step 3: Choose your recipe')}
+							</div>
+						</div>
+
+						<div className={`flex flex-1 flex-col ${currentStep < 3 ? 'items-center justify-center' : ''}`}>
+							<div
+								className={`w-full rounded-2xl px-5 pb-8 pt-8 shadow-[0_12px_32px_rgba(3,80,53,0.05)] sm:px-7 sm:pb-10 sm:pt-10 ${currentStep === 3 ? 'flex-1' : ''}`}
+								style={{
+									background: 'rgba(255, 255, 255, 0.7)',
+									backdropFilter: 'blur(20px)',
+									WebkitBackdropFilter: 'blur(20px)',
+									border: '1px solid rgba(255, 255, 255, 0.3)',
+									boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
+								}}
+							>
+								{currentStep === 1 && (
+									<PromptStep
+										onSubmit={(promptText) => {
+											setPrompt(promptText);
+											goToStep(2);
+										}}
+										initialValue={prompt}
+										loading={loading}
 									/>
 								)}
+
+								{currentStep === 2 && !loading && !error && (
+									<IngredientsStep
+										onSubmit={(ingredientsText, imgKey) => {
+											setInputMethod(ingredientsText ? 'text' : 'image');
+											handleGenerateRecipes({
+												ingredientsOverride: ingredientsText,
+												imageKeyOverride: imgKey,
+											});
+										}}
+										onBack={handleGoBack}
+										initialIngredients={ingredients}
+										initialImageKey={imageKey}
+										initialInputMethod={inputMethod}
+										loading={loading}
+									/>
+								)}
+
+								{currentStep === 2 && error && (
+									<div className="my-6" role="alert" aria-live="assertive">
+										<ErrorMessage message={error} onRetry={handleRetry} />
+									</div>
+								)}
+
+								{currentStep === 3 && !error && (
+									<RecipeOptionsStep
+										recipeOptions={recipeOptions}
+										onRegenerate={handleRegenerateRecipes}
+										loading={loading}
+										onSaveRecipe={handleSaveRecipeOption}
+										onFinishSession={handleFinishCurrentSession}
+										sessionCompleting={finishingSession}
+										preparingSessionId={preparingSessionId}
+									/>
+								)}
+
+								{currentStep === 3 && error && (
+									<div className="my-6" role="alert" aria-live="assertive">
+										<ErrorMessage message={error} onRetry={handleRetry} />
+									</div>
+								)}
+
+								{currentStep === 3 && successMessage && (
+									<div className="mb-4 flex justify-center" role="status" aria-live="polite">
+										<div className="flex items-center gap-2 rounded-full bg-[#035035]/10 px-4 py-2 text-[#035035]">
+											<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+											</svg>
+											<span className="text-sm font-medium">{successMessage}</span>
+										</div>
+									</div>
+								)}
 							</div>
-						))}
-					</div>
-					<div className="text-center text-xs sm:text-sm text-[#2D2D2D] opacity-60">
-						{currentStep === 1 && t('steps.step1', 'Step 1: What do you want to cook?')}
-						{currentStep === 2 && t('steps.step2', 'Step 2: What ingredients do you have?')}
-						{currentStep === 3 && t('steps.step3', 'Step 3: Choose your recipe')}
-					</div>
-				</div>
-
-				<div className="bg-white rounded-2xl border border-[#F5F5F5] p-4 sm:p-6 lg:p-8">
-					{currentStep === 1 && (
-						<PromptStep
-							onSubmit={(promptText) => {
-								setPrompt(promptText);
-								goToStep(2);
-							}}
-							initialValue={prompt}
-							loading={loading}
-						/>
-					)}
-
-					{currentStep === 2 && !loading && !error && (
-						<IngredientsStep
-							onSubmit={(ingredientsText, imgKey) => {
-								setInputMethod(ingredientsText ? 'text' : 'image');
-								handleGenerateRecipes({
-									ingredientsOverride: ingredientsText,
-									imageKeyOverride: imgKey,
-								});
-							}}
-							onBack={handleGoBack}
-							initialIngredients={ingredients}
-							initialImageKey={imageKey}
-							initialInputMethod={inputMethod}
-							loading={loading}
-						/>
-					)}
-
-					{currentStep === 2 && error && (
-						<div className="my-6" role="alert" aria-live="assertive">
-							<ErrorMessage message={error} onRetry={handleRetry} />
 						</div>
-					)}
-
-					{currentStep === 3 && !error && (
-						<RecipeOptionsStep
-							recipeOptions={recipeOptions}
-							onRegenerate={handleRegenerateRecipes}
-							loading={loading}
-							onSaveRecipe={handleSaveRecipeOption}
-							onFinishSession={handleFinishCurrentSession}
-							sessionCompleting={finishingSession}
-							preparingSessionId={preparingSessionId}
-						/>
-					)}
-
-					{currentStep === 3 && error && (
-						<div className="my-6" role="alert" aria-live="assertive">
-							<ErrorMessage message={error} onRetry={handleRetry} />
-						</div>
-					)}
+					</div>
 				</div>
 			</div>
 		</div>

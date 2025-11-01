@@ -36,15 +36,15 @@ export default function PromptStep({ onSubmit, initialValue = '', loading = fals
 	};
 
 	return (
-		<div className="space-y-6">
-			<h2 className="text-2xl sm:text-3xl font-bold text-[#035035] text-center">
+		<div className="flex flex-col items-center">
+			<h2 className="text-3xl font-bold text-[#035035] text-center">
 				{t('prompt.title', 'What do you want to cook today?')}
 			</h2>
-			<p className="text-sm sm:text-base text-center text-[#2D2D2D] opacity-70">
+			<p className="text-center text-[#2D2D2D] opacity-60 mt-4 max-w-2xl">
 				{t('prompt.subtitle', 'Describe what you\'re in the mood for, and we\'ll help you create the perfect recipe')}
 			</p>
 
-			<form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6" aria-label="Recipe prompt form">
+			<form onSubmit={handleSubmit} className="w-full max-w-2xl mt-4" aria-label={t('prompt.aria.form', 'Recipe prompt form')}>
 				<div>
 					<label htmlFor="prompt-input" className="block text-sm font-medium text-[#2D2D2D] mb-2">
 						{t('prompt.label', 'What do you want to cook?')}
@@ -63,7 +63,7 @@ export default function PromptStep({ onSubmit, initialValue = '', loading = fals
 						`}
 						aria-invalid={validationError ? 'true' : 'false'}
 						aria-describedby={validationError ? 'prompt-error' : undefined}
-						aria-label="Enter what you want to cook"
+						aria-label={t('prompt.aria.input', 'Enter what you want to cook')}
 					/>
 					{validationError && (
 						<p
@@ -77,17 +77,16 @@ export default function PromptStep({ onSubmit, initialValue = '', loading = fals
 					)}
 				</div>
 
-				<div className="flex flex-col sm:flex-row justify-center">
+				<div className="flex justify-end mt-4">
 					<button
 						type="submit"
 						disabled={loading}
-						className="w-full sm:w-auto bg-[#035035] text-white px-8 py-3 rounded-full font-semibold text-base
-							hover:scale-105 active:scale-95 transition-all duration-200 text-center
+						className="bg-[#035035] text-white px-8 py-3 rounded-full font-semibold text-base
+							hover:scale-105 active:scale-95 transition-all duration-200
 							disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
 							focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2
-							min-w-[120px]
-						"
-						aria-label="Proceed to ingredients step"
+							min-w-[120px]"
+						aria-label={t('prompt.aria.submit', 'Proceed to ingredients step')}
 					>
 						{loading ? t('prompt.loading', 'Loading...') : t('prompt.next', 'Next')}
 					</button>
