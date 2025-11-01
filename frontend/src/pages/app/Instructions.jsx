@@ -71,13 +71,13 @@ const AIQuestionButton = ({ onClick, isFocused }) => {
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="absolute top-4 right-4 flex items-center gap-2 bg-[#035035] hover:bg-[#046847] text-white px-3 py-2 rounded-full shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer z-10"
+      className="absolute top-4 right-4 flex items-center gap-2 border border-gray-100 hover:border-gray-300 bg-white/50 hover:bg-white/90 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer z-10 px-2 py-2"
     >
-      <span className="text-xl">🤖</span>
+      <span className="text-xl flex-shrink-0">✨</span>
       <span
-        className="overflow-hidden transition-all duration-300 text-sm font-medium whitespace-nowrap"
+        className="overflow-hidden transition-all duration-300 text-sm font-medium whitespace-nowrap text-[#2D2D2D]"
         style={{
-          maxWidth: isHovered ? '120px' : '0',
+          maxWidth: isHovered ? '80px' : '0',
           opacity: isHovered ? 1 : 0
         }}
       >
@@ -170,6 +170,15 @@ const CookingInstructions = ({
   // Chat state management
   const [openChatStep, setOpenChatStep] = React.useState(null);
   const [chatStepPosition, setChatStepPosition] = React.useState(null);
+  const [savedChatConfig, setSavedChatConfig] = React.useState(() => {
+    // Try to load from localStorage
+    try {
+      const saved = localStorage.getItem('piatto_chat_config');
+      return saved ? JSON.parse(saved) : { position: null, size: null };
+    } catch {
+      return { position: null, size: null };
+    }
+  });
 
   // Handle opening chat for a step
   const handleOpenChat = React.useCallback((stepIndex) => {
@@ -180,6 +189,18 @@ const CookingInstructions = ({
   const handleCloseChat = React.useCallback(() => {
     setOpenChatStep(null);
     setChatStepPosition(null);
+  }, []);
+
+  // Handle saving chat position and size
+  const handleSaveChatConfig = React.useCallback((position, size) => {
+    const config = { position, size };
+    setSavedChatConfig(config);
+    // Save to localStorage for persistence
+    try {
+      localStorage.setItem('piatto_chat_config', JSON.stringify(config));
+    } catch (err) {
+      console.error('Failed to save chat config to localStorage:', err);
+    }
   }, []);
 
   // Track step position for chat pointer
@@ -614,7 +635,13 @@ const CookingInstructions = ({
           stepPosition={chatStepPosition}
           onClose={handleCloseChat}
           cookingSessionId={cookingSessionId}
+          onSaveConfig={handleSaveChatConfig}
           initialPosition={(() => {
+            // Use saved position if available, otherwise calculate default
+            if (savedChatConfig.position) {
+              return savedChatConfig.position;
+            }
+
             // Calculate initial position to the left of the step
             const stepEl = stepRefs.current[openChatStep];
             if (!stepEl) return { x: 100, y: 100 };
@@ -626,6 +653,7 @@ const CookingInstructions = ({
               y: Math.max(20, rect.top - 50)
             };
           })()}
+          initialSize={savedChatConfig.size || { width: 400, height: 500 }}
         />
       )}
     </div>
