@@ -49,7 +49,7 @@ export default defineConfig({
                     const parsed = JSON.parse(body);
                     console.log(JSON.stringify(parsed, null, 2));
                   } catch {
-                    console.log(body); // Fallback if not JSON
+                    //console.log(body); // Fallback if not JSON
                   }
                 }
               });
