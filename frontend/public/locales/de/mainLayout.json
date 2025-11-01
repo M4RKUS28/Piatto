@@ -1,0 +1,19 @@
+{
+  "navigation": {
+    "dashboard": "Dashboard",
+    "generate": "Generieren",
+    "recipeLibrary": "Rezeptbibliothek",
+    "settings": "Einstellungen"
+  },
+  "profile": {
+    "logout": "Abmelden"
+  },
+  "aria": {
+    "openProfileMenu": "Profilmenü öffnen",
+    "expandSidebar": "Seitenleiste erweitern",
+    "collapseSidebar": "Seitenleiste einklappen"
+  },
+  "footer": {
+    "copyright": "© 2025 Piatto. Kochen wird zum Vergnügen, ein Rezept nach dem anderen."
+  }
+}

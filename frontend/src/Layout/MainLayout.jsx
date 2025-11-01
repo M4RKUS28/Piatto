@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { NavLink, Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Home, UtensilsCrossed, PanelLeft, Settings as SettingsIcon, LogOut, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 import useMediaQuery from '../hooks/useMediaQuery';
 
 export default function MainLayout({ children }) {
+  const { t } = useTranslation('mainLayout');
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
@@ -45,13 +47,13 @@ export default function MainLayout({ children }) {
   console.log('MainLayout - Display user:', displayUser);
 
   const navItems = [
-    { label: 'Dashboard', to: '/app', icon: Home, end: true },
-    { label: 'Generate', to: '/app/generate', icon: Sparkles },
-    { label: 'Recipe Library', to: '/app/library', icon: UtensilsCrossed }
+    { label: t('navigation.dashboard', 'Dashboard'), to: '/app', icon: Home, end: true },
+    { label: t('navigation.generate', 'Generate'), to: '/app/generate', icon: Sparkles },
+    { label: t('navigation.recipeLibrary', 'Recipe Library'), to: '/app/library', icon: UtensilsCrossed }
   ];
 
   const content = children ?? <Outlet />;
-  const mobileNavItems = [...navItems, { label: 'Settings', to: '/app/settings', icon: SettingsIcon }];
+  const mobileNavItems = [...navItems, { label: t('navigation.settings', 'Settings'), to: '/app/settings', icon: SettingsIcon }];
 
   if (isMobile) {
     return (
@@ -77,7 +79,7 @@ export default function MainLayout({ children }) {
             <button
               onClick={toggleProfileMenu}
               className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#A8C9B8] bg-white"
-              aria-label="Open profile menu"
+              aria-label={t('aria.openProfileMenu', 'Open profile menu')}
             >
               <img
                 src={displayUser.profile_image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${displayUser.username}`}
@@ -95,7 +97,7 @@ export default function MainLayout({ children }) {
         {!isRecipeViewPage && (
           <footer className="py-4 px-4 text-center">
             <p className="text-xs text-[#2D2D2D] opacity-40">
-              © 2025 Piatto. Cooking made delightful, one recipe at a time.
+              {t('footer.copyright', '© 2025 Piatto. Cooking made delightful, one recipe at a time.')}
             </p>
           </footer>
         )}
@@ -159,14 +161,14 @@ export default function MainLayout({ children }) {
                   className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-[#2D2D2D] hover:bg-[#FFF8F0] transition-all"
                 >
                   <SettingsIcon className="w-5 h-5" />
-                  <span className="text-sm font-medium">Settings</span>
+                  <span className="text-sm font-medium">{t('navigation.settings', 'Settings')}</span>
                 </Link>
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-[#2D2D2D] hover:bg-[#FFF8F0] transition-all"
                 >
                   <LogOut className="w-5 h-5" />
-                  <span className="text-sm font-medium">Logout</span>
+                  <span className="text-sm font-medium">{t('profile.logout', 'Logout')}</span>
                 </button>
               </div>
             </div>
@@ -190,8 +192,8 @@ export default function MainLayout({ children }) {
             <button
               onClick={toggleSidebar}
               className="w-8 h-8 bg-white rounded-xl shadow-sm flex items-center justify-center flex-shrink-0 group relative hover:shadow-md transition-all"
-              title={sidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
-              aria-label={sidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
+              title={sidebarExpanded ? t('aria.collapseSidebar', 'Collapse sidebar') : t('aria.expandSidebar', 'Expand sidebar')}
+              aria-label={sidebarExpanded ? t('aria.collapseSidebar', 'Collapse sidebar') : t('aria.expandSidebar', 'Expand sidebar')}
             >
               {sidebarExpanded ? (
                 <img src="/logo_no_P.svg" alt="Piatto" className="w-6 h-6" />
@@ -217,8 +219,8 @@ export default function MainLayout({ children }) {
                 <button
                   onClick={toggleSidebar}
                   className="text-[#035035] opacity-60 hover:opacity-100 transition-opacity flex-shrink-0"
-                  title="Collapse sidebar"
-                  aria-label="Collapse sidebar"
+                  title={t('aria.collapseSidebar', 'Collapse sidebar')}
+                  aria-label={t('aria.collapseSidebar', 'Collapse sidebar')}
                 >
                   <PanelLeft className="w-5 h-5" />
                 </button>
@@ -314,14 +316,14 @@ export default function MainLayout({ children }) {
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[#2D2D2D] hover:bg-[#FFF8F0] transition-all text-left"
                 >
                   <SettingsIcon className="w-5 h-5" />
-                  <span className="text-base font-medium">Settings</span>
+                  <span className="text-base font-medium">{t('navigation.settings', 'Settings')}</span>
                 </Link>
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[#2D2D2D] hover:bg-[#FFF8F0] transition-all text-left"
                 >
                   <LogOut className="w-5 h-5" />
-                  <span className="text-base font-medium">Logout</span>
+                  <span className="text-base font-medium">{t('profile.logout', 'Logout')}</span>
                 </button>
               </div>
             </div>
@@ -341,7 +343,7 @@ export default function MainLayout({ children }) {
         {!isRecipeViewPage && (
           <footer className="py-3 px-6 text-center">
             <p className="text-xs text-[#2D2D2D] opacity-40">
-              © 2025 Piatto. Cooking made delightful, one recipe at a time.
+              {t('footer.copyright', '© 2025 Piatto. Cooking made delightful, one recipe at a time.')}
             </p>
           </footer>
         )}

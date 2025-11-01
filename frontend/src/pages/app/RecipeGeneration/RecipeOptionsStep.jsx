@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { getImageUrl } from '../../../utils/imageUtils';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import SaveRecipesCollectionModal from '../../../components/SaveRecipesCollectionModal';
 import { generateInstructions } from '../../../api/instructionApi';
 import { getRecipeImage } from '../../../api/filesApi';
@@ -14,6 +15,7 @@ export default function RecipeOptionsStep({
 	sessionCompleting = false,
 	preparingSessionId,
 }) {
+	const { t } = useTranslation('recipeGeneration');
 	const navigate = useNavigate();
 	const [selectedRecipes, setSelectedRecipes] = useState(new Set());
 	const [processingSelection, setProcessingSelection] = useState(false);
@@ -168,10 +170,10 @@ export default function RecipeOptionsStep({
 			`}</style>
 
 			<div>
-				<h2 className="text-2xl sm:text-3xl font-bold text-[#035035] mb-4 sm:mb-6 text-center">Select Recipes to Generate</h2>
+				<h2 className="text-2xl sm:text-3xl font-bold text-[#035035] mb-4 sm:mb-6 text-center">{t('options.title', 'Select Recipes to Generate')}</h2>
 			</div>
 
-			<div className="space-y-4" role="list" aria-label="Generated recipe options">
+			<div className="space-y-4" role="list" aria-label={t('options.aria.recipeList', 'Generated recipe options')}>
 				{recipes.map((recipe, index) => {
 					const isSelected = selectedRecipes.has(recipe.id);
 					const imageStatus = imageLoadStatus[recipe.id] || 'loading';
@@ -220,7 +222,7 @@ export default function RecipeOptionsStep({
 											{/* Text container */}
 											<div className="absolute inset-0 flex items-center justify-center">
 												<span className="text-gray-600 font-semibold text-sm sm:text-base text-center px-2">
-													Generating Image...
+													{t('options.generatingImage', 'Generating Image...')}
 												</span>
 											</div>
 										</div>
@@ -230,7 +232,7 @@ export default function RecipeOptionsStep({
 											<svg className="w-8 h-8 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
 											</svg>
-											<span className="text-xs">Failed to load</span>
+											<span className="text-xs">{t('options.failedToLoad', 'Failed to load')}</span>
 										</div>
 									)}
 									{imageStatus === 'loaded' && recipe.image_url && (
@@ -273,9 +275,9 @@ export default function RecipeOptionsStep({
 						hover:bg-[#035035] hover:text-white transition-all duration-200
 						disabled:opacity-50 disabled:cursor-not-allowed
 						focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2"
-					aria-label="Generate new recipe options with same ingredients"
+					aria-label={t('options.aria.regenerate', 'Generate new recipe options with same ingredients')}
 				>
-					{loading ? 'Generating...' : 'Generate New Recipes'}
+					{loading ? t('options.generating', 'Generating...') : t('options.generateNewRecipes', 'Generate New Recipes')}
 				</button>
 
 				<button
@@ -291,9 +293,9 @@ export default function RecipeOptionsStep({
 						hover:bg-[#024027] transition-all duration-200
 						disabled:opacity-50 disabled:cursor-not-allowed
 						focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2"
-					aria-label="Generate selected recipes"
+					aria-label={t('options.aria.generate', 'Generate selected recipes')}
 				>
-				{processingSelection ? 'Processing...' : `Generate (${selectedRecipes.size})`}
+				{processingSelection ? t('options.processing', 'Processing...') : `${t('options.generate', 'Generate')} (${selectedRecipes.size})`}
 				</button>
 			</div>
 
