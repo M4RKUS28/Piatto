@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { getPromptHistory, askCookingQuestion } from '../../../api/cookingApi';
 
 /**
  * Chat component - AI chat functionality for cooking steps
  */
-const Chat = ({ stepIndex, stepHeading, cookingSessionId }) => {
+const Chat = ({ cookingSessionId }) => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -159,7 +161,39 @@ const Chat = ({ stepIndex, stepHeading, cookingSessionId }) => {
                     : 'bg-[#F5F5F5] text-[#2D2D2D] rounded-bl-sm'
                 }`}
               >
-                <p className="whitespace-pre-wrap break-words">{message.text}</p>
+                {message.type === 'ai' ? (
+                  <ReactMarkdown
+                    className="markdown-content text-sm leading-relaxed text-inherit break-words"
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      p: (props) => <p className="mb-2 last:mb-0" {...props} />,
+                      ul: (props) => <ul className="list-disc pl-5 mb-2 last:mb-0" {...props} />,
+                      ol: (props) => <ol className="list-decimal pl-5 mb-2 last:mb-0" {...props} />,
+                      li: (props) => <li className="mb-1 last:mb-0" {...props} />,
+                      code: ({ inline, className, children, ...props }) => (
+                        <code
+                          className={`${inline ? 'px-1 py-0.5 rounded-md bg-[#ECECEC] text-[#1F1F1F]' : 'block bg-[#1F1F1F] text-white text-xs rounded-lg p-3 overflow-x-auto'} ${className || ''}`.trim()}
+                          {...props}
+                        >
+                          {children}
+                        </code>
+                      ),
+                      a: ({ href, ...props }) => (
+                        <a
+                          className="text-[#035035] underline break-words"
+                          href={href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          {...props}
+                        />
+                      )
+                    }}
+                  >
+                    {message.text}
+                  </ReactMarkdown>
+                ) : (
+                  <p className="whitespace-pre-wrap break-words">{message.text}</p>
+                )}
               </div>
             </div>
           ))
