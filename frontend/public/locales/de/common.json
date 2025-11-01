@@ -45,6 +45,17 @@
     "medium": "Mittel",
     "hard": "Schwierig"
   },
+  "foodCategory": {
+    "vegan": "Vegan",
+    "vegetarian": "Vegetarisch",
+    "beef": "Rind",
+    "pork": "Schwein",
+    "chicken": "Huhn",
+    "lamb": "Lamm",
+    "fish": "Fisch",
+    "seafood": "Meeresfrüchte",
+    "mixedMeat": "Gemischtes Fleisch"
+  },
   "language": {
     "label": "Sprache",
     "english": "Englisch",

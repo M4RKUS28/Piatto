@@ -52,12 +52,20 @@
     "newBadge": "NEU",
     "collections": "Sammlungen",
     "newCollection": "Neue Sammlung",
-    "noCollections": "Keine Sammlungen",
+    "noCollections": "Noch keine Sammlungen",
     "noCollectionsDescription": "Erstelle deine erste Sammlung, um Rezepte zu organisieren",
     "createNewCollection": "Neue Sammlung erstellen",
     "recipe": "Rezept",
     "recipes": "Rezepte",
-    "collectionLabel": "Sammlung"
+    "collectionLabel": "Sammlung",
+    "createModalTitle": "Neue Sammlung erstellen",
+    "modalNameLabel": "Name",
+    "modalNamePlaceholder": "z.B. Lieblingsrezepte",
+    "modalDescriptionLabel": "Beschreibung (optional)",
+    "modalDescriptionPlaceholder": "Beschreibe deine Sammlung...",
+    "cancel": "Abbrechen",
+    "create": "Erstellen",
+    "creating": "Erstellen..."
   },
   "generation": {
     "step1": {

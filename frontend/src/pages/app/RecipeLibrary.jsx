@@ -17,25 +17,25 @@ import { getImageUrl } from '../../utils/imageUtils';
 import { useTranslation } from 'react-i18next'
 
 // Helper function to get food category display (icon and label)
-const getFoodCategoryDisplay = (category) => {
+const getFoodCategoryDisplay = (category, t) => {
   if (!category) return null;
 
   if (category === 'vegan') {
-    return { icon: PiLeaf, label: 'Vegan' };
+    return { icon: PiLeaf, label: t('foodCategory.vegan', { ns: 'common', defaultValue: 'Vegan' }) };
   }
   if (category === 'vegetarian') {
-    return { icon: PiEgg, label: 'Vegetarian' };
+    return { icon: PiEgg, label: t('foodCategory.vegetarian', { ns: 'common', defaultValue: 'Vegetarian' }) };
   }
 
   // Meat categories
   const meatLabels = {
-    'beef': 'Beef',
-    'pork': 'Pork',
-    'chicken': 'Chicken',
-    'lamb': 'Lamb',
-    'fish': 'Fish',
-    'seafood': 'Seafood',
-    'mixed-meat': 'Mixed Meat',
+    'beef': t('foodCategory.beef', { ns: 'common', defaultValue: 'Beef' }),
+    'pork': t('foodCategory.pork', { ns: 'common', defaultValue: 'Pork' }),
+    'chicken': t('foodCategory.chicken', { ns: 'common', defaultValue: 'Chicken' }),
+    'lamb': t('foodCategory.lamb', { ns: 'common', defaultValue: 'Lamb' }),
+    'fish': t('foodCategory.fish', { ns: 'common', defaultValue: 'Fish' }),
+    'seafood': t('foodCategory.seafood', { ns: 'common', defaultValue: 'Seafood' }),
+    'mixed-meat': t('foodCategory.mixedMeat', { ns: 'common', defaultValue: 'Mixed Meat' }),
   };
 
   if (meatLabels[category]) {
@@ -46,9 +46,15 @@ const getFoodCategoryDisplay = (category) => {
 };
 
 // Helper function to format difficulty
-const formatDifficulty = (difficulty) => {
-  if (!difficulty) return 'Medium';
-  return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+const formatDifficulty = (difficulty, t) => {
+  if (!difficulty) return t('difficulty.medium', { ns: 'common', defaultValue: 'Medium' });
+  const lowerDifficulty = difficulty.toLowerCase();
+
+  if (lowerDifficulty === 'easy') return t('difficulty.easy', { ns: 'common', defaultValue: 'Easy' });
+  if (lowerDifficulty === 'medium') return t('difficulty.medium', { ns: 'common', defaultValue: 'Medium' });
+  if (lowerDifficulty === 'hard') return t('difficulty.hard', { ns: 'common', defaultValue: 'Hard' });
+
+  return difficulty.charAt(0).toUpperpper() + difficulty.slice(1);
 };
 
 // Helper function to get difficulty color classes
@@ -242,7 +248,7 @@ export default function RecipeLibrary() {
             {/* Latest Recipes Section - Horizontal scroll with 6 recipes */}
             {latestRecipes.length > 0 && (
               <div className="mb-8 md:mb-10">
-                <h2 className="text-2xl sm:text-3xl font-bold text-[#035035] mb-4">Letzte Rezepte</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-[#035035] mb-4">{t("library.latestRecipes", "Latest Recipes")}</h2>
                 <div className="overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
                   <div className="flex gap-4 min-w-min">
                     {latestRecipes.map((recipe) => {
@@ -274,7 +280,7 @@ export default function RecipeLibrary() {
                               {/* NEW Badge - top left */}
                               {isNew && (
                                 <div className="absolute top-2 left-2 z-10 bg-gradient-to-r from-[#FF9B7B] to-[#ff8a61] text-white px-2 py-1 rounded-full text-[10px] font-bold shadow-lg animate-pulse">
-                                  ✨ NEU
+                                  ✨ {t("library.newBadge", "NEW")}
                                 </div>
                               )}
 
@@ -292,7 +298,7 @@ export default function RecipeLibrary() {
                             <div className="p-3">
                               <div className="flex items-center gap-1 mb-2 flex-wrap">
                                 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${getDifficultyColorClasses(recipe.difficulty)}`}>
-                                  {formatDifficulty(recipe.difficulty)}
+                                  {formatDifficulty(recipe.difficulty, t)}
                                 </span>
                               </div>
                               <h3 className="text-sm font-bold text-[#2D2D2D] mb-2 line-clamp-2">{recipe.name}</h3>
@@ -302,7 +308,7 @@ export default function RecipeLibrary() {
                                   <span className="whitespace-nowrap">{formatTime(recipe.total_time_minutes)}</span>
                                 </div>
                                 {(() => {
-                                  const foodDisplay = getFoodCategoryDisplay(recipe.food_category);
+                                  const foodDisplay = getFoodCategoryDisplay(recipe.food_category, t);
                                   if (!foodDisplay) return null;
                                   const FoodIcon = foodDisplay.icon;
                                   return (
@@ -326,26 +332,26 @@ export default function RecipeLibrary() {
             {/* Collections Section */}
             <div className="mb-8 md:mb-10">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl sm:text-3xl font-bold text-[#035035]">Sammlungen</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-[#035035]">{t("library.collections", "Collections")}</h2>
                 <button
                   onClick={() => setShowCreateModal(true)}
                   className="bg-[#FF9B7B] text-white px-4 py-2 rounded-full font-semibold hover:scale-105 transition-all flex items-center gap-2 min-h-[44px]"
                 >
                   <Plus className="w-5 h-5" />
-                  <span>Neue Sammlung</span>
+                  <span>{t("library.newCollection", "New Collection")}</span>
                 </button>
               </div>
 
               {collections.length === 0 ? (
                 <div className="bg-white rounded-2xl border-2 border-dashed border-[#F5F5F5] p-8 text-center">
                   <FolderOpen className="w-16 h-16 mx-auto mb-4 text-[#2D2D2D] opacity-20" />
-                  <h3 className="text-xl font-bold text-[#2D2D2D] mb-2">Noch keine Sammlungen</h3>
-                  <p className="text-[#2D2D2D] opacity-60 mb-4">Erstelle deine erste Sammlung, um Rezepte zu organisieren</p>
+                  <h3 className="text-xl font-bold text-[#2D2D2D] mb-2">{t("library.noCollections", "No collections yet")}</h3>
+                  <p className="text-[#2D2D2D] opacity-60 mb-4">{t("library.noCollectionsDescription", "Create your first collection to organize recipes")}</p>
                   <button
                     onClick={() => setShowCreateModal(true)}
                     className="bg-[#035035] text-white px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all min-h-[44px]"
                   >
-                    Neue Sammlung erstellen
+                    {t("library.createNewCollection", "Create New Collection")}
                   </button>
                 </div>
               ) : (
@@ -375,13 +381,13 @@ export default function RecipeLibrary() {
                           <div className="flex items-center gap-1 mb-2 flex-wrap">
                             <span className="text-[10px] font-semibold text-[#035035] bg-[#035035]/10 px-2 py-0.5 rounded-full whitespace-nowrap">
                               <FolderOpen className="w-3 h-3 inline mr-0.5 -mt-0.5" />
-                              Sammlung
+                              {t("library.collectionLabel", "Collection")}
                             </span>
                           </div>
                           <h3 className="text-sm font-bold text-[#2D2D2D] mb-2 line-clamp-2">{collection.name}</h3>
                           <div className="flex items-center gap-2 text-xs text-[#2D2D2D] opacity-60 flex-wrap">
                             <span className="whitespace-nowrap">
-                              {collection.recipe_count} {collection.recipe_count === 1 ? 'Rezept' : 'Rezepte'}
+                              {collection.recipe_count} {collection.recipe_count === 1 ? t("library.recipe", "Recipe") : t("library.recipes", "Recipes")}
                             </span>
                           </div>
                         </div>
@@ -399,24 +405,24 @@ export default function RecipeLibrary() {
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-            <h2 className="text-2xl font-bold text-[#035035] mb-4">Neue Sammlung erstellen</h2>
+            <h2 className="text-2xl font-bold text-[#035035] mb-4">{t("library.createModalTitle", "Create New Collection")}</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-[#2D2D2D] mb-2">Name</label>
+                <label className="block text-sm font-semibold text-[#2D2D2D] mb-2">{t("library.modalNameLabel", "Name")}</label>
                 <input
                   type="text"
                   value={newCollectionName}
                   onChange={(e) => setNewCollectionName(e.target.value)}
-                  placeholder="z.B. Lieblingsrezepte"
+                  placeholder={t("library.modalNamePlaceholder", "e.g. Favorite Recipes")}
                   className="w-full px-4 py-3 rounded-full border-2 border-[#F5F5F5] focus:border-[#035035] focus:outline-none transition-all"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-[#2D2D2D] mb-2">Beschreibung (optional)</label>
+                <label className="block text-sm font-semibold text-[#2D2D2D] mb-2">{t("library.modalDescriptionLabel", "Description (optional)")}</label>
                 <textarea
                   value={newCollectionDescription}
                   onChange={(e) => setNewCollectionDescription(e.target.value)}
-                  placeholder="Beschreibe deine Sammlung..."
+                  placeholder={t("library.modalDescriptionPlaceholder", "Describe your collection...")}
                   rows={3}
                   className="w-full px-4 py-3 rounded-2xl border-2 border-[#F5F5F5] focus:border-[#035035] focus:outline-none transition-all resize-none"
                 />
@@ -432,14 +438,14 @@ export default function RecipeLibrary() {
                 className="flex-1 px-6 py-3 rounded-full border-2 border-[#F5F5F5] text-[#2D2D2D] font-semibold hover:bg-[#F5F5F5] transition-all"
                 disabled={creatingCollection}
               >
-                Abbrechen
+                {t("library.cancel", "Cancel")}
               </button>
               <button
                 onClick={handleCreateCollection}
                 className="flex-1 px-6 py-3 rounded-full bg-[#035035] text-white font-semibold hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={!newCollectionName.trim() || creatingCollection}
               >
-                {creatingCollection ? 'Erstellen...' : 'Erstellen'}
+                {creatingCollection ? t("library.creating", "Creating...") : t("library.create", "Create")}
               </button>
             </div>
           </div>

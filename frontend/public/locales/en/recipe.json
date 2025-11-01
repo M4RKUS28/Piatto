@@ -52,12 +52,20 @@
     "newBadge": "NEW",
     "collections": "Collections",
     "newCollection": "New Collection",
-    "noCollections": "No collections",
+    "noCollections": "No collections yet",
     "noCollectionsDescription": "Create your first collection to organize recipes",
     "createNewCollection": "Create New Collection",
     "recipe": "Recipe",
     "recipes": "Recipes",
-    "collectionLabel": "Collection"
+    "collectionLabel": "Collection",
+    "createModalTitle": "Create New Collection",
+    "modalNameLabel": "Name",
+    "modalNamePlaceholder": "e.g. Favorite Recipes",
+    "modalDescriptionLabel": "Description (optional)",
+    "modalDescriptionPlaceholder": "Describe your collection...",
+    "cancel": "Cancel",
+    "create": "Create",
+    "creating": "Creating..."
   },
   "generation": {
     "step1": {
