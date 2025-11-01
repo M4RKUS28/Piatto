@@ -211,9 +211,14 @@
     "noChanges": "No changes to save",
     "updateSuccess": "Profile updated successfully!",
     "updateFailed": "Failed to update profile. Please try again.",
+    "uploadFailed": "Failed to upload image. Please try again.",
     "saveChanges": "Save Changes",
     "saving": "Saving...",
     "uploadingImage": "Uploading image...",
+    "language": {
+      "title": "Language",
+      "subtitle": "Choose your preferred language"
+    },
     "accountInfo": {
       "title": "Account Information",
       "created": "Account Created",

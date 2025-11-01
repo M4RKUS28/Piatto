@@ -211,9 +211,14 @@
     "noChanges": "Keine Änderungen zum Speichern",
     "updateSuccess": "Profil erfolgreich aktualisiert!",
     "updateFailed": "Aktualisierung des Profils fehlgeschlagen. Bitte versuche es erneut.",
+    "uploadFailed": "Hochladen des Bildes fehlgeschlagen. Bitte versuche es erneut.",
     "saveChanges": "Änderungen speichern",
     "saving": "Wird gespeichert...",
     "uploadingImage": "Bild wird hochgeladen...",
+    "language": {
+      "title": "Sprache",
+      "subtitle": "Wähle deine bevorzugte Sprache"
+    },
     "accountInfo": {
       "title": "Kontoinformationen",
       "created": "Konto erstellt",

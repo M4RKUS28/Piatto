@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { updateUser } from '../../api/authApi';
 import { uploadPublicFile } from '../../api/filesApi';
-import { User, Mail, Save, AlertCircle, CheckCircle } from 'lucide-react';
+import { User, Mail, Save, AlertCircle, CheckCircle, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next'
 import './ProfileSettings.css';
 
@@ -35,6 +35,7 @@ const extractErrorMessage = (error, fallback) => {
 };
 
 export default function ProfileSettings() {
+        const { t, i18n } = useTranslation(['pages', 'common']);
         const { user, fetchAndSetCurrentUser } = useAuth();
         const [formData, setFormData] = useState({
                 username: '',
@@ -45,6 +46,10 @@ export default function ProfileSettings() {
         const [isUploadingImage, setIsUploadingImage] = useState(false);
         const [message, setMessage] = useState({ type: '', text: '' });
         const fileInputRef = useRef(null);
+
+        const changeLanguage = (lng) => {
+                i18n.changeLanguage(lng);
+        };
 
         useEffect(() => {
                 if (user) {
