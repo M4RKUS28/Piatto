@@ -2,8 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { updateUser } from '../../api/authApi';
 import { uploadPublicFile } from '../../api/filesApi';
-import { User, Mail, Save, AlertCircle, CheckCircle, Globe } from 'lucide-react';
-import { useTranslation } from 'react-i18next'
+import { User, Mail, Save, AlertCircle, CheckCircle } from 'lucide-react';
 import './ProfileSettings.css';
 
 const extractErrorMessage = (error, fallback) => {
@@ -35,7 +34,6 @@ const extractErrorMessage = (error, fallback) => {
 };
 
 export default function ProfileSettings() {
-        const { t, i18n } = useTranslation(['pages', 'common']);
         const { user, fetchAndSetCurrentUser } = useAuth();
         const [formData, setFormData] = useState({
                 username: '',
@@ -46,10 +44,6 @@ export default function ProfileSettings() {
         const [isUploadingImage, setIsUploadingImage] = useState(false);
         const [message, setMessage] = useState({ type: '', text: '' });
         const fileInputRef = useRef(null);
-
-        const changeLanguage = (lng) => {
-                i18n.changeLanguage(lng);
-        };
 
         useEffect(() => {
                 if (user) {
@@ -134,23 +128,23 @@ export default function ProfileSettings() {
         }
 
         return (
-                <div className="p-8 profile-settings-container">
-                        <div className="max-w-3xl mx-auto">
+                <div className="profile-settings-container min-h-screen px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-12 bg-[#F8F9F8]">
+                        <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8">
                                 {/* Header */}
-                                <div className="mb-8">
-                                        <h1 className="text-4xl font-bold text-[#035035] mb-2">Profile Settings</h1>
-                                        <p className="text-[#2D2D2D] opacity-60">Manage your account information</p>
+                                <div className="text-center sm:text-left space-y-2">
+                                        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#035035]">Profile Settings</h1>
+                                        <p className="text-sm sm:text-base text-[#2D2D2D] opacity-70">Manage your account information</p>
                                 </div>
 
                                 {/* Profile Form */}
-                                <div className="bg-white rounded-2xl border border-[#F5F5F5] p-8">
+                                <div className="bg-white rounded-2xl border border-[#F5F5F5] p-4 sm:p-6 lg:p-8 shadow-sm">
                                         <form onSubmit={handleSubmit} className="space-y-6">
                                                 {/* Profile Image Preview */}
-                                                <div className="flex items-center gap-6 pb-6 border-b border-[#F5F5F5]">
+                                                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 pb-6 border-b border-[#F5F5F5] text-center sm:text-left">
                                                         <button
                                                                 type="button"
                                                                 onClick={handleProfileImageClick}
-                                                                className="w-24 h-24 rounded-full overflow-hidden flex-shrink-0 ring-4 ring-[#A8C9B8] profile-image-preview focus:outline-none focus:ring-4 focus:ring-[#035035] transition-all relative disabled:opacity-70"
+                                                                className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden flex-shrink-0 ring-4 ring-[#A8C9B8] profile-image-preview focus:outline-none focus:ring-4 focus:ring-[#035035] transition-all relative disabled:opacity-70"
                                                                 aria-label="Change profile image"
                                                                 disabled={isUploadingImage}
                                                         >
@@ -172,10 +166,10 @@ export default function ProfileSettings() {
                                                                 className="hidden"
                                                                 onChange={handleProfileImageChange}
                                                         />
-                                                        <div className="flex-1">
+                                                        <div className="flex-1 w-full">
                                                                 <h3 className="text-lg font-semibold text-[#2D2D2D] mb-1">{formData.username}</h3>
                                                                 <p className="text-sm text-[#2D2D2D] opacity-60">{formData.email}</p>
-                                                                <p className="text-xs text-[#2D2D2D] opacity-60 mt-2">Click your avatar to upload a new profile image.</p>
+                                                                <p className="text-xs text-[#2D2D2D] opacity-60 mt-2">Tap or click your avatar to upload a new profile image.</p>
                                                         </div>
                                                 </div>
 
@@ -229,7 +223,7 @@ export default function ProfileSettings() {
                                                 <button
                                                         type="submit"
                                                         disabled={!user || !((formData.username !== (user.username || '')) || (formData.profile_image_url !== (user.profile_image_url || ''))) || loading || isUploadingImage}
-                                                        className="w-full bg-[#035035] text-white px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+                                                        className="w-full bg-[#035035] text-white px-6 py-3 sm:py-3.5 rounded-full font-semibold hover:scale-[1.02] transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
                                                 >
                                                         <Save className="w-5 h-5" />
                                                         {loading ? 'Saving...' : isUploadingImage ? 'Uploading image...' : 'Save Changes'}
@@ -238,24 +232,24 @@ export default function ProfileSettings() {
                                 </div>
 
                                 {/* Account Info */}
-                                <div className="mt-6 bg-[#FFF8F0] rounded-2xl p-6">
+                                <div className="bg-[#FFF8F0] rounded-2xl p-4 sm:p-6">
                                         <h3 className="text-lg font-semibold text-[#035035] mb-4">Account Information</h3>
-                                        <div className="space-y-2 text-sm text-[#2D2D2D]">
-                                                <div className="flex justify-between">
+                                        <div className="space-y-3 text-sm text-[#2D2D2D]">
+                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2 text-center sm:text-left">
                                                         <span className="opacity-60">Account Created</span>
-                                                        <span className="font-medium">
+                                                        <span className="font-medium text-[#035035]">
                                                                 {new Date(user.created_at).toLocaleDateString()}
                                                         </span>
                                                 </div>
-                                                <div className="flex justify-between">
+                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2 text-center sm:text-left">
                                                         <span className="opacity-60">Last Login</span>
-                                                        <span className="font-medium">
+                                                        <span className="font-medium text-[#035035]">
                                                                 {new Date(user.last_login).toLocaleDateString()}
                                                         </span>
                                                 </div>
-                                                <div className="flex justify-between">
+                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2 text-center sm:text-left">
                                                         <span className="opacity-60">Login Streak</span>
-                                                        <span className="font-medium">{user.login_streak} days</span>
+                                                        <span className="font-medium text-[#035035]">{user.login_streak} days</span>
                                                 </div>
                                         </div>
                                 </div>
