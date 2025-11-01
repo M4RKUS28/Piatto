@@ -47,20 +47,18 @@ export default function IngredientsStep({
 
 
         return (
-                <div className="flex flex-col h-full">
-                        {/* Top Section - Heading */}
-                        <div>
-                                <h2 className="text-3xl font-bold text-[#035035] mb-6 text-center">
-                                        What ingredients do you have?
-                                </h2>
-                                <p className="text-center text-[#2D2D2D] opacity-60 mb-8">
-                                        Tell us what's in your kitchen. You can also analyze a photo to extract ingredients.
-                                </p>
-                        </div>
+                <div className="flex flex-col items-center">
+                        {/* Heading */}
+                        <h2 className="text-3xl font-bold text-[#035035] text-center">
+                                What ingredients do you have?
+                        </h2>
+                        <p className="text-center text-[#2D2D2D] opacity-60 mt-4 max-w-2xl">
+                                Tell us what's in your kitchen. You can also analyze a photo to extract ingredients.
+                        </p>
 
-                        {/* Middle Section - Textbox */}
-                        <div className="flex-1 flex flex-col justify-center">
-                                <div className="mb-6 relative">
+                        {/* Form Section - matches description width */}
+                        <form onSubmit={handleSubmit} aria-label="Ingredients input form" className="w-full max-w-2xl mt-4">
+                                <div className="relative">
                                         <label htmlFor="ingredients-input" className="block text-sm font-medium text-[#2D2D2D] mb-2">
                                                 Enter your ingredients
                                         </label>
@@ -172,23 +170,20 @@ export default function IngredientsStep({
                                 {validationError && (
                                         <p
                                                 id="ingredients-error"
-                                                className="mb-6 text-sm text-[#FF9B7B]"
+                                                className="mt-2 text-sm text-[#FF9B7B]"
                                                 role="alert"
                                                 aria-live="polite"
                                         >
                                                 {validationError}
                                         </p>
                                 )}
-                        </div>
 
-                        {/* Bottom Section - Buttons */}
-                        <div>
-                                <form onSubmit={handleSubmit} aria-label="Ingredients input form">
-                                        <div className="flex justify-between gap-3">
-                                                <button
-                                                        type="button"
-                                                        onClick={onBack}
-                                                        disabled={loading || analyzing}
+                                {/* Buttons */}
+                                <div className="flex justify-between gap-3 mt-4">
+                                        <button
+                                                type="button"
+                                                onClick={onBack}
+                                                disabled={loading || analyzing}
                                                 className="bg-white text-[#035035] border-2 border-[#035035] px-6 py-3 rounded-full font-semibold text-base
                                                         hover:bg-[#035035] hover:text-white transition-all duration-200
                                                         disabled:opacity-50 disabled:cursor-not-allowed
@@ -211,8 +206,7 @@ export default function IngredientsStep({
                                                 {loading ? 'Generating...' : analyzing ? 'Analyzing image...' : 'Generate Recipes'}
                                         </button>
                                 </div>
-                                </form>
-                        </div>
+                        </form>
                 </div>
         );
 }

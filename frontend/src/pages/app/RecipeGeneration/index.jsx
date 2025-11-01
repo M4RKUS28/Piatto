@@ -377,9 +377,9 @@ export default function RecipeGeneration() {
                                                         </div>
                                                 </div>
 
-                                                <div className="flex flex-col flex-1">
+                                                <div className={`flex flex-col flex-1 ${currentStep === 1 || currentStep === 2 ? 'justify-center items-center' : ''}`}>
                                                         <div
-                                                                className="rounded-2xl px-5 sm:px-7 pt-8 sm:pt-10 pb-8 sm:pb-10 shadow-[0_12px_32px_rgba(3,80,53,0.05)] flex-1 flex flex-col"
+                                                                className={`rounded-2xl px-5 sm:px-7 pt-8 sm:pt-10 pb-8 sm:pb-10 shadow-[0_12px_32px_rgba(3,80,53,0.05)] w-full ${currentStep === 3 ? 'flex-1' : ''}`}
                                                                 style={{
                                                                         background: 'rgba(255, 255, 255, 0.7)',
                                                                         backdropFilter: 'blur(20px)',
@@ -453,7 +453,6 @@ export default function RecipeGeneration() {
                                                                         </div>
                                                                 </div>
                                                         )}
-                                                                </div>
                                                         </div>
                                                 </div>
                                         </div>

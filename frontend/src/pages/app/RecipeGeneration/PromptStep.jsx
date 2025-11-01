@@ -36,20 +36,18 @@ export default function PromptStep({ onSubmit, initialValue = '', loading = fals
         };
 
         return (
-                <div className="flex flex-col h-full">
-                        {/* Top Section - Heading */}
-                        <div>
-                                <h2 className="text-3xl font-bold text-[#035035] mb-6 text-center">
-                                        What do you want to cook today?
-                                </h2>
-                                <p className="text-center text-[#2D2D2D] opacity-60 mb-8">
-                                        Describe what you're in the mood for, and we'll help you create the perfect recipe
-                                </p>
-                        </div>
+                <div className="flex flex-col items-center">
+                        {/* Heading */}
+                        <h2 className="text-3xl font-bold text-[#035035] text-center">
+                                What do you want to cook today?
+                        </h2>
+                        <p className="text-center text-[#2D2D2D] opacity-60 mt-4 max-w-2xl">
+                                Describe what you're in the mood for, and we'll help you create the perfect recipe
+                        </p>
 
-                        {/* Middle Section - Textbox */}
-                        <div className="flex-1 flex flex-col justify-center">
-                                <div className="mb-6">
+                        {/* Form Section - matches description width */}
+                        <form onSubmit={handleSubmit} className="w-full max-w-2xl mt-4">
+                                <div>
                                         <label htmlFor="prompt-input" className="block text-sm font-medium text-[#2D2D2D] mb-2">
                                                 What do you want to cook?
                                         </label>
@@ -80,15 +78,12 @@ export default function PromptStep({ onSubmit, initialValue = '', loading = fals
                                                 </p>
                                         )}
                                 </div>
-                        </div>
 
-                        {/* Bottom Section - Button */}
-                        <div>
-                                <form onSubmit={handleSubmit}>
-                                        <div className="flex justify-end">
-                                                <button
-                                                        type="submit"
-                                                        disabled={loading}
+                                {/* Button aligned to the right */}
+                                <div className="flex justify-end mt-4">
+                                        <button
+                                                type="submit"
+                                                disabled={loading}
                                                 className="bg-[#035035] text-white px-8 py-3 rounded-full font-semibold text-base
                                                         hover:scale-105 active:scale-95 transition-all duration-200
                                                         disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
@@ -98,10 +93,9 @@ export default function PromptStep({ onSubmit, initialValue = '', loading = fals
                                                 aria-label="Proceed to ingredients step"
                                         >
                                                 {loading ? 'Loading...' : 'Next'}
-                                                </button>
-                                        </div>
-                                </form>
-                        </div>
+                                        </button>
+                                </div>
+                        </form>
                 </div>
         );
 }
