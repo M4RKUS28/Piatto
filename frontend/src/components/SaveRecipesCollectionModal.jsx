@@ -3,7 +3,6 @@ import { X, Search, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getUserCollections, createCollection, updateCollectionRecipes } from '../api/collectionApi';
 import { getImageUrl } from '../utils/imageUtils';
 import LoadingSpinner from './LoadingSpinner';
-import { useTranslation } from 'react-i18next'
 
 /**
  * SaveRecipesCollectionModal component - Multi-step wizard for saving recipes to collections
@@ -120,13 +119,7 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
 
   const handleNext = () => {
     const currentRecipe = recipes[currentStep];
-    const currentSelections = recipeSelections.get(currentRecipe.id);
-
-    // Validate current step
-    if (!currentSelections || currentSelections.size === 0) {
-      setError('Bitte wähle mindestens eine Sammlung aus');
-      return;
-    }
+    const currentSelections = recipeSelections.get(currentRecipe.id) || new Set();
 
     setError(null);
 
@@ -137,7 +130,7 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
       const nextRecipeId = recipes[currentStep + 1].id;
 
       // Only inherit selections if the next recipe hasn't been visited yet
-      if (!visitedRecipes.has(nextRecipeId)) {
+      if (!visitedRecipes.has(nextRecipeId) && currentSelections.size > 0) {
         setRecipeSelections(prevSelections => {
           const nextSelections = prevSelections.get(nextRecipeId);
 
@@ -168,33 +161,17 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
   };
 
   const handleSave = async () => {
-    const currentRecipe = recipes[currentStep];
-    const currentSelections = recipeSelections.get(currentRecipe.id);
-
-    // Validate current (last) step
-    if (!currentSelections || currentSelections.size === 0) {
-      setError('Bitte wähle mindestens eine Sammlung aus');
-      return;
-    }
-
     setSaving(true);
     setError(null);
 
     try {
-      // Validate all recipes have at least one collection
-      for (const [recipeId, collectionIds] of recipeSelections.entries()) {
-        if (collectionIds.size === 0) {
-          const recipe = recipes.find(r => r.id === recipeId);
-          setError(`Bitte wähle mindestens eine Sammlung für "${recipe.title}" aus`);
-          setSaving(false);
-          return;
-        }
-      }
-
       // Build a map of collectionId -> Set of recipeIds
       const collectionToRecipes = new Map();
 
       for (const [recipeId, collectionIds] of recipeSelections.entries()) {
+        if (!collectionIds || collectionIds.size === 0) {
+          continue;
+        }
         for (const collectionId of collectionIds) {
           if (!collectionToRecipes.has(collectionId)) {
             // Initialize with existing recipes from the collection
@@ -249,7 +226,7 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
             <div>
               <h2 className="text-2xl font-bold text-[#035035]">In Sammlung speichern</h2>
               <p className="text-sm text-[#2D2D2D] opacity-60 mt-1">
-                Schritt {currentStep + 1} von {recipes.length}
+                Schritt {currentStep + 1} von {recipes.length} · Sammlungsauswahl optional
               </p>
             </div>
             <button
@@ -307,6 +284,10 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
                   disabled={saving}
                 />
               </div>
+
+              <p className="text-xs text-[#2D2D2D] opacity-60 mb-4">
+                Du kannst Rezepte auch ohne Sammlung speichern.
+              </p>
 
               {/* Create Collection Button */}
               {!showCreateForm ? (
