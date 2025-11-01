@@ -34,6 +34,39 @@ const ChatContainer = ({
   }));
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  const chatContentRef = useRef(null);
+  useEffect(() => {
+    if (isMobile) {
+      return;
+    }
+
+    const measure = () => {
+      if (!chatContentRef.current) {
+        return;
+      }
+
+      const rect = chatContentRef.current.getBoundingClientRect();
+      const desiredHeight = rect.height + 52;
+
+      setSize((prev) => {
+        if (prev.height === desiredHeight) {
+          return prev;
+        }
+        return { ...prev, height: desiredHeight };
+      });
+    };
+
+    measure();
+
+    if (typeof ResizeObserver === 'function' && chatContentRef.current) {
+      const observer = new ResizeObserver(measure);
+      observer.observe(chatContentRef.current);
+      return () => observer.disconnect();
+    }
+
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [isMobile]);
   const [resizeDirection, setResizeDirection] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0, posX: 0, posY: 0 });
@@ -497,7 +530,7 @@ const ChatContainer = ({
       </div>
 
       {/* Chat Content */}
-      <div className="p-4 h-[calc(100%-52px)] overflow-hidden">
+      <div ref={chatContentRef} className="p-4 h-[calc(100%-52px)] overflow-hidden">
         <Chat stepIndex={stepIndex} stepHeading={stepHeading} cookingSessionId={cookingSessionId} />
       </div>
     </div>
