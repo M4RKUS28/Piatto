@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { X, Search, Plus, Trash2 } from 'lucide-react';
 import { getUserCollections, getCollectionsForRecipe, getCollectionById, updateCollectionRecipes, createCollection } from '../api/collectionApi';
-import { deleteRecipe } from '../api/recipeApi';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
+import DeleteCollectionModal from './DeleteCollectionModal';
 import { useTranslation } from 'react-i18next'
 
 /**
@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next'
  * - Create new collections
  * - Delete the recipe if no collections are selected
  */
-export default function EditCollectionsModal({ recipeId, isOpen, onClose, onRecipeDeleted, onCollectionsUpdated }) {
+export default function EditCollectionsModal({ recipeId, isOpen, onClose, onCollectionsUpdated }) {
   const { t } = useTranslation(['pages']);
   const [collections, setCollections] = useState([]);
   const [selectedCollectionIds, setSelectedCollectionIds] = useState(new Set());
@@ -26,6 +26,8 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
   const [newCollectionName, setNewCollectionName] = useState('');
   const [newCollectionDescription, setNewCollectionDescription] = useState('');
   const [creatingCollection, setCreatingCollection] = useState(false);
+  const [collectionToDelete, setCollectionToDelete] = useState(null);
+  const [showDeleteCollectionModal, setShowDeleteCollectionModal] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -116,25 +118,6 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
     }
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm(t('editCollectionsModal.deleteConfirm', 'Are you sure you want to delete this recipe?'))) {
-      return;
-    }
-
-    setSaving(true);
-    setError(null);
-
-    try {
-      await deleteRecipe(recipeId);
-      onRecipeDeleted();
-    } catch (err) {
-      console.error('Failed to delete recipe:', err);
-      setError(t('editCollectionsModal.errorDeleting', 'Failed to delete. Please try again.'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const handleCreateCollection = async () => {
     if (!newCollectionName.trim()) return;
 
@@ -161,6 +144,25 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
     }
   };
 
+  const handleDeleteCollectionIconClick = (event, collection) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setCollectionToDelete(collection);
+    setShowDeleteCollectionModal(true);
+  };
+
+  const handleCloseDeleteCollectionModal = () => {
+    setShowDeleteCollectionModal(false);
+    setCollectionToDelete(null);
+  };
+
+  const handleCollectionDeleted = async () => {
+    await fetchData();
+    if (onCollectionsUpdated) {
+      await onCollectionsUpdated();
+    }
+  };
+
   const filteredCollections = collections.filter(collection =>
     collection.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -168,8 +170,9 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <>
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="p-6 border-b border-[#F5F5F5] flex items-center justify-between">
           <h2 className="text-2xl font-bold text-[#035035]">{t('editCollectionsModal.title', 'Edit Collection')}</h2>
@@ -263,20 +266,30 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
                   filteredCollections.map((collection) => (
                     <label
                       key={collection.id}
-                      className="flex items-center gap-3 p-3 rounded-xl border-2 border-[#F5F5F5] hover:border-[#035035] cursor-pointer transition-all"
+                      className="flex items-center justify-between gap-3 p-3 rounded-xl border-2 border-[#F5F5F5] hover:border-[#035035] cursor-pointer transition-all"
                     >
-                      <input
-                        type="checkbox"
-                        checked={selectedCollectionIds.has(collection.id)}
-                        onChange={() => handleToggleCollection(collection.id)}
-                        className="w-5 h-5 rounded border-2 border-[#035035] text-[#035035] focus:ring-[#035035] cursor-pointer"
-                      />
-                      <div className="flex-1">
-                        <p className="font-semibold text-[#2D2D2D]">{collection.name}</p>
-                        {collection.description && (
-                          <p className="text-sm text-[#2D2D2D] opacity-60 line-clamp-1">{collection.description}</p>
-                        )}
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <input
+                          type="checkbox"
+                          checked={selectedCollectionIds.has(collection.id)}
+                          onChange={() => handleToggleCollection(collection.id)}
+                          className="w-5 h-5 rounded border-2 border-[#035035] text-[#035035] focus:ring-[#035035] cursor-pointer"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-[#2D2D2D] truncate">{collection.name}</p>
+                          {collection.description && (
+                            <p className="text-sm text-[#2D2D2D] opacity-60 line-clamp-1">{collection.description}</p>
+                          )}
+                        </div>
                       </div>
+                      <button
+                        type="button"
+                        onClick={(event) => handleDeleteCollectionIconClick(event, collection)}
+                        className="p-2 text-[#2D2D2D] opacity-40 hover:opacity-90 transition-opacity"
+                        aria-label={t('editCollectionsModal.deleteCollection', 'Delete collection')}
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
                     </label>
                   ))
                 )}
@@ -293,27 +306,25 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-[#F5F5F5] flex gap-3">
-          {selectedCollectionIds.size === 0 ? (
-            <button
-              onClick={handleDelete}
-              className="flex-1 px-6 py-3 rounded-full bg-red-500 text-white font-semibold hover:bg-red-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-              disabled={saving || loading}
-            >
-              <Trash2 className="w-5 h-5" />
-              <span>{saving ? t('editCollectionsModal.deleting', 'Deleting...') : t('editCollectionsModal.delete', 'Delete')}</span>
-            </button>
-          ) : (
-            <button
-              onClick={handleSave}
-              className="flex-1 px-6 py-3 rounded-full bg-[#035035] text-white font-semibold hover:scale-105 transition-all disabled:opacity-50"
-              disabled={saving || loading}
-            >
-              {saving ? t('editCollectionsModal.saving', 'Saving...') : t('editCollectionsModal.save', 'Save')}
-            </button>
-          )}
+        <div className="p-6 border-t border-[#F5F5F5]">
+          <button
+            onClick={handleSave}
+            className="w-full px-6 py-3 rounded-full bg-[#035035] text-white font-semibold hover:scale-105 transition-all disabled:opacity-50"
+            disabled={saving || loading}
+          >
+            {saving
+              ? t('editCollectionsModal.saving', 'Saving...')
+              : t('editCollectionsModal.save', 'Save')}
+          </button>
         </div>
       </div>
     </div>
+      <DeleteCollectionModal
+        collection={collectionToDelete}
+        isOpen={showDeleteCollectionModal}
+        onClose={handleCloseDeleteCollectionModal}
+        onDeleted={handleCollectionDeleted}
+      />
+    </>
   );
 }
