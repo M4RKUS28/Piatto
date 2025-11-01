@@ -5,6 +5,7 @@ import { getInstructions } from '../../api/instructionApi';
 import WakeWordDetection from '../../components/WakeWordDetection';
 import AnimatedTimer from './Instructions/AnimatedTimer';
 import AnimatingTimerPortal from './Instructions/AnimatingTimerPortal';
+import ChatContainer from './Instructions/ChatContainer';
 import { useTranslation } from 'react-i18next'
 
  // --- Configuration ---
@@ -55,12 +56,43 @@ const StepCircle = ({ animationFile, circleRadius }) => {
   );
 };
 
+// --- AI Question Button Component ---
+const AIQuestionButton = ({ onClick, isFocused }) => {
+  const [isHovered, setIsHovered] = React.useState(false);
+
+  if (!isFocused) return null;
+
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="absolute top-4 right-4 flex items-center gap-2 bg-[#035035] hover:bg-[#046847] text-white px-3 py-2 rounded-full shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer z-10"
+    >
+      <span className="text-xl">🤖</span>
+      <span
+        className="overflow-hidden transition-all duration-300 text-sm font-medium whitespace-nowrap"
+        style={{
+          maxWidth: isHovered ? '120px' : '0',
+          opacity: isHovered ? 1 : 0
+        }}
+      >
+        AI Fragen
+      </span>
+    </button>
+  );
+};
+
 // --- Build Instruction Content ---
-const buildInstructionContent = (instruction, stepIndex, timerData, handlers) => {
+const buildInstructionContent = (instruction, stepIndex, timerData, handlers, isFocused) => {
   const { heading, description, timer } = instruction;
 
   return (
-    <div className="p-4 sm:p-5 md:p-6 bg-white rounded-2xl shadow-md">
+    <div className="p-4 sm:p-5 md:p-6 bg-white rounded-2xl shadow-md relative">
+      <AIQuestionButton onClick={handlers.onOpenChat} isFocused={isFocused} />
       <h3 className="text-lg sm:text-xl md:text-xl font-semibold text-[#2D2D2D] mb-2">{heading}</h3>
       <p className="text-sm sm:text-base text-[#2D2D2D] mb-4">{description}</p>
       {timer && timerData && !timerData.isFloating && (
@@ -130,6 +162,49 @@ const CookingInstructions = ({
   const [animatingTimers, setAnimatingTimers] = React.useState([]); // Timers currently animating
   const [hiddenTimers, setHiddenTimers] = React.useState([]); // Timers hidden during animation
   const timerRefs = React.useRef({});
+
+  // Chat state management
+  const [openChatStep, setOpenChatStep] = React.useState(null);
+  const [chatStepPosition, setChatStepPosition] = React.useState(null);
+
+  // Handle opening chat for a step
+  const handleOpenChat = React.useCallback((stepIndex) => {
+    setOpenChatStep(stepIndex);
+  }, []);
+
+  // Handle closing chat
+  const handleCloseChat = React.useCallback(() => {
+    setOpenChatStep(null);
+    setChatStepPosition(null);
+  }, []);
+
+  // Track step position for chat pointer
+  React.useEffect(() => {
+    if (openChatStep === null) return;
+
+    const updateStepPosition = () => {
+      const circleEl = circleRefs.current[openChatStep];
+      if (!circleEl) return;
+
+      const rect = circleEl.getBoundingClientRect();
+      setChatStepPosition({
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2
+      });
+    };
+
+    // Initial position
+    updateStepPosition();
+
+    // Update on scroll and resize
+    window.addEventListener('scroll', updateStepPosition, true);
+    window.addEventListener('resize', updateStepPosition);
+
+    return () => {
+      window.removeEventListener('scroll', updateStepPosition, true);
+      window.removeEventListener('resize', updateStepPosition);
+    };
+  }, [openChatStep]);
 
   // Handle timer starting to float
   const handleStartFloating = React.useCallback((stepIndex) => {
@@ -202,6 +277,8 @@ const CookingInstructions = ({
   // Handle step click with smooth scroll to center
   const handleStepClick = React.useCallback((index) => {
     setFocusedStep(index);
+    // Close chat when switching steps
+    setOpenChatStep(null);
 
     // Scroll the step to center of viewport
     const stepElement = stepRefs.current[index];
@@ -455,7 +532,8 @@ const CookingInstructions = ({
             const handlers = {
               onStartFloating: handleStartFloating,
               onReturnToStep: handleReturnToStep,
-              onExpand: () => handleExpandTimer(index)
+              onExpand: () => handleExpandTimer(index),
+              onOpenChat: () => handleOpenChat(index)
             };
 
             return (
@@ -464,7 +542,7 @@ const CookingInstructions = ({
                 ref={(el) => (stepRefs.current[index] = el)}
                 circleRef={(el) => (circleRefs.current[index] = el)}
                 instruction={instruction}
-                content={buildInstructionContent(instruction, index, timerData, handlers)}
+                content={buildInstructionContent(instruction, index, timerData, handlers, focusedStep === index)}
                 index={index}
                 circleRadius={circleRadius}
                 isFocused={focusedStep === index}
@@ -507,6 +585,28 @@ const CookingInstructions = ({
 
       {/* Animating Timers Portal */}
       <AnimatingTimerPortal timers={animatingTimers} instructions={instructions} />
+
+      {/* Chat Container */}
+      {openChatStep !== null && chatStepPosition && (
+        <ChatContainer
+          stepIndex={openChatStep}
+          stepHeading={instructions[openChatStep]?.heading}
+          stepPosition={chatStepPosition}
+          onClose={handleCloseChat}
+          initialPosition={(() => {
+            // Calculate initial position to the left of the step
+            const stepEl = stepRefs.current[openChatStep];
+            if (!stepEl) return { x: 100, y: 100 };
+
+            const rect = stepEl.getBoundingClientRect();
+            // Position to the left of the step, with some padding
+            return {
+              x: Math.max(20, rect.left - 420), // 400px width + 20px gap
+              y: Math.max(20, rect.top - 50)
+            };
+          })()}
+        />
+      )}
     </div>
   );
 };
