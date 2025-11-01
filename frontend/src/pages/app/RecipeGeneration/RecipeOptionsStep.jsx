@@ -25,7 +25,6 @@ export default function RecipeOptionsStep({
 	const [recipes, setRecipes] = useState(recipeOptions);
 	const [imageLoadStatus, setImageLoadStatus] = useState({});
 	const [detailsCache, setDetailsCache] = useState({});
-	const [detailsModalOpen, setDetailsModalOpen] = useState(false);
 	const [activeDetailsId, setActiveDetailsId] = useState(null);
 	const [detailsLoadingId, setDetailsLoadingId] = useState(null);
 	const [detailsError, setDetailsError] = useState(null);
@@ -105,14 +104,12 @@ export default function RecipeOptionsStep({
 			return;
 		}
 		setActiveDetailsId(recipe.id);
-		setDetailsModalOpen(true);
 		if (!detailsCache[recipe.id]) {
 			await fetchRecipeDetails(recipe.id);
 		}
 	};
 
 	const handleCloseDetails = () => {
-		setDetailsModalOpen(false);
 		setActiveDetailsId(null);
 		setDetailsError(null);
 		setDetailsLoadingId(null);
@@ -132,6 +129,10 @@ export default function RecipeOptionsStep({
 
 	// Initialize recipes when recipeOptions changes
 	useEffect(() => {
+		setActiveDetailsId(null);
+		setDetailsError(null);
+		setDetailsLoadingId(null);
+
 		setRecipes(recipeOptions);
 		// Initialize image load status for all recipes
 		const initialStatus = {};
@@ -146,6 +147,16 @@ export default function RecipeOptionsStep({
 			}
 		});
 		setImageLoadStatus(initialStatus);
+		// Optionally keep cached details for recipes still present
+		setDetailsCache(prev => {
+			const nextCache = {};
+			recipeOptions.forEach(recipe => {
+				if (recipe.id > 0 && prev[recipe.id]) {
+					nextCache[recipe.id] = prev[recipe.id];
+				}
+			});
+			return nextCache;
+		});
 	}, [recipeOptions]);
 
 	// Poll for image updates
@@ -215,6 +226,7 @@ export default function RecipeOptionsStep({
 		: null;
 
 	const isDetailsLoading = activeDetailsId != null && detailsLoadingId === activeDetailsId && !detailsCache[activeDetailsId];
+	const isDetailsModalOpen = activeDetailsId != null;
 
 	return (
 		<div className="space-y-6">
@@ -383,7 +395,7 @@ export default function RecipeOptionsStep({
 			/>
 
 			<RecipeDetailsModal
-				isOpen={detailsModalOpen}
+				isOpen={isDetailsModalOpen}
 				onClose={handleCloseDetails}
 				recipe={activeRecipeDetails}
 				isLoading={isDetailsLoading}
