@@ -8,9 +8,11 @@ import AnimatedTimer from './Instructions/AnimatedTimer';
 import AnimatingTimerPortal from './Instructions/AnimatingTimerPortal';
 import ChatContainer from './Instructions/ChatContainer';
 import { useTranslation } from 'react-i18next'
+import useMediaQuery from '../../hooks/useMediaQuery';
 
  // --- Configuration ---
 const CURVE_AMOUNT = 180;
+const MOBILE_NAV_HEIGHT = 72;
 
 // Calculate responsive circle radius based on viewport width
 const getCircleRadius = () => {
@@ -193,6 +195,11 @@ const CookingInstructions = ({
       return { position: null, size: null };
     }
   });
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const [mobileChatHeight, setMobileChatHeight] = React.useState(0);
+  const mobileContentPadding = isMobile && openChatStep !== null
+    ? mobileChatHeight + MOBILE_NAV_HEIGHT + 32
+    : undefined;
 
   // Handle opening chat for a step
   const handleOpenChat = React.useCallback((stepIndex) => {
@@ -208,7 +215,14 @@ const CookingInstructions = ({
   const handleCloseChat = React.useCallback(() => {
     setOpenChatStep(null);
     setChatStepPosition(null);
+    setMobileChatHeight(0);
   }, []);
+
+  React.useEffect(() => {
+    if (openChatStep === null) {
+      setMobileChatHeight(0);
+    }
+  }, [openChatStep]);
 
   // Handle saving chat position and size
   const handleSaveChatConfig = React.useCallback((position, size) => {
@@ -611,7 +625,10 @@ const CookingInstructions = ({
 
   // Show instructions
   return (
-    <div className="bg-[#FFF8F0] min-h-full w-full flex flex-col items-center p-3 sm:p-4 md:p-6">
+    <div
+      className="bg-[#FFF8F0] min-h-full w-full flex flex-col items-center p-3 sm:p-4 md:p-6"
+      style={mobileContentPadding ? { paddingBottom: mobileContentPadding } : undefined}
+    >
       {/* Header */}
       <div className="p-3 sm:p-4 md:p-8 text-center">
         <h1 className="font-['Poppins',_sans-serif] font-bold text-[#2D2D2D] text-2xl sm:text-3xl md:text-4xl lg:text-[2.5rem]">
@@ -812,6 +829,8 @@ const CookingInstructions = ({
           onClose={handleCloseChat}
           cookingSessionId={cookingSessionId}
           onSaveConfig={handleSaveChatConfig}
+          isMobile={isMobile}
+          onMobileHeightChange={setMobileChatHeight}
           initialPosition={(() => {
             // Use saved position if available, otherwise calculate default
             if (savedChatConfig.position) {

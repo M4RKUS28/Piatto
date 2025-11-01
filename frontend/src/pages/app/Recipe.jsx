@@ -11,6 +11,7 @@ import ErrorMessage from '../../components/ErrorMessage';
 import EditCollectionsModal from '../../components/EditCollectionsModal';
 import { getImageUrl } from '../../utils/imageUtils';
 import { useTranslation } from 'react-i18next'
+import useMediaQuery from '../../hooks/useMediaQuery';
 
 // Helper function to get food category icon and label
 const getFoodCategoryDisplay = (category, t) => {
@@ -150,6 +151,7 @@ const Recipe = ({ recipeId }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showCollectionsModal, setShowCollectionsModal] = useState(false);
   const menuRef = useRef(null);
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -185,7 +187,7 @@ const Recipe = ({ recipeId }) => {
     };
 
     fetchRecipe();
-  }, [recipeId]);
+  }, [recipeId, t]);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -350,7 +352,7 @@ const Recipe = ({ recipeId }) => {
     <div className="h-full overflow-y-auto no-scrollbar bg-white">
       <div className="p-4 sm:p-6 md:p-8">
         {/* Header with Share, Print, and Menu buttons */}
-        <div className="flex items-start justify-between gap-4 mb-4">
+        <div className={`flex items-start justify-between gap-4 mb-4 ${isMobile ? 'flex-col' : ''}`}>
           <div className="flex-1">
             <h1 className="font-poppins font-bold text-xl sm:text-2xl text-[#035035] break-words">
               {recipe.title}
@@ -359,7 +361,7 @@ const Recipe = ({ recipeId }) => {
               {recipe.description}
             </p>
           </div>
-          <div className="flex gap-2 flex-shrink-0">
+          <div className={`flex gap-2 flex-shrink-0 ${isMobile ? 'self-stretch justify-end' : ''}`}>
             <button className="p-3 border-2 border-[#A8C9B8] rounded-full text-[#035035] hover:bg-[#A8C9B8]/30 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
               <PiShareNetwork className="h-5 w-5" />
             </button>
@@ -417,7 +419,7 @@ const Recipe = ({ recipeId }) => {
 
 
         {/* Recipe Info */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center mt-6 sm:mt-8 py-4 border-y border-[#F5F5F5]">
+        <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-3 gap-2 sm:gap-4'} text-center mt-6 sm:mt-8 py-4 border-y border-[#F5F5F5]`}>
           <div className="flex flex-col items-center gap-1 sm:gap-2">
             <PiClock className="h-6 w-6 sm:h-7 sm:w-7 text-[#035035]" />
             <span className="text-xs sm:text-sm font-medium">{formatTime(recipe.total_time_minutes, t)}</span>

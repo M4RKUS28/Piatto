@@ -1,66 +1,124 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Chat from './Chat';
 
+const MOBILE_MIN_HEIGHT = 240;
+const MOBILE_BOTTOM_OFFSET = 72;
+const DESKTOP_MIN_WIDTH = 320;
+const DESKTOP_MIN_HEIGHT = 400;
+
 /**
- * ChatContainer - Draggable chat container with a speech bubble pointer
- * The pointer dynamically points towards the associated step
+ * ChatContainer - Draggable chat container with a speech bubble pointer.
+ * Desktop: free positioning with resize handles on all sides.
+ * Mobile: fixed full width above navigation, height adjustable via top drag handle.
  */
-const ChatContainer = ({ stepIndex, stepHeading, stepPosition, onClose, initialPosition, initialSize, cookingSessionId, onSaveConfig }) => {
+const ChatContainer = ({
+  stepIndex,
+  stepHeading,
+  stepPosition,
+  onClose,
+  initialPosition,
+  initialSize,
+  cookingSessionId,
+  onSaveConfig,
+  isMobile = false,
+  onMobileHeightChange
+}) => {
   const containerRef = useRef(null);
-  const [position, setPosition] = useState(initialPosition || { x: 100, y: 100 });
-  const [size, setSize] = useState(initialSize || { width: 400, height: 500 });
+  const draggingPointerId = useRef(null);
+  const resizingPointerId = useRef(null);
+
+  const [position, setPosition] = useState(() => initialPosition || { x: 100, y: 100 });
+  const [size, setSize] = useState(() => ({
+    width: initialSize?.width ?? 400,
+    height: initialSize?.height ?? 500
+  }));
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [resizeDirection, setResizeDirection] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0, posX: 0, posY: 0 });
   const [pointerStyle, setPointerStyle] = useState({ side: 'left', position: 50 });
 
-  // Calculate pointer position based on container and step positions
+  const getMobileLimits = useCallback(() => {
+    if (typeof window === 'undefined') {
+      return { min: MOBILE_MIN_HEIGHT, max: MOBILE_MIN_HEIGHT * 2 };
+    }
+    const viewportHeight = window.innerHeight || 0;
+    const max = viewportHeight
+      ? Math.max(viewportHeight - (MOBILE_BOTTOM_OFFSET + 48), MOBILE_MIN_HEIGHT)
+      : MOBILE_MIN_HEIGHT;
+    return { min: MOBILE_MIN_HEIGHT, max };
+  }, []);
+
+  // Snap to fixed positioning and clamp height when switching to mobile layout
+  useEffect(() => {
+    if (!isMobile) {
+      return;
+    }
+
+    const limits = getMobileLimits();
+    setPosition({ x: 0, y: 0 });
+    setSize((prev) => {
+      const clampedHeight = Math.min(Math.max(prev.height, limits.min), limits.max);
+      if (clampedHeight === prev.height) {
+        return prev;
+      }
+      return { ...prev, height: clampedHeight };
+    });
+  }, [isMobile, getMobileLimits]);
+
+  // Keep height within viewport bounds on orientation/viewport changes (mobile)
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const handleResize = () => {
+      const limits = getMobileLimits();
+      setSize((prev) => {
+        const desired = Math.min(Math.max(prev.height, limits.min), limits.max);
+        if (desired === prev.height) {
+          return prev;
+        }
+        return { ...prev, height: desired };
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isMobile, getMobileLimits]);
+
+  // Calculate pointer position based on container and step positions (desktop only)
   const calculatePointerPosition = useCallback(() => {
-    if (!containerRef.current || !stepPosition) return;
+    if (!containerRef.current || !stepPosition || isMobile) return;
 
     const container = containerRef.current.getBoundingClientRect();
-    const containerCenter = {
-      x: container.left + container.width / 2,
-      y: container.top + container.height / 2
-    };
 
-    // Step position (center of step circle)
-    const step = {
-      x: stepPosition.x,
-      y: stepPosition.y
-    };
-
-    // Calculate distances to each edge and find closest point on each edge
     const edges = [
       {
         side: 'top',
-        distance: Math.abs(container.top - step.y),
-        position: Math.max(10, Math.min(90, ((step.x - container.left) / container.width) * 100)),
-        shouldShow: step.y < container.top
+        distance: Math.abs(container.top - stepPosition.y),
+        position: Math.max(10, Math.min(90, ((stepPosition.x - container.left) / container.width) * 100)),
+        shouldShow: stepPosition.y < container.top
       },
       {
         side: 'bottom',
-        distance: Math.abs(container.bottom - step.y),
-        position: Math.max(10, Math.min(90, ((step.x - container.left) / container.width) * 100)),
-        shouldShow: step.y > container.bottom
+        distance: Math.abs(container.bottom - stepPosition.y),
+        position: Math.max(10, Math.min(90, ((stepPosition.x - container.left) / container.width) * 100)),
+        shouldShow: stepPosition.y > container.bottom
       },
       {
         side: 'left',
-        distance: Math.abs(container.left - step.x),
-        position: Math.max(10, Math.min(90, ((step.y - container.top) / container.height) * 100)),
-        shouldShow: step.x < container.left
+        distance: Math.abs(container.left - stepPosition.x),
+        position: Math.max(10, Math.min(90, ((stepPosition.y - container.top) / container.height) * 100)),
+        shouldShow: stepPosition.x < container.left
       },
       {
         side: 'right',
-        distance: Math.abs(container.right - step.x),
-        position: Math.max(10, Math.min(90, ((step.y - container.top) / container.height) * 100)),
-        shouldShow: step.x > container.right
+        distance: Math.abs(container.right - stepPosition.x),
+        position: Math.max(10, Math.min(90, ((stepPosition.y - container.top) / container.height) * 100)),
+        shouldShow: stepPosition.x > container.right
       }
     ];
 
-    // Find the edge closest to the step
     const closestEdge = edges.reduce((closest, edge) => {
       if (!edge.shouldShow) return closest;
       if (!closest || edge.distance < closest.distance) return edge;
@@ -73,42 +131,60 @@ const ChatContainer = ({ stepIndex, stepHeading, stepPosition, onClose, initialP
         position: closestEdge.position
       });
     }
-  }, [stepPosition]);
+  }, [stepPosition, isMobile]);
 
-  // Update pointer position when container moves, resizes, or step position changes
   useEffect(() => {
+    if (isMobile) return;
     calculatePointerPosition();
-  }, [position, size, stepPosition, calculatePointerPosition]);
+  }, [position, size, stepPosition, calculatePointerPosition, isMobile]);
 
-  // Save position and size whenever they change
+  // Save layout configuration when interactions finish
   useEffect(() => {
     if (onSaveConfig && !isDragging && !isResizing) {
-      // Only save after dragging/resizing is complete to avoid excessive saves
       onSaveConfig(position, size);
     }
   }, [position, size, isDragging, isResizing, onSaveConfig]);
 
-  // Handle drag start
-  const handleMouseDown = (e) => {
-    if (e.target.closest('.chat-close-button')) return; // Don't drag when clicking close button
-    if (e.target.closest('.resize-handle')) return; // Don't drag when clicking resize handle
+  // Notify parent about current height in mobile mode
+  useEffect(() => {
+    if (isMobile && onMobileHeightChange) {
+      onMobileHeightChange(size.height);
+    }
+  }, [isMobile, size.height, onMobileHeightChange]);
 
-    const container = containerRef.current.getBoundingClientRect();
+  const handlePointerDown = (event) => {
+    if (isMobile) return;
+    if (event.target.closest('.chat-close-button')) return;
+    if (event.target.closest('.resize-handle')) return;
+
+    const container = containerRef.current?.getBoundingClientRect();
+    if (!container) return;
+
+    draggingPointerId.current = event.pointerId;
     setIsDragging(true);
     setDragOffset({
-      x: e.clientX - container.left,
-      y: e.clientY - container.top
+      x: event.clientX - container.left,
+      y: event.clientY - container.top
     });
   };
 
-  // Handle resize start
-  const handleResizeStart = (e, direction) => {
-    e.stopPropagation();
+  const handleResizeStart = (event, direction) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (isMobile && direction !== 'n') {
+      return;
+    }
+
+    const container = containerRef.current?.getBoundingClientRect();
+    if (!container) return;
+
+    resizingPointerId.current = event.pointerId;
     setIsResizing(true);
     setResizeDirection(direction);
     setResizeStart({
-      x: e.clientX,
-      y: e.clientY,
+      x: event.clientX,
+      y: event.clientY,
       width: size.width,
       height: size.height,
       posX: position.x,
@@ -116,63 +192,71 @@ const ChatContainer = ({ stepIndex, stepHeading, stepPosition, onClose, initialP
     });
   };
 
-  // Handle dragging
+  // Drag interactions (desktop only)
   useEffect(() => {
     if (!isDragging) return;
 
-    const handleMouseMove = (e) => {
+    const handlePointerMove = (event) => {
+      if (draggingPointerId.current !== event.pointerId) return;
       setPosition({
-        x: e.clientX - dragOffset.x,
-        y: e.clientY - dragOffset.y
+        x: event.clientX - dragOffset.x,
+        y: event.clientY - dragOffset.y
       });
     };
 
-    const handleMouseUp = () => {
+    const handlePointerUp = (event) => {
+      if (draggingPointerId.current !== event.pointerId) return;
+      draggingPointerId.current = null;
       setIsDragging(false);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('pointermove', handlePointerMove);
+    document.addEventListener('pointerup', handlePointerUp);
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
     };
   }, [isDragging, dragOffset]);
 
-  // Handle resizing
+  // Resize interactions
   useEffect(() => {
     if (!isResizing) return;
 
-    const handleMouseMove = (e) => {
-      const deltaX = e.clientX - resizeStart.x;
-      const deltaY = e.clientY - resizeStart.y;
+    const handlePointerMove = (event) => {
+      if (resizingPointerId.current !== event.pointerId) return;
 
-      const minWidth = 300;
-      const minHeight = 400;
+      const deltaX = event.clientX - resizeStart.x;
+      const deltaY = event.clientY - resizeStart.y;
+
+      if (isMobile) {
+        const limits = getMobileLimits();
+        const nextHeight = Math.min(Math.max(resizeStart.height - deltaY, limits.min), limits.max);
+        setSize((prev) => ({ ...prev, height: nextHeight }));
+        return;
+      }
 
       let newWidth = resizeStart.width;
       let newHeight = resizeStart.height;
       let newX = resizeStart.posX;
       let newY = resizeStart.posY;
 
-      // Handle different resize directions
       if (resizeDirection.includes('e')) {
-        newWidth = Math.max(minWidth, resizeStart.width + deltaX);
+        newWidth = Math.max(DESKTOP_MIN_WIDTH, resizeStart.width + deltaX);
       }
       if (resizeDirection.includes('w')) {
         const potentialWidth = resizeStart.width - deltaX;
-        if (potentialWidth >= minWidth) {
+        if (potentialWidth >= DESKTOP_MIN_WIDTH) {
           newWidth = potentialWidth;
           newX = resizeStart.posX + deltaX;
         }
       }
       if (resizeDirection.includes('s')) {
-        newHeight = Math.max(minHeight, resizeStart.height + deltaY);
+        newHeight = Math.max(DESKTOP_MIN_HEIGHT, resizeStart.height + deltaY);
       }
       if (resizeDirection.includes('n')) {
         const potentialHeight = resizeStart.height - deltaY;
-        if (potentialHeight >= minHeight) {
+        if (potentialHeight >= DESKTOP_MIN_HEIGHT) {
           newHeight = potentialHeight;
           newY = resizeStart.posY + deltaY;
         }
@@ -182,23 +266,26 @@ const ChatContainer = ({ stepIndex, stepHeading, stepPosition, onClose, initialP
       setPosition({ x: newX, y: newY });
     };
 
-    const handleMouseUp = () => {
+    const handlePointerUp = (event) => {
+      if (resizingPointerId.current !== event.pointerId) return;
+      resizingPointerId.current = null;
       setIsResizing(false);
       setResizeDirection(null);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('pointermove', handlePointerMove);
+    document.addEventListener('pointerup', handlePointerUp);
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
     };
-  }, [isResizing, resizeDirection, resizeStart]);
+  }, [isResizing, resizeDirection, resizeStart, isMobile, getMobileLimits]);
 
-  // Render the pointer based on calculated position
   const renderPointer = () => {
-    const pointerSize = 16; // Size of the triangular pointer
+    if (isMobile) return null;
+
+    const pointerSize = 16;
     const baseStyles = 'absolute w-0 h-0 border-solid';
 
     const styles = {
@@ -252,67 +339,101 @@ const ChatContainer = ({ stepIndex, stepHeading, stepPosition, onClose, initialP
     return <div className={config.className} style={config.style} />;
   };
 
-  return (
-    <div
-      ref={containerRef}
-      className="fixed bg-white rounded-2xl shadow-2xl transition-shadow hover:shadow-3xl"
-      style={{
+  const limits = getMobileLimits();
+  const mobileHeight = Math.min(Math.max(size.height, limits.min), limits.max);
+  const containerStyle = isMobile
+    ? {
+        left: 0,
+        right: 0,
+        bottom: `calc(env(safe-area-inset-bottom, 0px) + ${MOBILE_BOTTOM_OFFSET}px)`,
+        width: '100%',
+        height: `${mobileHeight}px`,
+        zIndex: 1000,
+        cursor: isResizing ? 'ns-resize' : 'default'
+      }
+    : {
         left: `${position.x}px`,
         top: `${position.y}px`,
         width: `${size.width}px`,
         height: `${size.height}px`,
         zIndex: 1000,
         cursor: isDragging ? 'grabbing' : isResizing ? 'nwse-resize' : 'grab'
-      }}
-      onMouseDown={handleMouseDown}
+      };
+
+  const containerClassName = [
+    'fixed bg-white shadow-2xl transition-shadow',
+    isMobile ? 'rounded-t-3xl rounded-b-none border border-[#035035]/10 overflow-hidden' : 'rounded-2xl hover:shadow-3xl'
+  ].join(' ');
+
+  const headerClassName = [
+    'bg-[#035035] text-white px-4 py-3 flex items-center justify-between',
+    isMobile ? 'rounded-t-3xl' : 'rounded-t-2xl cursor-grab active:cursor-grabbing'
+  ].join(' ');
+
+  return (
+    <div
+      ref={containerRef}
+      className={containerClassName}
+      style={containerStyle}
+      onPointerDown={handlePointerDown}
     >
       {/* Resize Handles */}
-      <div
-        className="resize-handle absolute top-0 left-0 w-3 h-3 cursor-nw-resize"
-        onMouseDown={(e) => handleResizeStart(e, 'nw')}
-        style={{ marginTop: '-4px', marginLeft: '-4px' }}
-      />
-      <div
-        className="resize-handle absolute top-0 right-0 w-3 h-3 cursor-ne-resize"
-        onMouseDown={(e) => handleResizeStart(e, 'ne')}
-        style={{ marginTop: '-4px', marginRight: '-4px' }}
-      />
-      <div
-        className="resize-handle absolute bottom-0 left-0 w-3 h-3 cursor-sw-resize"
-        onMouseDown={(e) => handleResizeStart(e, 'sw')}
-        style={{ marginBottom: '-4px', marginLeft: '-4px' }}
-      />
-      <div
-        className="resize-handle absolute bottom-0 right-0 w-3 h-3 cursor-se-resize"
-        onMouseDown={(e) => handleResizeStart(e, 'se')}
-        style={{ marginBottom: '-4px', marginRight: '-4px' }}
-      />
-      <div
-        className="resize-handle absolute top-0 left-1/2 -translate-x-1/2 w-12 h-2 cursor-n-resize"
-        onMouseDown={(e) => handleResizeStart(e, 'n')}
-        style={{ marginTop: '-4px' }}
-      />
-      <div
-        className="resize-handle absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-2 cursor-s-resize"
-        onMouseDown={(e) => handleResizeStart(e, 's')}
-        style={{ marginBottom: '-4px' }}
-      />
-      <div
-        className="resize-handle absolute left-0 top-1/2 -translate-y-1/2 w-2 h-12 cursor-w-resize"
-        onMouseDown={(e) => handleResizeStart(e, 'w')}
-        style={{ marginLeft: '-4px' }}
-      />
-      <div
-        className="resize-handle absolute right-0 top-1/2 -translate-y-1/2 w-2 h-12 cursor-e-resize"
-        onMouseDown={(e) => handleResizeStart(e, 'e')}
-        style={{ marginRight: '-4px' }}
-      />
+      {!isMobile ? (
+        <>
+          <div
+            className="resize-handle absolute top-0 left-0 w-3 h-3 cursor-nw-resize"
+            onPointerDown={(event) => handleResizeStart(event, 'nw')}
+            style={{ marginTop: '-4px', marginLeft: '-4px', touchAction: 'none' }}
+          />
+          <div
+            className="resize-handle absolute top-0 right-0 w-3 h-3 cursor-ne-resize"
+            onPointerDown={(event) => handleResizeStart(event, 'ne')}
+            style={{ marginTop: '-4px', marginRight: '-4px', touchAction: 'none' }}
+          />
+          <div
+            className="resize-handle absolute bottom-0 left-0 w-3 h-3 cursor-sw-resize"
+            onPointerDown={(event) => handleResizeStart(event, 'sw')}
+            style={{ marginBottom: '-4px', marginLeft: '-4px', touchAction: 'none' }}
+          />
+          <div
+            className="resize-handle absolute bottom-0 right-0 w-3 h-3 cursor-se-resize"
+            onPointerDown={(event) => handleResizeStart(event, 'se')}
+            style={{ marginBottom: '-4px', marginRight: '-4px', touchAction: 'none' }}
+          />
+          <div
+            className="resize-handle absolute top-0 left-1/2 -translate-x-1/2 w-12 h-2 cursor-n-resize"
+            onPointerDown={(event) => handleResizeStart(event, 'n')}
+            style={{ marginTop: '-4px', touchAction: 'none' }}
+          />
+          <div
+            className="resize-handle absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-2 cursor-s-resize"
+            onPointerDown={(event) => handleResizeStart(event, 's')}
+            style={{ marginBottom: '-4px', touchAction: 'none' }}
+          />
+          <div
+            className="resize-handle absolute left-0 top-1/2 -translate-y-1/2 w-2 h-12 cursor-w-resize"
+            onPointerDown={(event) => handleResizeStart(event, 'w')}
+            style={{ marginLeft: '-4px', touchAction: 'none' }}
+          />
+          <div
+            className="resize-handle absolute right-0 top-1/2 -translate-y-1/2 w-2 h-12 cursor-e-resize"
+            onPointerDown={(event) => handleResizeStart(event, 'e')}
+            style={{ marginRight: '-4px', touchAction: 'none' }}
+          />
+        </>
+      ) : (
+        <div
+          className="resize-handle absolute top-2 left-1/2 -translate-x-1/2 w-16 h-2 bg-[#A8C9B8] rounded-full cursor-ns-resize"
+          onPointerDown={(event) => handleResizeStart(event, 'n')}
+          style={{ touchAction: 'none' }}
+        />
+      )}
 
       {/* Pointer/Tail */}
       {renderPointer()}
 
       {/* Header */}
-      <div className="bg-[#035035] text-white px-4 py-3 rounded-t-2xl flex items-center justify-between cursor-grab active:cursor-grabbing">
+      <div className={headerClassName}>
         <div className="flex items-center gap-2">
           <span className="text-lg">🤖</span>
           <span className="font-semibold text-sm">AI Assistent - Step {stepIndex + 1}</span>

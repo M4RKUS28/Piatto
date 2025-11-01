@@ -4,6 +4,7 @@ import { PiX, PiCaretRight } from 'react-icons/pi';
 import Recipe from './Recipe';
 import CookingInstructions from "./Instructions";
 import { useTranslation } from 'react-i18next'
+import useMediaQuery from '../../hooks/useMediaQuery';
 
 // Main RecipeView component
 const RecipeView = () => {
@@ -14,15 +15,16 @@ const RecipeView = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [recipeMinimized, setRecipeMinimized] = useState(false);
   const containerRef = useRef(null);
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const parsedRecipeId = parseInt(recipeId, 10);
 
   // Validate recipeId
   useEffect(() => {
-    const id = parseInt(recipeId, 10);
-    if (isNaN(id) || id <= 0) {
+    if (isNaN(parsedRecipeId) || parsedRecipeId <= 0) {
       console.error('Invalid recipe ID:', recipeId);
       navigate('/app/recipe-library');
     }
-  }, [recipeId, navigate]);
+  }, [recipeId, parsedRecipeId, navigate]);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -38,6 +40,10 @@ const RecipeView = () => {
       setIsDragging(false);
     };
 
+    if (isMobile) {
+      return undefined;
+    }
+
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
@@ -51,12 +57,25 @@ const RecipeView = () => {
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
     };
-  }, [isDragging]);
+  }, [isDragging, isMobile]);
 
   // Simplified toggle handler for the recipe panel
   const handleToggleRecipe = () => {
     setRecipeMinimized(!recipeMinimized);
   };
+
+  if (isMobile) {
+    return (
+      <div className="min-h-screen w-full max-w-full flex flex-col bg-[#F5F5F5]">
+        <div className="w-full">
+          <Recipe recipeId={parsedRecipeId} />
+        </div>
+        <div className="w-full flex-1">
+          <CookingInstructions recipeId={parsedRecipeId} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div ref={containerRef} className="h-screen w-full max-w-full flex overflow-hidden bg-[#F5F5F5]">
@@ -86,7 +105,7 @@ const RecipeView = () => {
             <button onClick={handleToggleRecipe} className="absolute top-4 right-4 z-10 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center text-[#035035] hover:bg-[#FF9B7B] hover:text-white transition-all hover:scale-110">
               <PiX className="text-xl" />
             </button>
-            <Recipe recipeId={parseInt(recipeId, 10)} />
+            <Recipe recipeId={parsedRecipeId} />
           </div>
         )}
       </div>
@@ -106,7 +125,7 @@ const RecipeView = () => {
       {/* Instructions Panel (now permanent) */}
       <div className="relative flex-1 min-w-0">
         <div className="h-full overflow-y-auto">
-          <CookingInstructions recipeId={parseInt(recipeId, 10)} />
+          <CookingInstructions recipeId={parsedRecipeId} />
         </div>
       </div>
     </div>
