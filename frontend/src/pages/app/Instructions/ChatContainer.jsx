@@ -128,7 +128,10 @@ const ChatContainer = ({
 
   // Calculate pointer position based on container and step positions (desktop only)
   const calculatePointerPosition = useCallback(() => {
-    if (!containerRef.current || !stepPosition || isMobile) return;
+    if (!containerRef.current || !stepPosition || isMobile) {
+      setPointerStyle(null);
+      return;
+    }
 
     const container = containerRef.current.getBoundingClientRect();
 
@@ -170,6 +173,8 @@ const ChatContainer = ({
         side: closestEdge.side,
         position: closestEdge.position
       });
+    } else {
+      setPointerStyle(null);
     }
   }, [stepPosition, isMobile]);
 
@@ -184,13 +189,6 @@ const ChatContainer = ({
       onSaveConfig(position, size);
     }
   }, [position, size, isDragging, isResizing, onSaveConfig]);
-
-  // Notify parent about current height in mobile mode
-  useEffect(() => {
-    if (isMobile && onMobileHeightChange) {
-      onMobileHeightChange(size.height);
-    }
-  }, [isMobile, size.height, onMobileHeightChange]);
 
   const handlePointerDown = (event) => {
     if (isMobile) return;
@@ -323,7 +321,7 @@ const ChatContainer = ({
   }, [isResizing, resizeDirection, resizeStart, isMobile, getMobileLimits]);
 
   const renderPointer = () => {
-    if (isMobile) return null;
+    if (isMobile || !pointerStyle) return null;
 
     const pointerSize = 16;
     const baseStyles = 'absolute w-0 h-0 border-solid';
@@ -385,9 +383,10 @@ const ChatContainer = ({
     ? {
         left: 0,
         right: 0,
-        bottom: `calc(env(safe-area-inset-bottom, 0px) + ${MOBILE_BOTTOM_OFFSET}px)`,
+        bottom: `calc(env(safe-area-inset-bottom, 0px) + ${navOffset}px)`,
         width: '100%',
         height: `${mobileHeight}px`,
+        maxHeight: `${limits.max}px`,
         zIndex: 1000,
         cursor: isResizing ? 'ns-resize' : 'default'
       }
@@ -399,6 +398,17 @@ const ChatContainer = ({
         zIndex: 1000,
         cursor: isDragging ? 'grabbing' : isResizing ? 'nwse-resize' : 'grab'
       };
+
+  useEffect(() => {
+    if (!isMobile || !onMobileHeightChange) {
+      return;
+    }
+
+    onMobileHeightChange({
+      chatHeight: mobileHeight,
+      navHeight: navOffset
+    });
+  }, [isMobile, mobileHeight, navOffset, onMobileHeightChange]);
 
   const containerClassName = [
     'fixed bg-white shadow-2xl transition-shadow',

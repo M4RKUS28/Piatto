@@ -12,7 +12,7 @@ import useMediaQuery from '../../hooks/useMediaQuery';
 
  // --- Configuration ---
 const CURVE_AMOUNT = 180;
-const MOBILE_NAV_HEIGHT = 72;
+const MOBILE_NAV_HEIGHT = 64;
 
 // Calculate responsive circle radius based on viewport width
 const getCircleRadius = () => {
@@ -196,9 +196,35 @@ const CookingInstructions = ({
     }
   });
   const isMobile = useMediaQuery('(max-width: 768px)');
-  const [mobileChatHeight, setMobileChatHeight] = React.useState(0);
+  const [mobileLayoutMetrics, setMobileLayoutMetrics] = React.useState({
+    chatHeight: 0,
+    navHeight: MOBILE_NAV_HEIGHT
+  });
+  const handleMobileLayoutMetrics = React.useCallback((metrics) => {
+    if (!metrics) {
+      setMobileLayoutMetrics((prev) => {
+        if (prev.chatHeight === 0 && prev.navHeight === MOBILE_NAV_HEIGHT) {
+          return prev;
+        }
+        return { chatHeight: 0, navHeight: MOBILE_NAV_HEIGHT };
+      });
+      return;
+    }
+
+    const next = {
+      chatHeight: metrics.chatHeight ?? 0,
+      navHeight: metrics.navHeight ?? MOBILE_NAV_HEIGHT
+    };
+
+    setMobileLayoutMetrics((prev) => {
+      if (prev.chatHeight === next.chatHeight && prev.navHeight === next.navHeight) {
+        return prev;
+      }
+      return next;
+    });
+  }, []);
   const mobileContentPadding = isMobile && openChatStep !== null
-    ? mobileChatHeight + MOBILE_NAV_HEIGHT + 32
+    ? mobileLayoutMetrics.chatHeight + mobileLayoutMetrics.navHeight + 32
     : undefined;
 
   // Handle opening chat for a step
@@ -215,12 +241,12 @@ const CookingInstructions = ({
   const handleCloseChat = React.useCallback(() => {
     setOpenChatStep(null);
     setChatStepPosition(null);
-    setMobileChatHeight(0);
+    setMobileLayoutMetrics({ chatHeight: 0, navHeight: MOBILE_NAV_HEIGHT });
   }, []);
 
   React.useEffect(() => {
     if (openChatStep === null) {
-      setMobileChatHeight(0);
+      setMobileLayoutMetrics({ chatHeight: 0, navHeight: MOBILE_NAV_HEIGHT });
     }
   }, [openChatStep]);
 
@@ -830,7 +856,7 @@ const CookingInstructions = ({
           cookingSessionId={cookingSessionId}
           onSaveConfig={handleSaveChatConfig}
           isMobile={isMobile}
-          onMobileHeightChange={setMobileChatHeight}
+          onMobileHeightChange={handleMobileLayoutMetrics}
           initialPosition={(() => {
             // Use saved position if available, otherwise calculate default
             if (savedChatConfig.position) {
