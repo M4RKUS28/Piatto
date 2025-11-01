@@ -47,7 +47,7 @@ async def get_session(cooking_session_id: int,
     )
     return result
 
-@router.get("{cooking_session_id}/get_prompt_history", response_model=PromptHistory)
+@router.get("/{cooking_session_id}/get_prompt_history", response_model=PromptHistory)
 async def get_prompt_history(cooking_session_id: int,
                             db: AsyncSession = Depends(get_db),
                             current_user_id: str = Depends(get_read_write_user_id)
@@ -115,7 +115,9 @@ async def change_state(request: ChangeStateRequest,
     )
 
 @router.post("/ask_question", response_model=PromptHistory)
-async def ask_question(request: AskQuestionRequest, current_user_id: str = Depends(get_read_write_user_id)):
+async def ask_question(request: AskQuestionRequest,
+                       db: AsyncSession = Depends(get_db),
+                       current_user_id: str = Depends(get_read_write_user_id)):
     """
     Ask a question during a cooking session based on the provided session ID, and prompt.
 
@@ -125,7 +127,7 @@ async def ask_question(request: AskQuestionRequest, current_user_id: str = Depen
     Returns:
         PromptHistory: The new prompt history entry.
     """
-    return agent_service.ask_question(current_user_id, request.cooking_session_id, request.prompt)
+    return await agent_service.ask_question(current_user_id, request.cooking_session_id, request.prompt, db)
 
 @router.delete("/{cooking_session_id}/finish")
 async def finish_session(cooking_session_id: int,

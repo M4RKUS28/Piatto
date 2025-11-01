@@ -5,12 +5,12 @@ import asyncio
 import json
 from logging import getLogger
 from typing import Optional
-from fastapi import Depends, HTTPException
+from fastapi import HTTPException
 import threading
 
 from ..agents.chat_agent.agent import ChatAgent
 from ..agents.instruction_agent.agent import InstructionAgent
-from ..api.schemas.recipe import Recipe
+from ..api.schemas.recipe import Recipe, PromptHistory as PromptHistorySchema
 
 from .query_service import get_recipe_gen_query, get_image_gen_query, get_chat_agent_query, get_instruction_query
 from ..agents.image_agent.agent import ImageAgent
@@ -228,24 +228,49 @@ class AgentService:
         )
         return result
 
-    async def ask_question(self, user_id: str, cooking_session_id: int, prompt: str, db: AsyncSession = Depends(get_db)):
+    async def ask_question(self, user_id: str, cooking_session_id: int, prompt: str, db: AsyncSession):
         cooking_session = await cooking_crud.get_cooking_session_by_id(db, cooking_session_id)
+
+        if cooking_session is None:
+            raise HTTPException(status_code=404, detail="Cooking session not found")
+
+        if cooking_session.user_id != user_id:
+            raise HTTPException(status_code=403, detail="Not authorized to interact with this cooking session")
+
         recipe = await recipe_crud.get_recipe_by_id(db, cooking_session.recipe_id)
-        prompt_history = await cooking_crud.get_prompt_history_by_cooking_session_id(db, cooking_session_id)
+        if recipe is None:
+            raise HTTPException(status_code=404, detail="Recipe not found for this cooking session")
+
+        prompt_history = await cooking_crud.get_prompt_history_by_cooking_session_id(db, cooking_session_id, user_id)
+        if prompt_history is None:
+            raise HTTPException(status_code=500, detail="Failed to retrieve prompt history for cooking session")
+
         query = get_chat_agent_query(prompt, recipe, cooking_session, prompt_history)
 
         # STREAMING BACK THE AGENTS RESONSE @MARKUS
-        response = await self.chat_agent.run(
+        response_chunks = []
+        async for chunk in self.chat_agent.run(
             user_id=user_id,
             state={},
             content=query,
-        )
-        await cooking_crud.update_prompt_history(
+        ):
+            if chunk is not None:
+                response_chunks.append(chunk)
+
+        response_text = "".join(response_chunks).strip()
+
+        updated_prompt_history = await cooking_crud.update_prompt_history(
             db,
             prompt_history.id,
             prompt,
-            response,
+            response_text,
         )
-        return response
+        if updated_prompt_history is None:
+            raise HTTPException(status_code=500, detail="Failed to update prompt history")
+
+        return PromptHistorySchema(
+            prompts=json.loads(updated_prompt_history.prompts),
+            responses=json.loads(updated_prompt_history.responses)
+        )
 
 
