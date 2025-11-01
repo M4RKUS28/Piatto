@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, Search, Plus, Trash2 } from 'lucide-react';
 import { getUserCollections, getCollectionsForRecipe, getCollectionById, updateCollectionRecipes, createCollection } from '../api/collectionApi';
 import { deleteRecipe } from '../api/recipeApi';
@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next'
  * - Create new collections
  * - Delete the recipe if no collections are selected
  */
-export default function EditCollectionsModal({ recipeId, isOpen, onClose, onRecipeDeleted }) {
+export default function EditCollectionsModal({ recipeId, isOpen, onClose, onRecipeDeleted, onCollectionsUpdated }) {
   const { t } = useTranslation(['pages']);
   const [collections, setCollections] = useState([]);
   const [selectedCollectionIds, setSelectedCollectionIds] = useState(new Set());
@@ -27,13 +27,7 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
   const [newCollectionDescription, setNewCollectionDescription] = useState('');
   const [creatingCollection, setCreatingCollection] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchData();
-    }
-  }, [isOpen, recipeId]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -56,7 +50,13 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
     } finally {
       setLoading(false);
     }
-  };
+  }, [recipeId, t]);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchData();
+    }
+  }, [fetchData, isOpen]);
 
   const handleToggleCollection = (collectionId) => {
     const newSelected = new Set(selectedCollectionIds);
@@ -102,6 +102,10 @@ export default function EditCollectionsModal({ recipeId, isOpen, onClose, onReci
       }
 
       await Promise.all(updatePromises);
+
+      if (onCollectionsUpdated) {
+        await onCollectionsUpdated();
+      }
 
       onClose();
     } catch (err) {

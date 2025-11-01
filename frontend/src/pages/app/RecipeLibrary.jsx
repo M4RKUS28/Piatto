@@ -182,10 +182,19 @@ export default function RecipeLibrary() {
     setShowDeleteRecipeModal(true);
   };
 
+  const handleCollectionsModalClose = () => {
+    setShowCollectionsModal(false);
+    setSelectedRecipeId(null);
+  };
+
+  const handleCollectionsUpdated = async () => {
+    await fetchRecipes();
+  };
+
   const handleRecipeDeleted = () => {
     // Refresh recipes after recipe is deleted
     fetchRecipes();
-    setShowCollectionsModal(false);
+    handleCollectionsModalClose();
   };
 
   const handleEditCollection = (collectionId) => {
@@ -461,10 +470,8 @@ export default function RecipeLibrary() {
         <EditCollectionsModal
           recipeId={selectedRecipeId}
           isOpen={showCollectionsModal}
-          onClose={() => {
-            setShowCollectionsModal(false);
-            setSelectedRecipeId(null);
-          }}
+          onClose={handleCollectionsModalClose}
+          onCollectionsUpdated={handleCollectionsUpdated}
           onRecipeDeleted={handleRecipeDeleted}
         />
       )}
