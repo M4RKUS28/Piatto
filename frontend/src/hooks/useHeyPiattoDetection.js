@@ -10,7 +10,8 @@ ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.23.0/di
  * Works with ONNX models expecting shape [1, 16, 96]
  *
  * Features:
- * - Extracts mel spectrogram features (96 bins) using Meyda
+ * - Extracts power spectrum features using Meyda
+ * - Downsamples to 96 frequency bins per frame
  * - Keeps 16 sequential time frames for temporal context
  * - Creates 3D tensor [1, 16, 96] for ONNX model inference
  * - Direct integration with onnxruntime-web
@@ -59,19 +60,37 @@ const useHeyPiattoDetection = ({
       meydaRef.current = Meyda.createMeydaAnalyzer({
         audioContext: audioContextRef.current,
         source: sourceNode,
-        bufferSize: 2048, // Larger buffer for better frequency resolution
-        featureExtractors: ['melBands', 'rms'], // Use mel bands instead of MFCC
-        numberOfMelBands: 96, // Match model's expected 96 features
+        bufferSize: 4096, // Larger buffer for more frequency resolution
+        featureExtractors: ['powerSpectrum', 'rms'], // Use power spectrum
         callback: async (features) => {
-          if (!features.melBands || features.melBands.length !== 96) {
-            console.warn('⚠️ Unexpected melBands length:', features.melBands?.length);
+          if (!features.powerSpectrum) {
+            console.warn('⚠️ No powerSpectrum features');
             return;
           }
 
           if (features.rms < silenceThreshold) return; // Silence gate
 
+          // The model expects 96 features per frame
+          // Power spectrum gives us 2049 bins (4096/2 + 1), we need to downsample to 96
+          const powerSpec = features.powerSpectrum;
+          const targetSize = 96;
+
+          // Downsample by averaging bins
+          const downsampled = [];
+          const binSize = Math.floor(powerSpec.length / targetSize);
+
+          for (let i = 0; i < targetSize; i++) {
+            const start = i * binSize;
+            const end = Math.min(start + binSize, powerSpec.length);
+            let sum = 0;
+            for (let j = start; j < end; j++) {
+              sum += powerSpec[j];
+            }
+            downsampled.push(sum / binSize);
+          }
+
           // Buffer feature frames
-          featureBuffer.current.push(features.melBands);
+          featureBuffer.current.push(downsampled);
 
           // Keep exactly 16 frames as required by model
           if (featureBuffer.current.length > 16) {
@@ -84,8 +103,11 @@ const useHeyPiattoDetection = ({
           // Flatten the 16 frames of 96 features into shape [1, 16, 96]
           const flatFeatures = featureBuffer.current.flat(); // 16 * 96 = 1536 values
 
-          console.log('🧪 Feature buffer size:', featureBuffer.current.length);
-          console.log('🧪 Flat features length:', flatFeatures.length);
+          // Log occasionally for debugging (every 50th inference)
+          if (Math.random() < 0.02) {
+            console.log('🧪 Feature buffer:', featureBuffer.current.length, 'frames of', featureBuffer.current[0].length, 'features');
+            console.log('🧪 Flat features length:', flatFeatures.length);
+          }
 
           try {
             // Create 3D tensor [1, 16, 96]
