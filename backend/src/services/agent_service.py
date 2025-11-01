@@ -117,6 +117,8 @@ class AgentService:
                     total_time_minutes=recipe.get('total_time_minutes'),
                     difficulty=recipe['difficulty'],
                     food_category=recipe['food_category'],
+                    important_notes=recipe.get('important_notes'),
+                    cooking_overview=recipe.get('cooking_overview'),
                 )
                 recipe_ids.append(recipe_db.id)
 

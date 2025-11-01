@@ -106,6 +106,8 @@ async def _create_mock_recipes(session: AsyncSession, users: list[User]) -> None
             "title": "Classic Italian Carbonara",
             "description": "A traditional Italian pasta dish with eggs, cheese, bacon, and black pepper. Simple yet incredibly delicious!",
             "prompt": "I want to make a traditional Italian carbonara pasta with eggs and bacon",
+            "important_notes": "Temper the eggs to avoid scrambling and reserve pasta water for adjusting the sauce texture.",
+            "cooking_overview": "Spaghetti kochen, Speck anbraten, Eier-Käse-Mix vorbereiten, alles schnell off-heat vermengen.",
             "instructions": json.dumps([
                 "Bring a large pot of salted water to boil and cook spaghetti according to package directions",
                 "While pasta cooks, fry the bacon until crispy, then set aside",
@@ -130,6 +132,8 @@ async def _create_mock_recipes(session: AsyncSession, users: list[User]) -> None
             "title": "Creamy Tomato Soup",
             "description": "A comforting and rich tomato soup perfect for cold days. Pairs wonderfully with grilled cheese sandwiches.",
             "prompt": "I want to make a comforting creamy tomato soup with fresh basil",
+            "important_notes": "Nutze reife Tomaten oder eine hochwertige Dosensorte und püriere die Suppe gründlich.",
+            "cooking_overview": "Gemüse anschwitzen, Tomaten und Brühe köcheln, pürieren, Sahne einrühren und abschmecken.",
             "instructions": json.dumps([
                 "Heat olive oil in a large pot over medium heat",
                 "Add diced onions and garlic, sauté until softened",
@@ -156,6 +160,8 @@ async def _create_mock_recipes(session: AsyncSession, users: list[User]) -> None
             "title": "Gordon's Beef Wellington",
             "description": "An elegant and show-stopping dish featuring tender beef wrapped in puff pastry with mushroom duxelles.",
             "prompt": "I want to make an elegant beef wellington with mushroom duxelles wrapped in puff pastry",
+            "important_notes": "Beef vollständig abkühlen lassen, damit der Blätterteig nicht weich wird, und Kerntemperatur kontrollieren.",
+            "cooking_overview": "Fleisch anbraten und kühlen, Duxelles zubereiten, in Prosciutto und Teig wickeln, backen und ruhen lassen.",
             "instructions": json.dumps([
                 "Season beef fillet with salt and pepper, sear in hot pan until browned on all sides",
                 "Let beef cool, then brush with mustard",
@@ -182,6 +188,8 @@ async def _create_mock_recipes(session: AsyncSession, users: list[User]) -> None
             "title": "Pan-Seared Salmon with Lemon Butter",
             "description": "Perfectly crispy skin salmon with a bright and flavorful lemon butter sauce.",
             "prompt": "I want to make pan-seared salmon with crispy skin and a lemon butter sauce",
+            "important_notes": "Fischhaut gut trocken tupfen und Pfanne vorheizen, damit die Haut knusprig wird.",
+            "cooking_overview": "Lachs würzen, Hautseite scharf anbraten, wenden, Sauce in derselben Pfanne fertigstellen.",
             "instructions": json.dumps([
                 "Pat salmon fillets dry and season with salt and pepper",
                 "Heat oil in a pan over medium-high heat",
@@ -207,6 +215,8 @@ async def _create_mock_recipes(session: AsyncSession, users: list[User]) -> None
             "title": "Chocolate Chip Cookies",
             "description": "Classic homemade cookies that are crispy on the outside and chewy on the inside.",
             "prompt": "I want to bake classic chocolate chip cookies that are crispy outside and chewy inside",
+            "important_notes": "Butter rechtzeitig aus dem Kühlschrank nehmen und Teig nicht zu lange kneten.",
+            "cooking_overview": "Teig vorbereiten, Zutaten mischen, Teig ruhen lassen, Kugeln formen und im Ofen goldbraun backen.",
             "instructions": json.dumps([
                 "Preheat oven to 180°C (350°F)",
                 "Cream together butter and both sugars until fluffy",

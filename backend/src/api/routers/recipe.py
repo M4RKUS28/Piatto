@@ -55,12 +55,14 @@ async def create_recipe(request: GenerateRecipeRequest, db: AsyncSession = Depen
         title=request.title,
         description=request.description,
         ingredients=request.ingredients,
-        instructions=_serialize_instructions_payload(request.instructions),
+    instructions=_serialize_instructions_payload(request.instructions) or "[]",
         image_url=request.image_url,
         total_time_minutes=request.total_time_minutes,
         difficulty=request.difficulty,
         food_category=request.food_category,
-        prompt=request.prompt if hasattr(request, 'prompt') else None,
+    prompt=getattr(request, 'prompt', ""),
+        important_notes=getattr(request, 'important_notes', None),
+        cooking_overview=getattr(request, 'cooking_overview', None),
     )
     if not recipe:
         raise HTTPException(status_code=400, detail="Recipe creation failed")
@@ -137,6 +139,8 @@ async def change_recipe_manual(request: ChangeRecipeManualRequest,
         total_time_minutes=request.total_time_minutes,
         difficulty=request.difficulty,
         food_category=request.food_category,
+        important_notes=request.important_notes,
+        cooking_overview=request.cooking_overview,
     )
     if not recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
@@ -229,6 +233,8 @@ def _serialize_recipe(recipe) -> RecipeSchema:
         total_time_minutes=recipe.total_time_minutes,
         difficulty=recipe.difficulty,
         food_category=recipe.food_category,
+        important_notes=recipe.important_notes or "No special notes provided.",
+        cooking_overview=recipe.cooking_overview or "Follow the instructions sequentially to complete the recipe.",
     )
 
 

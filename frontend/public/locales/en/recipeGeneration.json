@@ -11,6 +11,7 @@
     "next": "Next",
     "loading": "Loading..."
   },
+
   "ingredients": {
     "title": "What ingredients do you have?",
     "subtitle": "Tell us what's in your kitchen. You can also analyze a photo to extract ingredients.",
@@ -44,6 +45,19 @@
     "generating": "Generating...",
     "generate": "Generate",
     "processing": "Processing...",
+    "showDetails": "Show Details",
+    "details": {
+      "title": "Recipe details",
+      "loading": "Loading recipe details...",
+      "loadingButton": "Loading...",
+      "error": "Failed to load recipe details. Please try again.",
+      "retry": "Retry",
+      "close": "Close",
+      "ingredients": "Ingredients",
+      "noIngredients": "No ingredients available.",
+      "importantNotes": "Important notes",
+      "cookingOverview": "Cooking overview"
+    },
     "aria": {
       "recipeList": "Generated recipe options",
       "regenerate": "Generate new recipe options with same ingredients",

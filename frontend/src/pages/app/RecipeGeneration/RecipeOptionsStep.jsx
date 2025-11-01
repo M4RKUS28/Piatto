@@ -3,8 +3,10 @@ import { getImageUrl } from '../../../utils/imageUtils';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import SaveRecipesCollectionModal from '../../../components/SaveRecipesCollectionModal';
+import RecipeDetailsModal from '../../../components/RecipeDetailsModal';
 import { generateInstructions } from '../../../api/instructionApi';
 import { getRecipeImage } from '../../../api/filesApi';
+import { getRecipeById } from '../../../api/recipeApi';
 
 export default function RecipeOptionsStep({
 	recipeOptions,
@@ -22,6 +24,11 @@ export default function RecipeOptionsStep({
 	const [showCollectionModal, setShowCollectionModal] = useState(false);
 	const [recipes, setRecipes] = useState(recipeOptions);
 	const [imageLoadStatus, setImageLoadStatus] = useState({});
+	const [detailsCache, setDetailsCache] = useState({});
+	const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+	const [activeDetailsId, setActiveDetailsId] = useState(null);
+	const [detailsLoadingId, setDetailsLoadingId] = useState(null);
+	const [detailsError, setDetailsError] = useState(null);
 	const pollingIntervalRef = useRef(null);
 
 	const toggleRecipeSelection = (recipeId) => {
@@ -73,6 +80,54 @@ export default function RecipeOptionsStep({
 			console.error('Error processing recipes:', error);
 			setProcessingSelection(false);
 		}
+	};
+
+	const fetchRecipeDetails = async (recipeId) => {
+		if (recipeId < 0) {
+			return;
+		}
+		setDetailsError(null);
+		setDetailsLoadingId(recipeId);
+		try {
+			const fullRecipe = await getRecipeById(recipeId);
+			setDetailsCache(prev => ({ ...prev, [recipeId]: fullRecipe }));
+		} catch (error) {
+			console.error('Failed to load recipe details:', error);
+			setDetailsError(t('options.details.error', 'Failed to load recipe details. Please try again.'));
+		} finally {
+			setDetailsLoadingId(current => (current === recipeId ? null : current));
+		}
+	};
+
+	const handleShowDetails = async (event, recipe) => {
+		event.stopPropagation();
+		if (!recipe || recipe.id < 0) {
+			return;
+		}
+		setActiveDetailsId(recipe.id);
+		setDetailsModalOpen(true);
+		if (!detailsCache[recipe.id]) {
+			await fetchRecipeDetails(recipe.id);
+		}
+	};
+
+	const handleCloseDetails = () => {
+		setDetailsModalOpen(false);
+		setActiveDetailsId(null);
+		setDetailsError(null);
+		setDetailsLoadingId(null);
+	};
+
+	const handleRetryDetails = async () => {
+		if (!activeDetailsId) {
+			return;
+		}
+		setDetailsCache(prev => {
+			const nextCache = { ...prev };
+			delete nextCache[activeDetailsId];
+			return nextCache;
+		});
+		await fetchRecipeDetails(activeDetailsId);
 	};
 
 	// Initialize recipes when recipeOptions changes
@@ -154,6 +209,12 @@ export default function RecipeOptionsStep({
 			}
 		};
 	}, [recipes, imageLoadStatus]);
+
+	const activeRecipeDetails = activeDetailsId != null
+		? detailsCache[activeDetailsId] || recipes.find(recipe => recipe.id === activeDetailsId)
+		: null;
+
+	const isDetailsLoading = activeDetailsId != null && detailsLoadingId === activeDetailsId && !detailsCache[activeDetailsId];
 
 	return (
 		<div className="space-y-6">
@@ -245,19 +306,33 @@ export default function RecipeOptionsStep({
 									)}
 								</div>
 
-								<div className="flex-1 min-w-0 flex flex-col justify-center sm:pr-10">
-									{recipe.title ? (
-										<h3 className="text-lg sm:text-xl font-semibold text-[#035035] mb-2 line-clamp-2">{recipe.title}</h3>
-									) : (
-										<div className="h-6 bg-gray-200 rounded animate-pulse mb-2"></div>
-									)}
-									{recipe.description ? (
-										<p className="text-sm sm:text-base text-[#2D2D2D] opacity-75 line-clamp-2">{recipe.description}</p>
-									) : (
-										<>
-											<div className="h-4 bg-gray-200 rounded animate-pulse mb-1"></div>
-											<div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
-										</>
+								<div className="flex-1 min-w-0 flex flex-col justify-between sm:pr-10 gap-3">
+									<div className="flex flex-col justify-center">
+										{recipe.title ? (
+											<h3 className="text-lg sm:text-xl font-semibold text-[#035035] mb-2 line-clamp-2">{recipe.title}</h3>
+										) : (
+											<div className="h-6 bg-gray-200 rounded animate-pulse mb-2"></div>
+										)}
+										{recipe.description ? (
+											<p className="text-sm sm:text-base text-[#2D2D2D] opacity-75 line-clamp-2">{recipe.description}</p>
+										) : (
+											<>
+												<div className="h-4 bg-gray-200 rounded animate-pulse mb-1"></div>
+												<div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+											</>
+										)}
+									</div>
+									{recipe.id > 0 && (
+										<div className="flex flex-wrap gap-2 sm:justify-end">
+											<button
+												type="button"
+												onClick={(event) => handleShowDetails(event, recipe)}
+												className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-full border-2 border-[#035035] text-[#035035] text-sm font-semibold hover:bg-[#035035] hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
+												disabled={isDetailsLoading && activeDetailsId === recipe.id}
+											>
+												{isDetailsLoading && activeDetailsId === recipe.id ? t('options.details.loadingButton', 'Loading...') : t('options.showDetails', 'Show Details')}
+											</button>
+										</div>
 									)}
 								</div>
 							</div>
@@ -305,6 +380,15 @@ export default function RecipeOptionsStep({
 				isOpen={showCollectionModal}
 				onClose={() => setShowCollectionModal(false)}
 				onSave={handleSaveToCollections}
+			/>
+
+			<RecipeDetailsModal
+				isOpen={detailsModalOpen}
+				onClose={handleCloseDetails}
+				recipe={activeRecipeDetails}
+				isLoading={isDetailsLoading}
+				error={detailsError}
+				onRetry={handleRetryDetails}
 			/>
 		</div>
 	);

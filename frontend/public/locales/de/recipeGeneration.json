@@ -44,6 +44,19 @@
     "generating": "Wird generiert...",
     "generate": "Generieren",
     "processing": "Wird verarbeitet...",
+    "showDetails": "Details anzeigen",
+    "details": {
+      "title": "Rezeptdetails",
+      "loading": "Rezeptdetails werden geladen...",
+      "loadingButton": "Lädt...",
+      "error": "Rezeptdetails konnten nicht geladen werden. Bitte versuche es erneut.",
+      "retry": "Erneut versuchen",
+      "close": "Schließen",
+      "ingredients": "Zutaten",
+      "noIngredients": "Keine Zutaten verfügbar.",
+      "importantNotes": "Wichtige Hinweise",
+      "cookingOverview": "Kochüberblick"
+    },
     "aria": {
       "recipeList": "Generierte Rezeptoptionen",
       "regenerate": "Neue Rezeptoptionen mit denselben Zutaten generieren",

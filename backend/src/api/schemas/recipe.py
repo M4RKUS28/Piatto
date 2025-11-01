@@ -28,6 +28,8 @@ class Recipe(BaseModel):
     total_time_minutes: Optional[int] = None
     difficulty: Optional[Literal["easy", "medium", "hard"]] = None
     food_category: Optional[Literal["vegan", "vegetarian", "beef", "pork", "chicken", "lamb", "fish", "seafood", "mixed-meat"]] = None
+    important_notes: str
+    cooking_overview: str
 
     class Config:
         from_attributes = True  # wichtig, wenn du ORM-Objekte nutzt
@@ -86,6 +88,8 @@ class ChangeRecipeManualRequest(BaseModel):
     total_time_minutes: Optional[int] = None
     difficulty: Optional[Literal["easy", "medium", "hard"]] = None
     food_category: Optional[Literal["vegan", "vegetarian", "beef", "pork", "chicken", "lamb", "fish", "seafood", "mixed-meat"]] = None
+    important_notes: Optional[str] = None
+    cooking_overview: Optional[str] = None
 
 class ChangeStateRequest(BaseModel):
     """Schema for changing the cooking state."""
