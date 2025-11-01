@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Chat from './Chat';
 
-const MOBILE_MIN_HEIGHT = 240;
-const MOBILE_BOTTOM_OFFSET = 72;
+const MOBILE_MIN_HEIGHT = 60;
+const MOBILE_BOTTOM_OFFSET = 60;
 const DESKTOP_MIN_WIDTH = 320;
 const DESKTOP_MIN_HEIGHT = 400;
 
@@ -37,7 +37,8 @@ const ChatContainer = ({
   const [resizeDirection, setResizeDirection] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0, posX: 0, posY: 0 });
-  const [pointerStyle, setPointerStyle] = useState({ side: 'left', position: 50 });
+  const [pointerStyle, setPointerStyle] = useState(null);
+  const [navOffset, setNavOffset] = useState(MOBILE_BOTTOM_OFFSET);
 
   const getMobileLimits = useCallback(() => {
     if (typeof window === 'undefined') {
@@ -45,10 +46,10 @@ const ChatContainer = ({
     }
     const viewportHeight = window.innerHeight || 0;
     const max = viewportHeight
-      ? Math.max(viewportHeight - (MOBILE_BOTTOM_OFFSET + 48), MOBILE_MIN_HEIGHT)
+      ? Math.max(viewportHeight - (navOffset + 48), MOBILE_MIN_HEIGHT)
       : MOBILE_MIN_HEIGHT;
     return { min: MOBILE_MIN_HEIGHT, max };
-  }, []);
+  }, [navOffset]);
 
   // Snap to fixed positioning and clamp height when switching to mobile layout
   useEffect(() => {
@@ -66,6 +67,45 @@ const ChatContainer = ({
       return { ...prev, height: clampedHeight };
     });
   }, [isMobile, getMobileLimits]);
+
+  // Measure the navigation bar height to align the chat on mobile precisely above it
+  useEffect(() => {
+    if (!isMobile || typeof document === 'undefined') {
+      setNavOffset(MOBILE_BOTTOM_OFFSET);
+      return;
+    }
+
+    const navElement = document.querySelector('nav.fixed.bottom-0');
+
+    if (!navElement) {
+      setNavOffset(MOBILE_BOTTOM_OFFSET);
+      return;
+    }
+
+    const updateOffset = () => {
+      const height = navElement.getBoundingClientRect().height;
+      setNavOffset(height || MOBILE_BOTTOM_OFFSET);
+    };
+
+    updateOffset();
+
+    let resizeObserver;
+
+    if (typeof ResizeObserver === 'function') {
+      resizeObserver = new ResizeObserver(updateOffset);
+      resizeObserver.observe(navElement);
+    } else {
+      window.addEventListener('resize', updateOffset);
+    }
+
+    return () => {
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      } else {
+        window.removeEventListener('resize', updateOffset);
+      }
+    };
+  }, [isMobile]);
 
   // Keep height within viewport bounds on orientation/viewport changes (mobile)
   useEffect(() => {
