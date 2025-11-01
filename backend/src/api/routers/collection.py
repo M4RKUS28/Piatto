@@ -87,6 +87,9 @@ async def get_collection(
                 title=recipe.title,
                 description=recipe.description,
                 image_url=recipe.image_url or "",
+                total_time_minutes=recipe.total_time_minutes,
+                difficulty=recipe.difficulty,
+                food_category=recipe.food_category,
             )
             for recipe in recipes
         ],

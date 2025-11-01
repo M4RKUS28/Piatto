@@ -37,6 +37,10 @@ class RecipePreview(BaseModel):
     id: int
     title: str
     description: str
+    image_url: Optional[str] = None
+    total_time_minutes: Optional[int] = None
+    difficulty: Optional[Literal["easy", "medium", "hard"]] = None
+    food_category: Optional[Literal["vegan", "vegetarian", "beef", "pork", "chicken", "lamb", "fish", "seafood", "mixed-meat"]] = None
 
     class Config:
         from_attributes = True
