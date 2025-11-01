@@ -5,7 +5,7 @@ import Chat from './Chat';
  * ChatContainer - Draggable chat container with a speech bubble pointer
  * The pointer dynamically points towards the associated step
  */
-const ChatContainer = ({ stepIndex, stepHeading, stepPosition, onClose, initialPosition }) => {
+const ChatContainer = ({ stepIndex, stepHeading, stepPosition, onClose, initialPosition, cookingSessionId }) => {
   const containerRef = useRef(null);
   const [position, setPosition] = useState(initialPosition || { x: 100, y: 100 });
   const [isDragging, setIsDragging] = useState(false);
@@ -201,7 +201,7 @@ const ChatContainer = ({ stepIndex, stepHeading, stepPosition, onClose, initialP
 
       {/* Chat Content */}
       <div className="p-4 h-[calc(100%-52px)] overflow-hidden">
-        <Chat stepIndex={stepIndex} stepHeading={stepHeading} />
+        <Chat stepIndex={stepIndex} stepHeading={stepHeading} cookingSessionId={cookingSessionId} />
       </div>
     </div>
   );

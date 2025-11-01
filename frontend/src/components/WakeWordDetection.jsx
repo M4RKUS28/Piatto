@@ -4,7 +4,7 @@ import { Trans, useTranslation } from 'react-i18next';
 
 /**
  * Visual component for Custom "Hey Piatto" Wake Word Detection
- * Uses trained ONNX model with @p0llen/wakeword-react
+ * Uses trained ONNX model with meyda and onnxruntime-web
  */
 const WakeWordDetection = () => {
   const { t } = useTranslation(['common', 'errors']);

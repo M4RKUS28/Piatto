@@ -90,6 +90,34 @@ export const updateCookingState = async (cookingSessionId, newState) => {
 };
 
 /**
+ * Get prompt history for a cooking session
+ * @param {number} cookingSessionId - The cooking session ID
+ * @returns {Promise<Object>} Prompt history object with prompts and responses arrays
+ * @throws {Error} If the request fails
+ */
+export const getPromptHistory = async (cookingSessionId) => {
+  try {
+    const response = await apiWithCookies.get(`/cooking/${cookingSessionId}/get_prompt_history`);
+    return response.data;
+  } catch (error) {
+    // Log all errors to console with full error details for debugging
+    console.error('getPromptHistory error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      response: error.response,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      config: {
+        url: error.config?.url,
+        method: error.config?.method
+      }
+    });
+    throw error;
+  }
+};
+
+/**
  * Ask a question during cooking
  * @param {number} cookingSessionId - The cooking session ID
  * @param {string} prompt - Question text

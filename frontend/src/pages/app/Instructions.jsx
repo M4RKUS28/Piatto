@@ -2,6 +2,7 @@ import React from 'react';
 import Lottie from 'lottie-react';
 import { useParams } from 'react-router-dom';
 import { getInstructions } from '../../api/instructionApi';
+import { startCookingSession } from '../../api/cookingApi';
 import WakeWordDetection from '../../components/WakeWordDetection';
 import AnimatedTimer from './Instructions/AnimatedTimer';
 import AnimatingTimerPortal from './Instructions/AnimatingTimerPortal';
@@ -154,6 +155,9 @@ const CookingInstructions = ({
   const containerRef = React.useRef(null);
   const pollIntervalRef = React.useRef(null);
   const [focusedStep, setFocusedStep] = React.useState(0);
+
+  // Cooking session state
+  const [cookingSessionId, setCookingSessionId] = React.useState(null);
 
   // Timer state management
   // Track which step timers are floating and which is expanded
@@ -318,6 +322,22 @@ const CookingInstructions = ({
       }
     }
   }, []);
+
+  // Start cooking session when recipeId is available
+  React.useEffect(() => {
+    const startSession = async () => {
+      if (!recipeId) return;
+
+      try {
+        const sessionId = await startCookingSession(parseInt(recipeId, 10));
+        setCookingSessionId(sessionId);
+      } catch (err) {
+        console.error('Failed to start cooking session:', err);
+      }
+    };
+
+    startSession();
+  }, [recipeId]);
 
   // Fetch instructions with polling logic
   React.useEffect(() => {
@@ -587,12 +607,13 @@ const CookingInstructions = ({
       <AnimatingTimerPortal timers={animatingTimers} instructions={instructions} />
 
       {/* Chat Container */}
-      {openChatStep !== null && chatStepPosition && (
+      {openChatStep !== null && chatStepPosition && cookingSessionId && (
         <ChatContainer
           stepIndex={openChatStep}
           stepHeading={instructions[openChatStep]?.heading}
           stepPosition={chatStepPosition}
           onClose={handleCloseChat}
+          cookingSessionId={cookingSessionId}
           initialPosition={(() => {
             // Calculate initial position to the left of the step
             const stepEl = stepRefs.current[openChatStep];
