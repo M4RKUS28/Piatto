@@ -7,22 +7,20 @@ function TeamMemberCard({ member }) {
 
   return (
     <div className="bg-white rounded-3xl shadow-lg border border-[#F5F5F5] overflow-hidden hover:shadow-xl transition-shadow">
-      <div className="relative h-64 bg-gradient-to-br from-[#A8C9B8] to-[#035035] overflow-hidden">
-        {member.image && !imageError ? (
-          <img
-            src={member.image}
-            alt={member.name}
-            loading="lazy"
-            className="absolute inset-0 w-full h-full object-cover"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center">
-              <Users className="w-16 h-16 text-[#035035]" />
-            </div>
-          </div>
-        )}
+      <div className="h-64 bg-gradient-to-br from-[#F4F7F4] via-[#E6EFE9] to-[#D6E7DE] flex items-center justify-center">
+        <div className="relative w-60 h-60 rounded-full bg-white shadow-lg ring-4 ring-white/60 flex items-center justify-center overflow-hidden">
+          {member.image && !imageError ? (
+            <img
+              src={member.image}
+              alt={member.name}
+              loading="lazy"
+              className="w-full h-full object-cover"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <Users className="w-16 h-16 text-[#035035]" />
+          )}
+        </div>
       </div>
 
       <div className="p-6">
