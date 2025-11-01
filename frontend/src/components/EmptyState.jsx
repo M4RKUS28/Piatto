@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 export default function EmptyState({ title, message, actionLabel, onAction }) {
   const { t } = useTranslation('errors')
 

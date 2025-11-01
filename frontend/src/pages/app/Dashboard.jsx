@@ -4,12 +4,13 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from 'react-i18next'
 
 export default function Dashboard() {
+  const { t } = useTranslation(['dashboard', 'common'])
   const { user } = useAuth();
   const stats = [
-    { label: 'RecipeLibrary Saved', value: '24', icon: Heart, color: '#FF9B7B' },
-    { label: 'Cooked This Week', value: '8', icon: ChefHat, color: '#035035' },
-    { label: 'Avg Cook Time', value: '32m', icon: Clock, color: '#A8C9B8' },
-    { label: 'Streak Days', value: '12', icon: TrendingUp, color: '#FF9B7B' },
+    { label: t('stats.recipesSaved'), value: '24', icon: Heart, color: '#FF9B7B' },
+    { label: t('stats.cookedThisWeek'), value: '8', icon: ChefHat, color: '#035035' },
+    { label: t('stats.avgCookTime'), value: '32m', icon: Clock, color: '#A8C9B8' },
+    { label: t('stats.streakDays'), value: '12', icon: TrendingUp, color: '#FF9B7B' },
   ];
 
   const recentRecipes = [
@@ -24,9 +25,9 @@ export default function Dashboard() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-[#035035] mb-2">
-            Welcome back, {user?.username || 'Chef'}!
+            {t('welcome')}, {user?.username || t('chef')}!
           </h1>
-          <p className="text-[#2D2D2D] opacity-60">Let's cook something delicious today</p>
+          <p className="text-[#2D2D2D] opacity-60">{t('subtitle')}</p>
         </div>
 
         {/* Stats Grid */}
@@ -55,7 +56,7 @@ export default function Dashboard() {
 
         {/* Recent RecipeLibrary */}
         <div className="bg-white rounded-2xl border border-[#F5F5F5] p-6">
-          <h2 className="text-2xl font-bold text-[#035035] mb-6">Recent Recipes</h2>
+          <h2 className="text-2xl font-bold text-[#035035] mb-6">{t('recentRecipes')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {recentRecipes.map((recipe, index) => (
               <div
@@ -76,19 +77,19 @@ export default function Dashboard() {
             to="/app/generate"
             className="bg-[#035035] text-white px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all shadow-md inline-flex items-center justify-center"
           >
-            Generate Recipe
+            {t('buttons.generateRecipe', { ns: 'common' })}
           </Link>
           <Link
             to="/app/recipes"
             className="bg-white text-[#035035] border-2 border-[#035035] px-6 py-3 rounded-full font-semibold hover:bg-[#035035] hover:text-white transition-all inline-flex items-center justify-center"
           >
-            Find New Recipes
+            {t('buttons.findNewRecipes', { ns: 'common' })}
           </Link>
           <Link
             to="/app/settings"
             className="bg-white text-[#035035] border-2 border-[#035035] px-6 py-3 rounded-full font-semibold hover:bg-[#035035] hover:text-white transition-all inline-flex items-center justify-center"
           >
-            Profile Settings
+            {t('buttons.profileSettings', { ns: 'common' })}
           </Link>
         </div>
       </div>

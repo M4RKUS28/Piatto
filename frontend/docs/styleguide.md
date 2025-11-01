@@ -576,7 +576,37 @@ Desktop:
 
 ---
 
+## Internationalization (i18n)
+
+### Supported Languages
+- **English (en)** - Default/fallback
+- **German (de)** - Full support
+
+### Implementation
+```jsx
+import { useTranslation } from 'react-i18next'
+
+const { t } = useTranslation('namespace-name')
+<h1>{t('key.name')}</h1>
+```
+
+### Key Namespaces
+- `common` - Buttons, navigation, shared UI
+- `auth` - Login/register pages
+- `recipe` - Recipe-related content
+- `collection` - Collections
+- `errors` - Error messages
+
+### Translation Files
+All translations in `public/locales/en/` and `public/locales/de/`
+
+### Language Selector
+Located in Footer and Profile Settings (EN/DE buttons)
+
+---
+
 ## Version History
+- v1.2 - November 2025 - Added internationalization (i18n) section
 - v1.1 - October 2025 - Added responsive design and mobile optimization guidelines
 - v1.0 - October 2025 - Initial style guide created
 

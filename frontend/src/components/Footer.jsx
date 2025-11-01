@@ -63,7 +63,7 @@ export default function Footer() {
                   className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
                     i18n.language === 'en'
                       ? 'bg-white text-[#035035]'
-                      : 'bg-white bg-opacity-20 hover:bg-opacity-30'
+                      : 'bg-white bg-opacity-20 hover:bg-opacity-30 text-white'
                   }`}
                 >
                   EN
@@ -73,7 +73,7 @@ export default function Footer() {
                   className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
                     i18n.language === 'de'
                       ? 'bg-white text-[#035035]'
-                      : 'bg-white bg-opacity-20 hover:bg-opacity-30'
+                      : 'bg-white bg-opacity-20 hover:bg-opacity-30 text-white'
                   }`}
                 >
                   DE

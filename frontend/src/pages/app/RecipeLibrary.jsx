@@ -77,6 +77,7 @@ const formatTime = (minutes) => {
 };
 
 export default function RecipeLibrary() {
+  const { t } = useTranslation(["recipe", "common"])
   const [searchParams] = useSearchParams();
   const [collections, setCollections] = useState([]);
   const [latestRecipes, setLatestRecipes] = useState([]);
@@ -212,14 +213,14 @@ export default function RecipeLibrary() {
         {/* Header */}
         <div className="mb-6 md:mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-[#035035] mb-2">Your Recipes</h1>
-            <p className="text-sm sm:text-base text-[#2D2D2D] opacity-60">Discover and save your favorite dishes</p>
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#035035] mb-2">{t("library.title")}</h1>
+            <p className="text-sm sm:text-base text-[#2D2D2D] opacity-60">{t("library.subtitle")}</p>
           </div>
           <Link
             to="/app"
             className="px-6 py-3 rounded-full border-2 border-[#035035] text-[#035035] font-semibold hover:bg-[#035035] hover:text-white transition-all text-center min-h-[44px] flex items-center justify-center"
           >
-            Back to Dashboard
+            {t("library.backToDashboard")}
           </Link>
         </div>
 
