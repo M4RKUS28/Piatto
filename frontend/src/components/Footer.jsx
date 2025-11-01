@@ -63,7 +63,7 @@ export default function Footer() {
                 className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
                   i18n.language === 'en'
                     ? 'bg-white text-[#035035]'
-                    : 'bg-white bg-opacity-20 hover:bg-opacity-30 text-white'
+                    : 'border border-white/40 text-white hover:border-white/60 hover:bg-white/10'
                 }`}
               >
                 EN
@@ -73,7 +73,7 @@ export default function Footer() {
                 className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
                   i18n.language === 'de'
                     ? 'bg-white text-[#035035]'
-                    : 'bg-white bg-opacity-20 hover:bg-opacity-30 text-white'
+                    : 'border border-white/40 text-white hover:border-white/60 hover:bg-white/10'
                 }`}
               >
                 DE
