@@ -7,6 +7,13 @@ import RecipeDetailsModal from '../../../components/RecipeDetailsModal';
 import { generateInstructions } from '../../../api/instructionApi';
 import { getRecipeImage } from '../../../api/filesApi';
 import { getRecipeById } from '../../../api/recipeApi';
+import {
+	TimeIcon,
+	getFoodCategoryDisplay,
+	formatDifficulty,
+	getDifficultyColorClasses,
+	formatTime,
+} from '../../../utils/recipeMetaUtils';
 
 export default function RecipeOptionsStep({
 	recipeOptions,
@@ -250,6 +257,10 @@ export default function RecipeOptionsStep({
 				{recipes.map((recipe, index) => {
 					const isSelected = selectedRecipes.has(recipe.id);
 					const imageStatus = imageLoadStatus[recipe.id] || 'loading';
+					const difficultyLabel = formatDifficulty(recipe.difficulty, t);
+					const difficultyClasses = getDifficultyColorClasses(recipe.difficulty);
+					const formattedTime = formatTime(recipe.total_time_minutes);
+					const foodDisplay = getFoodCategoryDisplay(recipe.food_category, t);
 
 					return (
 						<div
@@ -335,7 +346,25 @@ export default function RecipeOptionsStep({
 										)}
 									</div>
 									{recipe.id > 0 && (
-										<div className="flex flex-wrap gap-2 sm:justify-end">
+										<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+											<div className="flex flex-wrap items-center gap-2 text-xs text-[#2D2D2D] opacity-80">
+												<span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${difficultyClasses}`}>
+													{difficultyLabel}
+												</span>
+												<div className="flex items-center gap-1 whitespace-nowrap">
+													<TimeIcon className="w-4 h-4 flex-shrink-0" />
+													<span>{formattedTime}</span>
+												</div>
+												{foodDisplay && (() => {
+													const FoodIcon = foodDisplay.icon;
+													return (
+														<div className="flex items-center gap-1 whitespace-nowrap">
+															<FoodIcon className="w-4 h-4 flex-shrink-0" />
+															<span>{foodDisplay.label}</span>
+														</div>
+													);
+												})()}
+											</div>
 											<button
 												type="button"
 												onClick={(event) => handleShowDetails(event, recipe)}
