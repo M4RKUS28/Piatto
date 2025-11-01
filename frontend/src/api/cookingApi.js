@@ -21,7 +21,7 @@ const storeCookingSessionId = (sessionId) => {
   }
 };
 
-const getStoredCookingSessionId = () => {
+export const getStoredCookingSessionId = () => {
   try {
     if (isBrowser && window.localStorage) {
       const raw = window.localStorage.getItem(COOKING_SESSION_STORAGE_KEY);
@@ -35,7 +35,7 @@ const getStoredCookingSessionId = () => {
   return null;
 };
 
-const clearStoredCookingSessionId = () => {
+export const clearStoredCookingSessionId = () => {
   try {
     if (isBrowser && window.localStorage) {
       window.localStorage.removeItem(COOKING_SESSION_STORAGE_KEY);
@@ -82,7 +82,7 @@ export const startCookingSession = async (recipeId) => {
  */
 export const getCookingSession = async (cookingSessionId) => {
   try {
-    const response = await apiWithCookies.get(`/cooking/${cookingSessionId}/get`);
+    const response = await apiWithCookies.get(`/cooking/${cookingSessionId}/get_session`);
     return response.data;
   } catch (error) {
     // Log all errors to console with full error details for debugging

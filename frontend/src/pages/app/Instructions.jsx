@@ -2,7 +2,14 @@ import React from 'react';
 import Lottie from 'lottie-react';
 import { useParams } from 'react-router-dom';
 import { getInstructions } from '../../api/instructionApi';
-import { startCookingSession, updateCookingState, finishCookingSession } from '../../api/cookingApi';
+import {
+  startCookingSession,
+  updateCookingState,
+  finishCookingSession,
+  getCookingSession,
+  getStoredCookingSessionId,
+  clearStoredCookingSessionId
+} from '../../api/cookingApi';
 import WakeWordDetection from '../../components/WakeWordDetection';
 import AnimatedTimer from './Instructions/AnimatedTimer';
 import AnimatingTimerPortal from './Instructions/AnimatingTimerPortal';
@@ -163,6 +170,7 @@ const CookingInstructions = ({
   // Cooking session state
   const [cookingSessionId, setCookingSessionId] = React.useState(null);
   const [sessionFinished, setSessionFinished] = React.useState(false);
+  const [sessionRestored, setSessionRestored] = React.useState(false);
   const [isSessionStarting, setIsSessionStarting] = React.useState(false);
   const [isNavigating, setIsNavigating] = React.useState(false);
   const [isFinishingSession, setIsFinishingSession] = React.useState(false);
@@ -513,6 +521,73 @@ const CookingInstructions = ({
 
     await navigateToStep(focusedStep + 1);
   }, [sessionActive, hasActiveStep, totalSteps, focusedStep, navigateToStep, cookingSessionId, t]);
+
+  // Attempt to restore an existing session for this recipe
+  React.useEffect(() => {
+    if (!recipeId || !instructions || instructions.length === 0) {
+      return;
+    }
+
+    if (sessionActive || sessionRestored) {
+      return;
+    }
+
+    const storedSessionId = getStoredCookingSessionId();
+
+    if (!storedSessionId && storedSessionId !== 0) {
+      setSessionRestored(true);
+      return;
+    }
+
+    let isCancelled = false;
+
+    const restoreSession = async () => {
+      try {
+        const session = await getCookingSession(storedSessionId);
+        if (isCancelled) {
+          return;
+        }
+
+        if (!session || String(session.recipe_id) !== String(recipeId)) {
+          clearStoredCookingSessionId();
+          setSessionRestored(true);
+          return;
+        }
+
+        const parsedState = Number(session.state);
+        const safeState = Number.isFinite(parsedState) ? parsedState : 0;
+        const clampedStep = Math.min(
+          Math.max(safeState, 0),
+          Math.max(instructions.length - 1, 0)
+        );
+
+        setCookingSessionId(session.id);
+        setSessionFinished(false);
+        setSessionError(null);
+        setNavigationError(null);
+        setOpenChatStep(null);
+        previousSyncedStep.current = clampedStep;
+
+        setFocusedStep(clampedStep);
+        requestAnimationFrame(() => {
+          scrollStepIntoView(clampedStep);
+        });
+      } catch (err) {
+        console.error('Failed to restore cooking session:', err);
+        clearStoredCookingSessionId();
+      } finally {
+        if (!isCancelled) {
+          setSessionRestored(true);
+        }
+      }
+    };
+
+    restoreSession();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [recipeId, instructions, sessionActive, sessionRestored, scrollStepIntoView]);
 
   // Fetch instructions with polling logic
   React.useEffect(() => {
