@@ -1,7 +1,8 @@
 import { getImageUrl } from '../utils/imageUtils';
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next';
 
 export default function CollectionImageCollage({ imageUrls = [] }) {
+  const { t } = useTranslation('collection');
   // Ensure we have at most 4 images
   const images = imageUrls.slice(0, 4).map(url => getImageUrl(url));
   const count = images.length;
@@ -21,7 +22,7 @@ export default function CollectionImageCollage({ imageUrls = [] }) {
       <div className="w-full h-full rounded-xl overflow-hidden border-4 border-white shadow-sm">
         <img
           src={images[0]}
-          alt="Collection preview"
+          alt={t('collage.singleAlt', 'Collection preview')}
           className="w-full h-full object-cover"
         />
       </div>
@@ -36,7 +37,7 @@ export default function CollectionImageCollage({ imageUrls = [] }) {
           <div key={idx} className="flex-1 border-2 border-white shadow-sm overflow-hidden">
             <img
               src={img}
-              alt={`Collection preview ${idx + 1}`}
+              alt={t('collage.altIndexed', { index: idx + 1, defaultValue: `Collection preview ${idx + 1}` })}
               className="w-full h-full object-cover"
             />
           </div>
@@ -52,7 +53,7 @@ export default function CollectionImageCollage({ imageUrls = [] }) {
         <div className="h-1/2 border-2 border-white shadow-sm overflow-hidden">
           <img
             src={images[0]}
-            alt="Collection preview 1"
+            alt={t('collage.altIndexed', { index: 1, defaultValue: 'Collection preview 1' })}
             className="w-full h-full object-cover"
           />
         </div>
@@ -61,7 +62,7 @@ export default function CollectionImageCollage({ imageUrls = [] }) {
             <div key={idx} className="flex-1 border-2 border-white shadow-sm overflow-hidden">
               <img
                 src={img}
-                alt={`Collection preview ${idx + 2}`}
+                alt={t('collage.altIndexed', { index: idx + 2, defaultValue: `Collection preview ${idx + 2}` })}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -78,7 +79,7 @@ export default function CollectionImageCollage({ imageUrls = [] }) {
         <div key={idx} className="border-2 border-white shadow-sm overflow-hidden">
           <img
             src={img}
-            alt={`Collection preview ${idx + 1}`}
+            alt={t('collage.altIndexed', { index: idx + 1, defaultValue: `Collection preview ${idx + 1}` })}
             className="w-full h-full object-cover"
           />
         </div>

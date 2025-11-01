@@ -73,5 +73,33 @@
     "label": "Sprache",
     "english": "Englisch",
     "german": "Deutsch"
+  },
+  "wakeWord": {
+    "messages": {
+      "unknownError": "Unbekannter Fehler"
+    },
+    "headerTitle": "Benutzerdefinierte Wake-Word-Erkennung",
+    "headerSubtitle": "Lauscht auf: „{{phrase}}“",
+    "statusListening": "Hört zu",
+    "controls": {
+      "start": "\u25b6 Zuhören starten",
+      "stop": "\u23f9 Zuhören stoppen"
+    },
+    "feedback": {
+      "detected": "„{{phrase}}“ erkannt!",
+      "confidence": "Vertrauen: {{value}}%",
+      "total": "Gesamt: {{count}}"
+    },
+    "setup": {
+      "title": "Ersteinrichtung erforderlich:",
+      "step1": "Trainiere dein benutzerdefiniertes „{{phrase}}“-Modell (siehe CUSTOM_WAKE_WORD_TRAINING.md)",
+      "step2": "Lege <code>{{file}}</code> in <code>{{folder}}</code> ab",
+      "step3": "Klicke auf „Zuhören starten“, um die Erkennung zu beginnen"
+    },
+    "debug": {
+      "description": "\ud83d\udca1 Verwendet ein benutzertrainiertes ONNX-Modell für die Erkennung von „{{phrase}}“.",
+      "currentConfidence": "Aktuelles Vertrauen: {{value}}%",
+      "logs": "Öffne die Browser-Konsole für detaillierte Erkennungsprotokolle."
+    }
   }
 }

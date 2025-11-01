@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { updateCollection } from '../api/collectionApi';
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next';
 
 /**
  * EditCollectionNameModal component allows users to edit collection name and description
  */
 export default function EditCollectionNameModal({ collection, isOpen, onClose, onUpdated }) {
+  const { t } = useTranslation('collection');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
@@ -22,7 +23,7 @@ export default function EditCollectionNameModal({ collection, isOpen, onClose, o
 
   const handleSave = async () => {
     if (!name.trim()) {
-      setError('Name darf nicht leer sein');
+      setError(t('editModal.errorEmpty', 'Name cannot be empty'));
       return;
     }
 
@@ -39,7 +40,7 @@ export default function EditCollectionNameModal({ collection, isOpen, onClose, o
       onClose();
     } catch (err) {
       console.error('Failed to update collection:', err);
-      setError('Speichern fehlgeschlagen. Bitte versuche es erneut.');
+      setError(t('editModal.errorSave', 'Save failed. Please try again.'));
     } finally {
       setSaving(false);
     }
@@ -59,7 +60,7 @@ export default function EditCollectionNameModal({ collection, isOpen, onClose, o
       <div className="bg-white rounded-2xl max-w-md w-full overflow-hidden flex flex-col">
         {/* Header */}
         <div className="p-6 border-b border-[#F5F5F5] flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-[#035035]">Sammlung bearbeiten</h2>
+          <h2 className="text-2xl font-bold text-[#035035]">{t('editModal.title', 'Edit Collection')}</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-[#F5F5F5] rounded-full transition-colors"
@@ -75,7 +76,7 @@ export default function EditCollectionNameModal({ collection, isOpen, onClose, o
             {/* Name Input */}
             <div>
               <label className="block text-sm font-semibold text-[#2D2D2D] mb-2">
-                Name
+                {t('editModal.nameLabel', 'Name')}
               </label>
               <input
                 type="text"
@@ -83,7 +84,7 @@ export default function EditCollectionNameModal({ collection, isOpen, onClose, o
                 onChange={(e) => setName(e.target.value)}
                 onKeyDown={handleKeyDown}
                 className="w-full px-4 py-3 rounded-full border-2 border-[#F5F5F5] focus:border-[#035035] focus:outline-none transition-all"
-                placeholder="Sammlungsname"
+                placeholder={t('editModal.namePlaceholder', 'Collection name')}
                 disabled={saving}
                 autoFocus
               />
@@ -92,14 +93,14 @@ export default function EditCollectionNameModal({ collection, isOpen, onClose, o
             {/* Description Input */}
             <div>
               <label className="block text-sm font-semibold text-[#2D2D2D] mb-2">
-                Beschreibung (optional)
+                {t('editModal.descriptionLabel', 'Description (optional)')}
               </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
                 className="w-full px-4 py-3 rounded-2xl border-2 border-[#F5F5F5] focus:border-[#035035] focus:outline-none transition-all resize-none"
-                placeholder="Beschreibe deine Sammlung..."
+                placeholder={t('editModal.descriptionPlaceholder', 'Describe your collection...')}
                 disabled={saving}
               />
             </div>
@@ -120,14 +121,14 @@ export default function EditCollectionNameModal({ collection, isOpen, onClose, o
             className="flex-1 px-6 py-3 rounded-full border-2 border-[#2D2D2D]/20 text-[#2D2D2D] font-semibold hover:bg-[#F5F5F5] transition-all"
             disabled={saving}
           >
-            Abbrechen
+            {t('editModal.cancel', 'Cancel')}
           </button>
           <button
             onClick={handleSave}
             className="flex-1 px-6 py-3 rounded-full bg-[#035035] text-white font-semibold hover:scale-105 transition-all disabled:opacity-50"
             disabled={saving || !name.trim()}
           >
-            {saving ? 'Speichern...' : 'Speichern'}
+            {saving ? t('editModal.saving', 'Saving...') : t('editModal.save', 'Save')}
           </button>
         </div>
       </div>

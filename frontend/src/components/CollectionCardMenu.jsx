@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { MoreVertical, Edit, Trash2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next';
 
 /**
  * CollectionCardMenu component displays a three-dot menu button for collection cards
  * Shows options to edit or delete a collection
  */
 export default function CollectionCardMenu({ collectionId, onEdit, onDelete }) {
+  const { t } = useTranslation('collection');
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
 
@@ -52,7 +53,7 @@ export default function CollectionCardMenu({ collectionId, onEdit, onDelete }) {
       <button
         onClick={toggleMenu}
         className="p-1.5 bg-white/95 backdrop-blur-sm rounded-full border border-[#F5F5F5] hover:bg-[#035035] hover:text-white transition-all shadow-md min-h-[28px] min-w-[28px] flex items-center justify-center"
-        aria-label="Collection options"
+        aria-label={t('actions.optionsAriaLabel', 'Collection options')}
       >
         <MoreVertical className="w-4 h-4" />
       </button>
@@ -65,14 +66,14 @@ export default function CollectionCardMenu({ collectionId, onEdit, onDelete }) {
             className="w-full px-3 py-2 text-left hover:bg-[#F5F5F5] transition-colors flex items-center gap-2"
           >
             <Edit className="w-4 h-4 text-[#035035]" />
-            <span className="text-[#2D2D2D] font-medium text-sm">Bearbeiten</span>
+            <span className="text-[#2D2D2D] font-medium text-sm">{t('actions.edit', 'Edit')}</span>
           </button>
           <button
             onClick={handleDelete}
             className="w-full px-3 py-2 text-left hover:bg-red-50 transition-colors flex items-center gap-2"
           >
             <Trash2 className="w-4 h-4 text-red-500" />
-            <span className="text-red-500 font-medium text-sm">Löschen</span>
+            <span className="text-red-500 font-medium text-sm">{t('actions.delete', 'Delete')}</span>
           </button>
         </div>
       )}

@@ -46,9 +46,9 @@ export default function Footer() {
           <div>
             <h4 className="font-bold mb-4">{t('footer.connect')}</h4>
             <ul className="space-y-2 text-sm opacity-80">
-              <li><a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity">Instagram</a></li>
-              <li><a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity">TikTok</a></li>
-              <li><a href="https://pinterest.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity">Pinterest</a></li>
+              <li><a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity">{t('footer.social.instagram', 'Instagram')}</a></li>
+              <li><a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity">{t('footer.social.tiktok', 'TikTok')}</a></li>
+              <li><a href="https://pinterest.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity">{t('footer.social.pinterest', 'Pinterest')}</a></li>
             </ul>
           </div>
 
