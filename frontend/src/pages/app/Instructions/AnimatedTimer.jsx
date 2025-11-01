@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTimer } from 'react-timer-hook';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { PiX, PiPlay, PiPause, PiArrowClockwise } from 'react-icons/pi';
 
@@ -15,6 +16,7 @@ const AnimatedTimer = ({
   onExpand,
   timerRef
 }) => {
+  const { t } = useTranslation('instructions');
   const time = new Date();
   time.setSeconds(time.getSeconds() + timerSeconds);
 
@@ -114,7 +116,7 @@ const AnimatedTimer = ({
           <button
             onClick={handleClose}
             className="flex-shrink-0 w-5 h-5 flex items-center justify-center text-gray-400 hover:text-[#FF9B7B] hover:bg-[#FFF8F0] rounded transition-colors"
-            aria-label="Return to step"
+            aria-label={t('timer.aria.returnToStep', 'Return to step')}
           >
             <PiX className="text-sm" />
           </button>
@@ -143,7 +145,7 @@ const AnimatedTimer = ({
                   : 'bg-[#035035] text-white hover:bg-[#024028] hover:scale-105 active:scale-95'
                 }
               `}
-              aria-label="Start"
+              aria-label={t('timer.aria.start', 'Start')}
             >
               <PiPlay className="text-sm sm:text-base" />
             </button>
@@ -159,7 +161,7 @@ const AnimatedTimer = ({
                   : 'bg-[#FF9B7B] text-white hover:bg-[#FF8B6B] hover:scale-105 active:scale-95'
                 }
               `}
-              aria-label="Pause"
+              aria-label={t('timer.aria.pause', 'Pause')}
             >
               <PiPause className="text-sm sm:text-base" />
             </button>
@@ -172,7 +174,7 @@ const AnimatedTimer = ({
                 bg-white text-[#FF9B7B] hover:bg-[#FFF8F0] hover:scale-105 active:scale-95
                 border-2 border-[#FF9B7B]
               "
-              aria-label="Reset"
+              aria-label={t('timer.aria.reset', 'Reset')}
             >
               <PiArrowClockwise className="text-sm sm:text-base" />
             </button>
@@ -216,7 +218,7 @@ const AnimatedTimer = ({
             animate={{ opacity: isAnimating ? 0 : 1 }}
             transition={{ duration: 0.6 }}
           >
-            {isRunning ? '⏱ Running' : '⏸ Paused'}
+            {isRunning ? `⏱ ${t('timer.running', 'Running')}` : `⏸ ${t('timer.paused', 'Paused')}`}
           </motion.div>
         </div>
 
@@ -241,7 +243,7 @@ const AnimatedTimer = ({
                 animate={{ opacity: isAnimating ? 0 : 1 }}
                 transition={{ duration: 0.6 }}
               >
-                Start
+                {t('timer.start', 'Start')}
               </motion.span>
             </span>
           </button>
@@ -265,7 +267,7 @@ const AnimatedTimer = ({
                 animate={{ opacity: isAnimating ? 0 : 1 }}
                 transition={{ duration: 0.6 }}
               >
-                Pause
+                {t('timer.pause', 'Pause')}
               </motion.span>
             </span>
           </button>
@@ -286,7 +288,7 @@ const AnimatedTimer = ({
                 animate={{ opacity: isAnimating ? 0 : 1 }}
                 transition={{ duration: 0.6 }}
               >
-                Reset
+                {t('timer.reset', 'Reset')}
               </motion.span>
             </span>
           </button>
