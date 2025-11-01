@@ -242,7 +242,7 @@ export default function RecipeOptionsStep({
 	const isDetailsModalOpen = activeDetailsId != null;
 
 	return (
-		<div className="space-y-5">
+		<div className="space-y-3">
 			<style>{`
 				@keyframes shimmer {
 					0% {
@@ -255,12 +255,12 @@ export default function RecipeOptionsStep({
 			`}</style>
 
 			<div>
-				<h2 className="mb-4 text-center text-2xl font-bold text-[#035035] sm:mb-6 sm:text-3xl">
+				<h2 className="mb-2 text-center text-2xl font-bold text-[#035035] sm:mb-3 sm:text-3xl">
 					{t('options.title', 'Select Recipes to Generate')}
 				</h2>
 			</div>
 
-			<div className="space-y-4" role="list" aria-label={t('options.aria.recipeList', 'Generated recipe options')}>
+			<div className="space-y-2" role="list" aria-label={t('options.aria.recipeList', 'Generated recipe options')}>
 				{recipes.map((recipe, index) => {
 					const isSelected = selectedRecipes.has(recipe.id);
 					const imageStatus = imageLoadStatus[recipe.id] || 'loading';
@@ -274,7 +274,7 @@ export default function RecipeOptionsStep({
 							key={recipe.id}
 							role="listitem"
 							onClick={() => toggleRecipeSelection(recipe.id)}
-							className={`group relative cursor-pointer rounded-2xl border-2 bg-white p-4 transition-all duration-200 hover:shadow-md
+							className={`group relative cursor-pointer rounded-2xl border-2 bg-white p-3 transition-all duration-200 hover:shadow-md
 								${isSelected ? 'border-[#035035]' : 'border-[#F5F5F5] hover:border-[#4CAF50]'}`}
 							style={{ animation: `fadeIn 0.5s ease-out ${index * 0.1}s both` }}
 						>
@@ -291,7 +291,7 @@ export default function RecipeOptionsStep({
 								</div>
 							</div>
 
-							<div className="flex flex-col gap-4 sm:flex-row">
+							<div className="flex flex-col gap-3 sm:flex-row">
 								<div className="h-48 w-full sm:h-40 sm:w-40 sm:flex-shrink-0">
 									{imageStatus === 'loading' && (
 										<div className="relative h-full w-full overflow-hidden rounded-xl bg-gray-200">
@@ -328,7 +328,7 @@ export default function RecipeOptionsStep({
 									)}
 								</div>
 
-								<div className="flex min-w-0 flex-1 flex-col justify-between gap-3 sm:pr-10">
+								<div className="flex min-w-0 flex-1 flex-col justify-between gap-2 sm:pr-10">
 									<div className="flex flex-col justify-center">
 										{recipe.title ? (
 											<h3 className="mb-2 line-clamp-2 text-lg font-semibold text-[#035035] sm:text-xl">{recipe.title}</h3>
@@ -383,7 +383,7 @@ export default function RecipeOptionsStep({
 				})}
 			</div>
 
-			<div className="mt-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+			<div className="mt-3 flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
 				<button
 					type="button"
 					onClick={onRegenerate}

@@ -57,7 +57,7 @@ export default function PromptStep({ onSubmit, initialValue = '', loading = fals
 						disabled={loading}
 						rows={4}
 						className={`w-full px-4 py-3 rounded-xl border-2 transition-all resize-none font-['Inter'] text-base
-							${validationError ? 'border-[#FF9B7B] focus:border-[#FF9B7B]' : 'border-[#F5F5F5] focus:border-[#035035]'}
+							${validationError ? 'border-[#D96332] focus:border-[#D96332]' : 'border-[#F5F5F5] focus:border-[#035035]'}
 							focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2
 							disabled:opacity-50 disabled:cursor-not-allowed
 						`}
@@ -68,7 +68,7 @@ export default function PromptStep({ onSubmit, initialValue = '', loading = fals
 					{validationError && (
 						<p
 							id="prompt-error"
-							className="mt-2 text-sm text-[#FF9B7B]"
+							className="mt-2 text-sm text-[#D96332]"
 							role="alert"
 							aria-live="polite"
 						>

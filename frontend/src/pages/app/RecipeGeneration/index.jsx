@@ -357,11 +357,6 @@ export default function RecipeGeneration() {
 									aria-label={t('progress.stepLabel', 'Step {{step}} of 3', { step: currentStep })}
 								/>
 							</div>
-							<div className="mt-3 text-center text-xs text-white/80 sm:text-sm">
-								{currentStep === 1 && t('steps.step1', 'Step 1: What do you want to cook?')}
-								{currentStep === 2 && t('steps.step2', 'Step 2: What ingredients do you have?')}
-								{currentStep === 3 && t('steps.step3', 'Step 3: Choose your recipe')}
-							</div>
 						</div>
 
 						<div className={`flex flex-1 flex-col ${currentStep < 3 ? 'items-center justify-center' : ''}`}>
