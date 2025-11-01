@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ChefHat, Clock, Heart, TrendingUp } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranslation } from 'react-i18next'
 
 export default function Dashboard() {
   const { user } = useAuth();

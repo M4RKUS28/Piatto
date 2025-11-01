@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 import { deleteCollection } from '../api/collectionApi';
+import { useTranslation } from 'react-i18next'
 
 /**
  * DeleteCollectionModal component shows a confirmation dialog before deleting a collection

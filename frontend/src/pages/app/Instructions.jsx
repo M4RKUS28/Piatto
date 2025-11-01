@@ -5,6 +5,7 @@ import { getInstructions } from '../../api/instructionApi';
 import WakeWordDetection from '../../components/WakeWordDetection';
 import AnimatedTimer from './Instructions/AnimatedTimer';
 import AnimatingTimerPortal from './Instructions/AnimatingTimerPortal';
+import { useTranslation } from 'react-i18next'
 
  // --- Configuration ---
 const CURVE_AMOUNT = 180;

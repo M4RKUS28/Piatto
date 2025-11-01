@@ -1,0 +1,110 @@
+{
+  "totalTime": "Gesamtzeit",
+  "difficulty": "Schwierigkeit",
+  "ingredients": "Zutaten",
+  "nutrition": "Nährwerte",
+  "servings": {
+    "for": "Für",
+    "serving": "Portion",
+    "servings": "Portionen"
+  },
+  "nutritionFacts": {
+    "title": "Nährwertangaben",
+    "servingsPerRecipe": "Portionen pro Rezept",
+    "servingSize": "Portionsgröße wird aus dem Rezept berechnet",
+    "amountPerServing": "Menge pro Portion",
+    "dailyValue": "% Tageswert*",
+    "totalFat": "Gesamtfett",
+    "saturatedFat": "Gesättigtes Fett",
+    "transFat": "Transfett",
+    "cholesterol": "Cholesterin",
+    "sodium": "Natrium",
+    "totalCarbohydrate": "Gesamtkohlenhydrate",
+    "dietaryFiber": "Ballaststoffe",
+    "totalSugars": "Gesamtzucker",
+    "protein": "Protein",
+    "vitaminD": "Vitamin D",
+    "calcium": "Calcium",
+    "iron": "Eisen",
+    "potassium": "Kalium",
+    "disclaimer": "* Der Tageswert (DV) gibt an, wie viel ein Nährstoff in einer Portion zur täglichen Ernährung beiträgt. 2.000 Kalorien pro Tag werden für allgemeine Ernährungsberatung verwendet."
+  },
+  "actions": {
+    "share": "Teilen",
+    "print": "Drucken",
+    "editCollection": "Sammlung bearbeiten",
+    "deleteRecipe": "Rezept löschen"
+  },
+  "errors": {
+    "notFound": "Rezept nicht gefunden. Es wurde möglicherweise gelöscht.",
+    "serverError": "Serverfehler. Bitte versuche es später erneut.",
+    "networkError": "Netzwerkfehler. Bitte überprüfe deine Verbindung.",
+    "loadFailed": "Rezept konnte nicht geladen werden. Bitte versuche es erneut."
+  },
+  "deleteConfirm": "Möchtest du dieses Rezept wirklich löschen?",
+  "deleteError": "Fehler beim Löschen des Rezepts",
+  "minimizedLabel": "REZEPT",
+  "library": {
+    "title": "Deine Rezepte",
+    "subtitle": "Entdecke und speichere deine Lieblingsgerichte",
+    "backToDashboard": "Zurück zum Dashboard",
+    "latestRecipes": "Letzte Rezepte",
+    "newBadge": "NEU",
+    "collections": "Sammlungen",
+    "newCollection": "Neue Sammlung",
+    "noCollections": "Keine Sammlungen",
+    "noCollectionsDescription": "Erstelle deine erste Sammlung, um Rezepte zu organisieren",
+    "createNewCollection": "Neue Sammlung erstellen",
+    "recipe": "Rezept",
+    "recipes": "Rezepte",
+    "collectionLabel": "Sammlung"
+  },
+  "generation": {
+    "step1": {
+      "title": "Was möchtest du heute kochen?",
+      "subtitle": "Beschreibe, worauf du Lust hast, und wir helfen dir, das perfekte Rezept zu erstellen",
+      "label": "Was möchtest du kochen?",
+      "placeholder": "z.B. Etwas Gesundes zum Abendessen, Schnelles Nudelgericht, Comfort Food...",
+      "errorEmpty": "Bitte sag uns, was du kochen möchtest",
+      "errorMinLength": "Bitte gib mindestens 3 Zeichen ein",
+      "next": "Weiter",
+      "loading": "Wird geladen..."
+    },
+    "step2": {
+      "title": "Welche Zutaten hast du?",
+      "subtitle": "Sag uns, was in deiner Küche ist. Du kannst auch ein Foto analysieren, um Zutaten zu extrahieren.",
+      "label": "Gib deine Zutaten ein",
+      "placeholder": "Gib deine Zutaten ein, durch Kommas getrennt...",
+      "errorMinLength": "Bitte gib mindestens 3 Zeichen ein",
+      "errorLoginRequired": "Du musst angemeldet sein, um ein Bild zu analysieren",
+      "errorAnalysisFailed": "Bildanalyse fehlgeschlagen. Bitte versuche es erneut.",
+      "analyzeImage": "Bild analysieren",
+      "noIngredientsDetected": "Keine Zutaten im Bild erkannt.",
+      "uploadAriaLabel": "Zutatenbild hochladen",
+      "back": "Zurück",
+      "generate": "Rezepte generieren",
+      "generating": "Wird generiert...",
+      "analyzing": "Bild wird analysiert..."
+    },
+    "step3": {
+      "title": "Wähle Rezepte zum Generieren",
+      "generatingImage": "Bild wird generiert...",
+      "failedToLoad": "Laden fehlgeschlagen",
+      "generateNew": "Neue Rezepte generieren",
+      "generateSelected": "Generieren",
+      "processing": "Wird verarbeitet..."
+    },
+    "header": {
+      "generateFor": "Generiere Rezept für:",
+      "step1Label": "Schritt 1: Was möchtest du kochen?",
+      "step2Label": "Schritt 2: Welche Zutaten hast du?",
+      "step3Label": "Schritt 3: Wähle dein Rezept"
+    }
+  },
+  "instructions": {
+    "generating": "Anleitung wird generiert...",
+    "generatingSubtitle": "Unser KI-Koch bereitet detaillierte Kochanleitungen für dein Rezept vor. Das dauert normalerweise nur wenige Momente.",
+    "title": "Kochanleitung",
+    "subtitle": "Folge den Schritten entlang des Pfades, um dein Rezept zu vervollständigen."
+  }
+}

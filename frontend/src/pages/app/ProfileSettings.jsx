@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { updateUser } from '../../api/authApi';
 import { uploadPublicFile } from '../../api/filesApi';
 import { User, Mail, Save, AlertCircle, CheckCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next'
 import './ProfileSettings.css';
 
 const extractErrorMessage = (error, fallback) => {

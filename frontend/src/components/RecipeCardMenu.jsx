@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { MoreVertical, FolderOpen, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next'
 
 /**
  * RecipeCardMenu component displays a three-dot menu button for recipe cards

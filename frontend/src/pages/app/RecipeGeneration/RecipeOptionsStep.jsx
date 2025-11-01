@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import SaveRecipesCollectionModal from '../../../components/SaveRecipesCollectionModal';
 import { generateInstructions } from '../../../api/instructionApi';
 import { getRecipeImage } from '../../../api/filesApi';
+import { useTranslation } from 'react-i18next'
 
 export default function RecipeOptionsStep({
 	recipeOptions,

@@ -1,0 +1,53 @@
+{
+  "appName": "Piatto",
+  "navigation": {
+    "features": "Features",
+    "howItWorks": "How It Works",
+    "recipes": "Recipes",
+    "about": "About",
+    "dashboard": "Dashboard",
+    "signIn": "Sign In",
+    "getStartedFree": "Get Started Free"
+  },
+  "footer": {
+    "tagline": "Your AI-powered cooking companion for delicious everyday meals",
+    "product": "Product",
+    "company": "Company",
+    "connect": "Connect",
+    "aboutUs": "About Us",
+    "contact": "Contact",
+    "privacyPolicy": "Privacy Policy",
+    "copyright": "© 2025 Piatto. Cooking made delightful, one recipe at a time."
+  },
+  "buttons": {
+    "startCooking": "Start Cooking",
+    "exploreRecipes": "Explore Recipes",
+    "generateRecipe": "Generate Recipe",
+    "findNewRecipes": "Find New Recipes",
+    "profileSettings": "Profile Settings",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish"
+  },
+  "time": {
+    "min": "min",
+    "minutes": "minutes",
+    "hours": "hours"
+  },
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "language": {
+    "label": "Language",
+    "english": "English",
+    "german": "German"
+  }
+}

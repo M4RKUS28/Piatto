@@ -10,6 +10,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorMessage from '../../components/ErrorMessage';
 import EditCollectionsModal from '../../components/EditCollectionsModal';
 import { getImageUrl } from '../../utils/imageUtils';
+import { useTranslation } from 'react-i18next'
 
 // Helper function to get food category icon and label
 const getFoodCategoryDisplay = (category) => {

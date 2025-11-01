@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import useHeyPiattoDetection from '../hooks/useHeyPiattoDetection';
+import { useTranslation } from 'react-i18next'
 
 /**
  * Visual component for Custom "Hey Piatto" Wake Word Detection

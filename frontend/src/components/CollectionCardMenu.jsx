@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next'
 
 /**
  * CollectionCardMenu component displays a three-dot menu button for collection cards

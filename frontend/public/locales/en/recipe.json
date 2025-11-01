@@ -1,0 +1,110 @@
+{
+  "totalTime": "Total Time",
+  "difficulty": "Difficulty",
+  "ingredients": "Ingredients",
+  "nutrition": "Nutrition",
+  "servings": {
+    "for": "For",
+    "serving": "serving",
+    "servings": "servings"
+  },
+  "nutritionFacts": {
+    "title": "Nutrition Facts",
+    "servingsPerRecipe": "servings per recipe",
+    "servingSize": "Serving size is calculated from the recipe",
+    "amountPerServing": "Amount per serving",
+    "dailyValue": "% Daily Value*",
+    "totalFat": "Total Fat",
+    "saturatedFat": "Saturated Fat",
+    "transFat": "Trans Fat",
+    "cholesterol": "Cholesterol",
+    "sodium": "Sodium",
+    "totalCarbohydrate": "Total Carbohydrate",
+    "dietaryFiber": "Dietary Fiber",
+    "totalSugars": "Total Sugars",
+    "protein": "Protein",
+    "vitaminD": "Vitamin D",
+    "calcium": "Calcium",
+    "iron": "Iron",
+    "potassium": "Potassium",
+    "disclaimer": "* The % Daily Value (DV) tells you how much a nutrient in a serving of food contributes to a daily diet. 2,000 calories a day is used for general nutrition advice."
+  },
+  "actions": {
+    "share": "Share",
+    "print": "Print",
+    "editCollection": "Edit Collection",
+    "deleteRecipe": "Delete Recipe"
+  },
+  "errors": {
+    "notFound": "Recipe not found. It may have been deleted.",
+    "serverError": "Server error. Please try again later.",
+    "networkError": "Network error. Please check your connection.",
+    "loadFailed": "Failed to load recipe. Please try again."
+  },
+  "deleteConfirm": "Do you really want to delete this recipe?",
+  "deleteError": "Error deleting recipe",
+  "minimizedLabel": "RECIPE",
+  "library": {
+    "title": "Your Recipes",
+    "subtitle": "Discover and save your favorite dishes",
+    "backToDashboard": "Back to Dashboard",
+    "latestRecipes": "Latest Recipes",
+    "newBadge": "NEW",
+    "collections": "Collections",
+    "newCollection": "New Collection",
+    "noCollections": "No collections",
+    "noCollectionsDescription": "Create your first collection to organize recipes",
+    "createNewCollection": "Create New Collection",
+    "recipe": "Recipe",
+    "recipes": "Recipes",
+    "collectionLabel": "Collection"
+  },
+  "generation": {
+    "step1": {
+      "title": "What do you want to cook today?",
+      "subtitle": "Describe what you're in the mood for, and we'll help you create the perfect recipe",
+      "label": "What do you want to cook?",
+      "placeholder": "e.g., Something healthy for dinner, Quick pasta dish, Comfort food...",
+      "errorEmpty": "Please tell us what you want to cook",
+      "errorMinLength": "Please enter at least 3 characters",
+      "next": "Next",
+      "loading": "Loading..."
+    },
+    "step2": {
+      "title": "What ingredients do you have?",
+      "subtitle": "Tell us what's in your kitchen. You can also analyze a photo to extract ingredients.",
+      "label": "Enter your ingredients",
+      "placeholder": "Enter your ingredients, separated by commas...",
+      "errorMinLength": "Please enter at least 3 characters",
+      "errorLoginRequired": "You must be logged in to analyze an image",
+      "errorAnalysisFailed": "Image analysis failed. Please try again.",
+      "analyzeImage": "Analyze Image",
+      "noIngredientsDetected": "No ingredients detected in image.",
+      "uploadAriaLabel": "Upload ingredients image",
+      "back": "Back",
+      "generate": "Generate Recipes",
+      "generating": "Generating...",
+      "analyzing": "Analyzing image..."
+    },
+    "step3": {
+      "title": "Select Recipes to Generate",
+      "generatingImage": "Generating Image...",
+      "failedToLoad": "Failed to load",
+      "generateNew": "Generate New Recipes",
+      "generateSelected": "Generate",
+      "processing": "Processing..."
+    },
+    "header": {
+      "generateFor": "Generate recipe for:",
+      "step1Label": "Step 1: What do you want to cook?",
+      "step2Label": "Step 2: What ingredients do you have?",
+      "step3Label": "Step 3: Choose your recipe"
+    }
+  },
+  "instructions": {
+    "generating": "Generating Instructions...",
+    "generatingSubtitle": "Our AI chef is preparing detailed cooking instructions for your recipe. This usually takes just a few moments.",
+    "title": "Cooking Instructions",
+    "subtitle": "Follow the steps along the path to complete your recipe."
+  }
+}

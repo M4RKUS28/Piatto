@@ -1,0 +1,91 @@
+{
+  "actions": {
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "optionsAriaLabel": "Sammlungsoptionen"
+  },
+  "deleteModal": {
+    "title": "Sammlung löschen",
+    "message": "Möchtest du die Sammlung \"{name}\" wirklich löschen?",
+    "warning": "Diese Aktion kann nicht rückgängig gemacht werden. Die Sammlung wird gelöscht, aber die Rezepte darin bleiben erhalten.",
+    "recipeCount": {
+      "singular": "Rezept",
+      "plural": "Rezepte",
+      "inCollection": "in dieser Sammlung"
+    },
+    "error": "Löschen fehlgeschlagen. Bitte versuche es erneut.",
+    "cancel": "Abbrechen",
+    "deleting": "Wird gelöscht...",
+    "delete": "Löschen"
+  },
+  "editModal": {
+    "title": "Sammlung bearbeiten",
+    "errorEmpty": "Name darf nicht leer sein",
+    "errorSave": "Speichern fehlgeschlagen. Bitte versuche es erneut.",
+    "nameLabel": "Name",
+    "namePlaceholder": "Sammlungsname",
+    "descriptionLabel": "Beschreibung (optional)",
+    "descriptionPlaceholder": "Beschreibe deine Sammlung...",
+    "cancel": "Abbrechen",
+    "saving": "Wird gespeichert...",
+    "save": "Speichern"
+  },
+  "saveModal": {
+    "title": "In Sammlung speichern",
+    "step": "Schritt {current} von {total}",
+    "searchPlaceholder": "Sammlungen durchsuchen...",
+    "createNew": "Neue Sammlung erstellen",
+    "newCollectionTitle": "Neue Sammlung",
+    "namePlaceholder": "Name",
+    "descriptionPlaceholder": "Beschreibung (optional)",
+    "cancel": "Abbrechen",
+    "creating": "Wird erstellt...",
+    "create": "Erstellen",
+    "noResults": "Keine Sammlungen gefunden",
+    "empty": "Noch keine Sammlungen vorhanden",
+    "errorMinSelection": "Bitte wähle mindestens eine Sammlung aus",
+    "errorMinSelectionFor": "Bitte wähle mindestens eine Sammlung für \"{title}\" aus",
+    "errorSave": "Speichern fehlgeschlagen. Bitte versuche es erneut.",
+    "back": "Zurück",
+    "next": "Weiter",
+    "saving": "Wird gespeichert...",
+    "save": "Speichern"
+  },
+  "editCollectionsModal": {
+    "title": "Sammlung bearbeiten",
+    "errorLoad": "Fehler beim Laden der Sammlungen",
+    "errorSave": "Speichern fehlgeschlagen. Bitte versuche es erneut.",
+    "errorDelete": "Löschen fehlgeschlagen. Bitte versuche es erneut.",
+    "deleteRecipeConfirm": "Möchtest du dieses Rezept wirklich löschen?",
+    "searchPlaceholder": "Sammlungen durchsuchen...",
+    "createNew": "Neue Sammlung erstellen",
+    "newCollectionTitle": "Neue Sammlung",
+    "namePlaceholder": "Name",
+    "descriptionPlaceholder": "Beschreibung (optional)",
+    "cancel": "Abbrechen",
+    "creating": "Wird erstellt...",
+    "create": "Erstellen",
+    "noResults": "Keine Sammlungen gefunden",
+    "empty": "Noch keine Sammlungen",
+    "deleting": "Wird gelöscht...",
+    "delete": "Löschen",
+    "saving": "Wird gespeichert...",
+    "save": "Speichern"
+  },
+  "view": {
+    "backToLibrary": "Zurück zur Bibliothek",
+    "recipe": "Rezept",
+    "recipes": "Rezepte",
+    "searchPlaceholder": "Rezepte durchsuchen...",
+    "filter": "Filter",
+    "noResults": "Keine Ergebnisse gefunden",
+    "noResultsSubtitle": "Versuche es mit anderen Suchbegriffen",
+    "empty": "Keine Rezepte in dieser Sammlung",
+    "emptySubtitle": "Füge Rezepte zu dieser Sammlung hinzu, indem du sie im Rezept-Menü zur Sammlung hinzufügst.",
+    "generateRecipe": "Rezept generieren",
+    "notFound": "Sammlung nicht gefunden.",
+    "serverError": "Serverfehler. Bitte versuche es später erneut.",
+    "networkError": "Netzwerkfehler. Bitte überprüfe deine Verbindung.",
+    "loadFailed": "Sammlung konnte nicht geladen werden. Bitte versuche es erneut."
+  }
+}

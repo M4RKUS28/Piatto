@@ -3,6 +3,7 @@ import { X, Search, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getUserCollections, createCollection, updateCollectionRecipes } from '../api/collectionApi';
 import { getImageUrl } from '../utils/imageUtils';
 import LoadingSpinner from './LoadingSpinner';
+import { useTranslation } from 'react-i18next'
 
 /**
  * SaveRecipesCollectionModal component - Multi-step wizard for saving recipes to collections

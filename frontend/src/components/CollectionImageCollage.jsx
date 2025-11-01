@@ -1,4 +1,5 @@
 import { getImageUrl } from '../utils/imageUtils';
+import { useTranslation } from 'react-i18next'
 
 export default function CollectionImageCollage({ imageUrls = [] }) {
   // Ensure we have at most 4 images

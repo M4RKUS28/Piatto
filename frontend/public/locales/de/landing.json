@@ -1,0 +1,63 @@
+{
+  "hero": {
+    "badge": "KI-gestützter Kochassistent",
+    "title": "Dein persönlicher Koch, direkt in deiner Tasche",
+    "description": "Entdecke personalisierte Rezepte, erhalte Schritt-für-Schritt-Kochanleitungen und verwandle deine Küche mit KI-gestützter Kreativität in einen kulinarischen Spielplatz.",
+    "aiRecipeGenerator": "KI-Rezeptgenerator",
+    "aiRecipeGeneratorDesc": "Individuelle Rezepte nach deinem Geschmack",
+    "interactiveGuide": "Interaktiver Leitfaden",
+    "interactiveGuideDesc": "Schritt-für-Schritt-Anleitungen"
+  },
+  "mockup": {
+    "discover": "Entdecken",
+    "whatToCook": "Was möchtest du heute kochen?",
+    "startCooking": "Jetzt kochen →"
+  },
+  "exampleRecipes": {
+    "mediterraneanBowl": {
+      "name": "Mediterrane Sonnenuntergangs-Bowl",
+      "description": "Frischer Quinoa mit geröstetem Gemüse, Feta und Zitronen-Kräuter-Dressing"
+    },
+    "tuscanChicken": {
+      "name": "Cremiges Toskanisches Hähnchen",
+      "description": "Gebratenes Hähnchen in getrockneter Tomaten-Sahnesauce mit Spinat"
+    },
+    "smoothieBowl": {
+      "name": "Beeren-Glücks-Smoothie-Bowl",
+      "description": "Antioxidantienreiche Mischung mit Granola, frischen Beeren & Kokos"
+    }
+  },
+  "howItWorks": {
+    "title": "So funktioniert's",
+    "subtitle": "Von der Idee zum köstlichen Gericht in drei einfachen Schritten",
+    "step1": {
+      "title": "Teile deine Vorlieben",
+      "description": "Sag uns, worauf du Appetit hast, deine Ernährungseinschränkungen, verfügbare Zutaten oder Kochzeit. Unsere KI versteht deine Bedürfnisse."
+    },
+    "step2": {
+      "title": "Erhalte personalisierte Rezepte",
+      "description": "Erhalte maßgeschneiderte Rezepte, die auf deinen Geschmack, dein Können und deine Küchenausstattung abgestimmt sind. Speichere Favoriten in deiner persönlichen Sammlung."
+    },
+    "step3": {
+      "title": "Koche mit Selbstvertrauen",
+      "description": "Folge interaktiven Schritt-für-Schritt-Anleitungen mit Tipps, Timern und Sprachassistenz. Kreiere jedes Mal erstaunliche Gerichte."
+    }
+  },
+  "features": {
+    "title": "Kochen leicht gemacht & unterhaltsam",
+    "subtitle": "Von der Inspiration bis zum fertigen Gericht begleiten wir dich auf jedem Schritt",
+    "aiBrainstorming": {
+      "title": "KI-Rezept-Brainstorming",
+      "description": "Sag uns deine Vorlieben, Ernährungsbedürfnisse oder was in deinem Kühlschrank ist. Unsere KI erstellt personalisierte Rezepte nur für dich, angepasst an deinen Geschmack und dein Können."
+    },
+    "cookingGuide": {
+      "title": "Interaktiver Kochleitfaden",
+      "description": "Folge den Schritt-für-Schritt-Anleitungen, hilfreichen Tipps und Sprachassistenz. Koche mit Selbstvertrauen, egal wie viel Erfahrung du hast."
+    }
+  },
+  "cta": {
+    "title": "Bereit, deine Kochkunst zu transformieren?",
+    "subtitle": "Schließe dich Tausenden von Hobbyköchen an, die die Freude am personalisierten, angeleiteten Kochen entdecken",
+    "button": "Piatto kostenlos herunterladen"
+  }
+}

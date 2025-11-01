@@ -1,5 +1,6 @@
 import './RecipePreviewCard.css';
 import { getImageUrl } from '../utils/imageUtils';
+import { useTranslation } from 'react-i18next'
 
 /**
  * RecipePreviewCard component displays a preview of a recipe option

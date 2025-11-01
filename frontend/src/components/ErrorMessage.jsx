@@ -1,4 +1,6 @@
 export default function ErrorMessage({ message, onRetry }) {
+  const { t } = useTranslation('errors')
+
         return (
                 <div className="flex flex-col items-center justify-center p-6 sm:p-8 text-center">
                         <div className="mb-4 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#FF9B7B] bg-opacity-10 flex items-center justify-center">

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 import { deleteRecipe } from '../api/recipeApi';
+import { useTranslation } from 'react-i18next'
 
 /**
  * DeleteRecipeModal component shows a confirmation dialog before deleting a recipe

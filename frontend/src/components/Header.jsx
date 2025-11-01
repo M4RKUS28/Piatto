@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function Header({ showAuthButtons = true }) {
+  const { t } = useTranslation('common')
   const { isAuthenticated } = useAuth()
 
   return (
@@ -16,10 +18,10 @@ export default function Header({ showAuthButtons = true }) {
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
-            <Link to="/#features" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">Features</Link>
-            <Link to="/#how-it-works" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">How It Works</Link>
-            <Link to="/#recipes" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">Recipes</Link>
-            <Link to="/about" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">About</Link>
+            <Link to="/#features" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">{t('navigation.features')}</Link>
+            <Link to="/#how-it-works" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">{t('navigation.howItWorks')}</Link>
+            <Link to="/#recipes" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">{t('navigation.recipes')}</Link>
+            <Link to="/about" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">{t('navigation.about')}</Link>
           </div>
 
           {showAuthButtons && (
@@ -29,7 +31,7 @@ export default function Header({ showAuthButtons = true }) {
                   to="/app"
                   className="bg-[#035035] text-white px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all shadow-md hover:shadow-lg"
                 >
-                  Dashboard
+                  {t('navigation.dashboard')}
                 </Link>
               ) : (
                 <div className="flex items-center gap-3">
@@ -37,13 +39,13 @@ export default function Header({ showAuthButtons = true }) {
                     to="/login"
                     className="text-[#035035] hover:text-[#FF9B7B] transition-colors font-semibold"
                   >
-                    Sign In
+                    {t('navigation.signIn')}
                   </Link>
                   <Link
                     to="/register"
                     className="bg-[#035035] text-white px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all shadow-md hover:shadow-lg"
                   >
-                    Get Started Free
+                    {t('navigation.getStartedFree')}
                   </Link>
                 </div>
               )}

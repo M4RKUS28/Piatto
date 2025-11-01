@@ -1,5 +1,6 @@
 import { ChefHat, Sparkles, BookOpen, Clock } from 'lucide-react'
 import LandingLayout from '../Layout/LandingLayout.jsx'
+import { useTranslation } from 'react-i18next'
 
 
 

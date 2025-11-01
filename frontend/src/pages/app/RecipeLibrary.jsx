@@ -14,6 +14,7 @@ import DeleteCollectionModal from '../../components/DeleteCollectionModal';
 import DeleteRecipeModal from '../../components/DeleteRecipeModal';
 import CollectionImageCollage from '../../components/CollectionImageCollage';
 import { getImageUrl } from '../../utils/imageUtils';
+import { useTranslation } from 'react-i18next'
 
 // Helper function to get food category display (icon and label)
 const getFoodCategoryDisplay = (category) => {

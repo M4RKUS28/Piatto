@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { updateCollection } from '../api/collectionApi';
+import { useTranslation } from 'react-i18next'
 
 /**
  * EditCollectionNameModal component allows users to edit collection name and description

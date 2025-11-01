@@ -1,4 +1,6 @@
 export default function EmptyState({ title, message, actionLabel, onAction }) {
+  const { t } = useTranslation('errors')
+
         return (
                 <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center">
                         <div className="mb-5 sm:mb-6 w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#FFF8F0] flex items-center justify-center">

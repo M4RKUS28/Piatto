@@ -1,5 +1,6 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { AlertCircle, Home, ArrowLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next'
 
 export default function RegisterFailedPage() {
   const [searchParams] = useSearchParams();

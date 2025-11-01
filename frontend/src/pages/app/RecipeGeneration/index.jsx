@@ -14,6 +14,7 @@ import IngredientsStep from './IngredientsStep';
 import RecipeOptionsStep from './RecipeOptionsStep';
 import { ensureFadeInStyles } from './fadeInStyles';
 import { SESSION_STORAGE_KEY } from './constants';
+import { useTranslation } from 'react-i18next'
 
 export default function RecipeGeneration() {
         const navigate = useNavigate();

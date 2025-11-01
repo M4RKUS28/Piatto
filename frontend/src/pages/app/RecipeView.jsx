@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { PiX, PiCaretRight } from 'react-icons/pi';
 import Recipe from './Recipe';
 import CookingInstructions from "./Instructions";
+import { useTranslation } from 'react-i18next'
 
 // Main RecipeView component
 const RecipeView = () => {

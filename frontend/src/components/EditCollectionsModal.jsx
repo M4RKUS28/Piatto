@@ -4,6 +4,7 @@ import { getUserCollections, getCollectionsForRecipe, getCollectionById, updateC
 import { deleteRecipe } from '../api/recipeApi';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
+import { useTranslation } from 'react-i18next'
 
 /**
  * EditCollectionsModal component allows users to:

@@ -1,0 +1,53 @@
+{
+  "appName": "Piatto",
+  "navigation": {
+    "features": "Funktionen",
+    "howItWorks": "So funktioniert's",
+    "recipes": "Rezepte",
+    "about": "Über uns",
+    "dashboard": "Dashboard",
+    "signIn": "Anmelden",
+    "getStartedFree": "Kostenlos starten"
+  },
+  "footer": {
+    "tagline": "Dein KI-gestützter Kochbegleiter für köstliche Alltagsgerichte",
+    "product": "Produkt",
+    "company": "Unternehmen",
+    "connect": "Verbinden",
+    "aboutUs": "Über uns",
+    "contact": "Kontakt",
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "copyright": "© 2025 Piatto. Kochen wird zum Vergnügen, ein Rezept nach dem anderen."
+  },
+  "buttons": {
+    "startCooking": "Jetzt kochen",
+    "exploreRecipes": "Rezepte entdecken",
+    "generateRecipe": "Rezept generieren",
+    "findNewRecipes": "Neue Rezepte finden",
+    "profileSettings": "Profileinstellungen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "close": "Schließen",
+    "confirm": "Bestätigen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "finish": "Fertig"
+  },
+  "time": {
+    "min": "Min",
+    "minutes": "Minuten",
+    "hours": "Stunden"
+  },
+  "difficulty": {
+    "easy": "Einfach",
+    "medium": "Mittel",
+    "hard": "Schwierig"
+  },
+  "language": {
+    "label": "Sprache",
+    "english": "Englisch",
+    "german": "Deutsch"
+  }
+}

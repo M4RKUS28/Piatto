@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useRef } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next'
 
 const INGREDIENTS_PLACEHOLDER = 'Enter your ingredients, separated by commas...';
 

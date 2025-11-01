@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next'
 
 const PROMPT_PLACEHOLDER = 'e.g., Something healthy for dinner, Quick pasta dish, Comfort food...';
 
