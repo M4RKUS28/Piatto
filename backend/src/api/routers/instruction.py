@@ -66,10 +66,12 @@ async def get_instructions(
     Returns:
         List[InstructionSchema]: List of instruction steps
     """
-    instruction_steps = await instruction_crud.get_instructions_by_recipe_id(db, recipe_id)
+    instruction_steps = await instruction_crud.get_instructions_by_recipe_id(db, recipe_id, user_id=user_id)
 
     if not instruction_steps:
         raise HTTPException(status_code=404, detail="No instructions found for this recipe")
+    
+
 
     return [
         InstructionSchema(
@@ -100,7 +102,7 @@ async def delete_instructions(
     Returns:
         dict: Success message
     """
-    success = await instruction_crud.delete_instruction_steps(db, recipe_id)
+    success = await instruction_crud.delete_instruction_steps(db, recipe_id, user_id=user_id)
 
     if not success:
         raise HTTPException(status_code=404, detail="Recipe not found")

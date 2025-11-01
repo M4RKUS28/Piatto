@@ -2,7 +2,7 @@
 
 ## OAuth Login Failed Page
 
-**Route**: `/oauth/callback/login-failed`
+**Route**: `/auth/oauth/callback/login-failed`
 
 ### Purpose
 Dedicated error page for OAuth-specific authentication failures. This page is shown when Google OAuth login fails for various reasons.
@@ -27,7 +27,7 @@ Backend: /api/auth/google/callback
     ↓
 Error occurs?
     ↓
-Redirect to: /oauth/callback/login-failed?reason=<error_message>
+Redirect to: /auth/oauth/callback/login-failed?reason=<error_message>
 ```
 
 ### Common Error Reasons
@@ -40,14 +40,14 @@ Redirect to: /oauth/callback/login-failed?reason=<error_message>
 
 ### Example URLs
 ```
-/oauth/callback/login-failed?reason=Unexpected+error+occurred+during+OAuth+login
-/oauth/callback/login-failed?reason=session_verification_failed
-/oauth/callback/login-failed?reason=User+cancelled+the+OAuth+flow
+/auth/oauth/callback/login-failed?reason=Unexpected+error+occurred+during+OAuth+login
+/auth/oauth/callback/login-failed?reason=session_verification_failed
+/auth/oauth/callback/login-failed?reason=User+cancelled+the+OAuth+flow
 ```
 
 ### User Actions Available
 1. **Retry with Google**: Attempts OAuth login again
-2. **Back to Login**: Returns to `/login` page
+2. **Back to Login**: Returns to `/auth/login` page
 3. **Go Home**: Returns to landing page `/`
 4. **Sign in with Email**: Links to email/password login
 5. **Contact Support**: Links to `/contact` page

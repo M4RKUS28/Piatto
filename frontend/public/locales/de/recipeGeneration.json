@@ -1,0 +1,119 @@
+{
+  "prompt": {
+    "title": "Was möchtest du heute kochen?",
+    "subtitle": "Beschreibe, worauf du Lust hast, und wir helfen dir, das perfekte Rezept zu erstellen",
+    "label": "Was möchtest du kochen?",
+    "placeholder": "z.B. Etwas Gesundes zum Abendessen, Schnelles Nudelgericht, Wohlfühlessen...",
+    "validation": {
+      "empty": "Bitte sage uns, was du kochen möchtest",
+      "tooShort": "Bitte gib mindestens 3 Zeichen ein"
+    },
+    "next": "Weiter",
+    "loading": "Lädt..."
+  },
+  "ingredients": {
+    "title": "Welche Zutaten hast du?",
+    "subtitle": "Sag uns, was in deiner Küche ist. Du kannst auch ein Foto analysieren, um Zutaten zu extrahieren.",
+    "label": "Gib deine Zutaten ein",
+    "placeholder": "Gib deine Zutaten ein, getrennt durch Kommas...",
+    "analyzeImage": "Bild analysieren",
+    "analyzing": "Bild wird analysiert...",
+    "generating": "Wird generiert...",
+    "generateRecipes": "Rezepte generieren",
+    "back": "Zurück",
+    "validation": {
+      "tooShort": "Bitte gib mindestens 3 Zeichen ein",
+      "notLoggedIn": "Du musst angemeldet sein, um ein Bild zu analysieren",
+      "imageAnalysisFailed": "Bildanalyse fehlgeschlagen. Bitte versuche es erneut.",
+      "noIngredients": "Die Bildanalyse hat keine Zutaten zurückgegeben"
+    },
+    "noIngredientsDetected": "Keine Zutaten im Bild erkannt.",
+    "aria": {
+      "form": "Zutaten-Eingabeformular",
+      "ingredientsInput": "Liste der verfügbaren Zutaten",
+      "analyzeImage": "Bild analysieren, um Zutaten zu extrahieren",
+      "back": "Zurück zum Prompt-Schritt",
+      "submit": "Rezeptoptionen basierend auf deinen Zutaten generieren"
+    }
+  },
+  "options": {
+    "title": "Wähle Rezepte zum Generieren",
+    "generatingImage": "Bild wird generiert...",
+    "failedToLoad": "Laden fehlgeschlagen",
+    "generateNewRecipes": "Neue Rezepte generieren",
+    "generating": "Wird generiert...",
+    "generate": "Generieren",
+    "processing": "Wird verarbeitet...",
+    "showDetails": "Details anzeigen",
+    "details": {
+      "title": "Rezeptdetails",
+      "loading": "Rezeptdetails werden geladen...",
+      "loadingButton": "Lädt...",
+      "error": "Rezeptdetails konnten nicht geladen werden. Bitte versuche es erneut.",
+      "retry": "Erneut versuchen",
+      "close": "Schließen",
+      "ingredients": "Zutaten",
+      "noIngredients": "Keine Zutaten verfügbar.",
+      "importantNotes": "Wichtige Hinweise",
+      "cookingOverview": "Kochüberblick"
+    },
+    "aria": {
+      "recipeList": "Generierte Rezeptoptionen",
+      "regenerate": "Neue Rezeptoptionen mit denselben Zutaten generieren",
+      "generate": "Ausgewählte Rezepte generieren"
+    }
+  },
+  "collectionsModal": {
+    "title": "In Sammlung speichern",
+    "stepIndicator": "Schritt {{current}} von {{total}} · Sammlungsauswahl optional",
+    "searchPlaceholder": "Sammlungen durchsuchen...",
+    "optionalHint": "Du kannst Rezepte auch ohne Sammlung speichern.",
+    "createButton": "Neue Sammlung erstellen",
+    "createForm": {
+      "title": "Neue Sammlung",
+      "namePlaceholder": "Name",
+      "descriptionPlaceholder": "Beschreibung (optional)",
+      "cancel": "Abbrechen",
+      "create": "Erstellen",
+      "creating": "Erstellen..."
+    },
+    "empty": {
+      "noResults": "Keine Sammlungen gefunden",
+      "noCollections": "Noch keine Sammlungen vorhanden"
+    },
+    "buttons": {
+      "back": "Zurück",
+      "next": "Weiter",
+      "save": "Speichern",
+      "saving": "Speichern..."
+    },
+    "errors": {
+      "fetchCollections": "Fehler beim Laden der Sammlungen",
+      "createCollection": "Sammlung konnte nicht erstellt werden",
+      "save": "Speichern fehlgeschlagen. Bitte versuche es erneut."
+    }
+  },
+  "steps": {
+    "step1": "Schritt 1: Was möchtest du kochen?",
+    "step2": "Schritt 2: Welche Zutaten hast du?",
+    "step3": "Schritt 3: Wähle dein Rezept"
+  },
+  "collectionBanner": {
+    "prefix": "Generiere Rezept für:",
+    "generatingFor": "Generiere Rezept für:"
+  },
+  "errors": {
+    "generateFailed": "Rezepte konnten nicht generiert werden. Bitte versuche es erneut.",
+    "networkError": "Netzwerkfehler. Bitte überprüfe deine Verbindung.",
+    "serverError": "Serverfehler. Bitte versuche es später erneut.",
+    "notFound": "Ressource nicht gefunden. Bitte versuche es erneut.",
+    "tooManyRequests": "Zu viele Anfragen. Bitte warte einen Moment.",
+    "invalidRequest": "Ungültige Anfrage. Bitte überprüfe deine Eingaben.",
+    "loadOptionsFailed": "Rezeptoptionen konnten nicht geladen werden. Bitte versuche es erneut.",
+    "optionsNotFound": "Rezeptoptionen nicht gefunden. Bitte generiere erneut.",
+    "saveFailed": "Rezept konnte nicht gespeichert werden. Bitte versuche es erneut.",
+    "restoreFailed": "Deine vorherige Sitzung konnte nicht wiederhergestellt werden. Bitte generiere Rezepte erneut.",
+    "savedButCollectionFailed": "Rezept gespeichert, aber Hinzufügen zur Sammlung fehlgeschlagen.",
+    "addToCollectionFailed": "Rezept konnte nicht zur Sammlung hinzugefügt werden:"
+  }
+}

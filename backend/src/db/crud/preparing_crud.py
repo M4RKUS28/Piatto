@@ -69,9 +69,11 @@ async def create_or_update_preparing_session(
 
 
 async def delete_preparing_session(db: AsyncSession,
-                               preparing_session_id: int) -> bool:
+                               preparing_session_id: int,
+                               user_id: str) -> bool:
     """Delete a preparing session from the database."""
-    result = await db.execute(select(PreparingSession).filter(PreparingSession.id == preparing_session_id))
+    result = await db.execute(select(PreparingSession).filter(PreparingSession.id == preparing_session_id,
+                                                             PreparingSession.user_id == user_id))
     preparing_session = result.scalar_one_or_none()
     if not preparing_session:
         return False

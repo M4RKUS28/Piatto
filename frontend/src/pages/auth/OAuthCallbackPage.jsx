@@ -24,7 +24,7 @@ export default function OAuthCallbackPage() {
         console.error(`OAuthCallbackPage: OAuth provider error: ${errorMessage}`);
         setStatus('error');
         setTimeout(() => {
-          navigate(`/oauth/callback/login-failed?reason=${encodeURIComponent(errorMessage)}`);
+          navigate(`/auth/oauth/callback/login-failed?reason=${encodeURIComponent(errorMessage)}`);
         }, 2000);
         return;
       }
@@ -44,7 +44,7 @@ export default function OAuthCallbackPage() {
           console.error('OAuthCallbackPage: No user returned (cookie auth). Possible session issue.');
           setStatus('error');
           setTimeout(() => {
-            navigate('/oauth/callback/login-failed?reason=session_verification_failed');
+            navigate('/auth/oauth/callback/login-failed?reason=session_verification_failed');
           }, 2000);
         }
       } catch (error) {
@@ -57,7 +57,7 @@ export default function OAuthCallbackPage() {
         
         setStatus('error');
         setTimeout(() => {
-          navigate(`/oauth/callback/login-failed?reason=${encodeURIComponent(detailMessage)}`);
+          navigate(`/auth/oauth/callback/login-failed?reason=${encodeURIComponent(detailMessage)}`);
         }, 2000);
       }
     };

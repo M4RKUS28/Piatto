@@ -69,7 +69,7 @@ async def get_recipes_by_preparing_session_id(db: AsyncSession, preparing_sessio
     recipe_lookup = {recipe.id: recipe for recipe in recipes}
     return [recipe_lookup[recipe_id] for recipe_id in active_recipe_ids if recipe_id in recipe_lookup]
 
-async def get_recipe_previews_by_preparing_session_id(db: AsyncSession, preparing_session_id: int) -> Optional[List[Recipe]]:
+async def get_recipe_previews_by_preparing_session_id(db: AsyncSession, preparing_session_id: int, user_id: str) -> Optional[List[Recipe]]:
     """Retrieve the active recipes for a preparing session (lightweight - no ingredients/instructions)."""
     # Get the preparing session with current_recipes relationship eagerly loaded (no extra relations)
     result = await db.execute(
@@ -77,7 +77,8 @@ async def get_recipe_previews_by_preparing_session_id(db: AsyncSession, preparin
         .options(
             selectinload(PreparingSession.current_recipes)
         )
-        .where(PreparingSession.id == preparing_session_id)
+        .where(PreparingSession.id == preparing_session_id,
+               PreparingSession.user_id == user_id)
     )
 
     preparing_session = result.scalars().first()
@@ -114,7 +115,7 @@ async def get_all_recipes_by_user_id(db: AsyncSession, user_id: str) -> List[Rec
             selectinload(Recipe.ingredients),
             selectinload(Recipe.instruction_steps)
         )
-        .filter(Recipe.user_id == user_id)
+        .filter(Recipe.user_id == user_id, Recipe.is_permanent == True)
         .order_by(Recipe.created_at.desc())
     )
     return result.scalars().all()
@@ -130,7 +131,9 @@ async def create_recipe(db: AsyncSession,
                 is_permanent: bool = False,
                 total_time_minutes: Optional[int] = None,
                 difficulty: Optional[str] = None,
-                food_category: Optional[str] = None) -> Recipe:
+                food_category: Optional[str] = None,
+                important_notes: Optional[str] = None,
+                cooking_overview: Optional[str] = None) -> Recipe:
     """Create a new recipe in the database."""
     recipe = Recipe(
         user_id=user_id,
@@ -138,6 +141,8 @@ async def create_recipe(db: AsyncSession,
         description=description,
         prompt=prompt,
         instructions=instructions,
+    important_notes=important_notes or "No special notes provided.",
+    cooking_overview=cooking_overview or "Follow the instructions sequentially to complete the recipe.",
         image_url=image_url,
         is_permanent=is_permanent,
         total_time_minutes=total_time_minutes,
@@ -171,7 +176,10 @@ async def update_recipe(db: AsyncSession,
                 is_permanent: Optional[bool] = None,
                 total_time_minutes: Optional[int] = None,
                 difficulty: Optional[str] = None,
-                food_category: Optional[str] = None) -> Optional[Recipe]:
+                food_category: Optional[str] = None,
+                important_notes: Optional[str] = None,
+                cooking_overview: Optional[str] = None,
+                user_id: Optional[str] = None) -> Optional[Recipe]:
     """Update an existing recipe in the database."""
     result = await db.execute(
         select(Recipe)
@@ -183,6 +191,8 @@ async def update_recipe(db: AsyncSession,
     )
     recipe = result.scalar_one_or_none()
     if not recipe:
+        return None
+    if user_id is not None and recipe.user_id != user_id:
         return None
     if title is not None:
         recipe.title = title
@@ -204,17 +214,23 @@ async def update_recipe(db: AsyncSession,
         recipe.difficulty = difficulty
     if food_category is not None:
         recipe.food_category = food_category
+    if important_notes is not None:
+        recipe.important_notes = important_notes
+    if cooking_overview is not None:
+        recipe.cooking_overview = cooking_overview
 
     db.add(recipe)
     await db.commit()
     await db.refresh(recipe, attribute_names=["ingredients", "instruction_steps"])
     return recipe
 
-async def delete_recipe(db: AsyncSession, recipe_id: int) -> bool:
+async def delete_recipe(db: AsyncSession, recipe_id: int, user_id: str) -> bool:
     """Delete a recipe from the database."""
     result = await db.execute(select(Recipe).filter(Recipe.id == recipe_id))
     recipe = result.scalar_one_or_none()
     if not recipe:
+        return False
+    if recipe.user_id != user_id:
         return False
     await db.delete(recipe)
     await db.commit()

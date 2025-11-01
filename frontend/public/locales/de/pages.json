@@ -227,5 +227,82 @@
       "days": "Tage"
     },
     "loading": "Wird geladen..."
+  },
+  "recipeView": {
+    "recipeLabel": "REZEPT"
+  },
+  "recipe": {
+    "totalTime": "Gesamtzeit",
+    "difficultyLabel": "Schwierigkeit",
+    "editCollection": "Sammlung bearbeiten",
+    "deleteRecipe": "Rezept löschen",
+    "deleteConfirm": "Möchtest du dieses Rezept wirklich löschen?",
+    "deleteFailed": "Fehler beim Löschen des Rezepts",
+    "forServings": "Für {{count}} Portion",
+    "forServings_plural": "Für {{count}} Portionen",
+    "tabs": {
+      "ingredients": "Zutaten",
+      "nutrition": "Nährwerte"
+    },
+    "nutrition": {
+      "title": "Nährwertangaben",
+      "servingsPerRecipe": "{{count}} Portionen pro Rezept",
+      "servingSize": "Die Portionsgröße wird aus dem Rezept berechnet",
+      "amountPerServing": "Menge pro Portion",
+      "dailyValue": "% Tageswert*",
+      "totalFat": "Gesamtfett",
+      "saturatedFat": "Gesättigte Fettsäuren",
+      "trans": "Trans",
+      "fat": "Fett",
+      "cholesterol": "Cholesterin",
+      "sodium": "Natrium",
+      "totalCarbohydrate": "Gesamtkohlenhydrate",
+      "dietaryFiber": "Ballaststoffe",
+      "totalSugars": "Gesamtzucker",
+      "protein": "Protein",
+      "vitaminD": "Vitamin D",
+      "calcium": "Kalzium",
+      "iron": "Eisen",
+      "potassium": "Kalium",
+      "disclaimer": "* Der % Tageswert (DV) gibt an, wie viel ein Nährstoff in einer Portion Nahrung zu einer täglichen Ernährung beiträgt. 2.000 Kalorien pro Tag werden für allgemeine Ernährungsempfehlungen verwendet."
+    },
+    "errors": {
+      "noId": "Keine Rezept-ID angegeben",
+      "notFound": "Rezept nicht gefunden. Es wurde möglicherweise gelöscht.",
+      "serverError": "Serverfehler. Bitte versuche es später erneut.",
+      "networkError": "Netzwerkfehler. Bitte überprüfe deine Verbindung.",
+      "loadFailed": "Fehler beim Laden des Rezepts. Bitte versuche es erneut.",
+      "dataNotAvailable": "Rezeptdaten nicht verfügbar"
+    }
+  },
+  "instructions": {
+    "title": "Kochanleitungen",
+    "subtitle": "Folge den Schritten entlang des Pfads, um dein Rezept zu vervollständigen.",
+    "generating": "Anleitungen werden erstellt...",
+    "generatingDescription": "Unser KI-Koch bereitet detaillierte Kochanleitungen für dein Rezept vor. Dies dauert normalerweise nur wenige Augenblicke.",
+    "errorTitle": "Hoppla! Etwas ist schief gelaufen",
+    "errorLoading": "Fehler beim Laden der Anleitungen. Bitte versuche es erneut."
+  },
+  "editCollectionsModal": {
+    "title": "Sammlung bearbeiten",
+    "searchPlaceholder": "Sammlungen durchsuchen...",
+    "createNew": "Neue Sammlung erstellen",
+    "newCollection": "Neue Sammlung",
+    "namePlaceholder": "Name",
+    "descriptionPlaceholder": "Beschreibung (optional)",
+    "cancel": "Abbrechen",
+    "create": "Erstellen",
+    "creating": "Erstellen...",
+    "noCollectionsFound": "Keine Sammlungen gefunden",
+    "noCollections": "Noch keine Sammlungen",
+    "save": "Speichern",
+    "saving": "Speichern...",
+    "delete": "Löschen",
+    "deleting": "Löschen...",
+    "deleteConfirm": "Möchtest du dieses Rezept wirklich löschen?",
+    "errorLoading": "Fehler beim Laden der Sammlungen",
+    "errorSaving": "Speichern fehlgeschlagen. Bitte versuche es erneut.",
+    "errorDeleting": "Löschen fehlgeschlagen. Bitte versuche es erneut.",
+    "errorCreating": "Sammlung konnte nicht erstellt werden"
   }
 }

@@ -44,9 +44,9 @@
     "micPermissionDenied": "Microphone permission denied. Please allow microphone access and try again.",
     "noMicrophone": "No microphone found. Please connect a microphone and try again.",
     "onnxLoadFailed": "Failed to load ONNX Runtime. This might be due to: (1) No internet connection to load WASM files from CDN, or (2) Browser restrictions. Try refreshing the page or check your internet connection.",
-    "modelNotFound": "Wake word model not found! You need to train your custom \"Hey Piatto\" model first...",
-    "modelLoadFailed": "Failed to load wake word model. Make sure wakeword_model.onnx is in the public folder...",
-    "wasmFailed": "WebAssembly loading failed. Please refresh the page...",
-    "startFailed": "Failed to start: {message}..."
+    "modelNotFound": "Wake word model not found! You need to train your custom \"Hey Piatto\" model first. See the setup instructions below or check QUICK_START.md for training steps.",
+    "modelLoadFailed": "Failed to load wake word model. Make sure wakeword_model.onnx is in the public folder. See CUSTOM_WAKE_WORD_TRAINING.md for setup.",
+    "wasmFailed": "WebAssembly loading failed. Please refresh the page. If this persists, check your internet connection (WASM files load from CDN).",
+    "startFailed": "Failed to start: {{message}}. Check browser console for details."
   }
 }

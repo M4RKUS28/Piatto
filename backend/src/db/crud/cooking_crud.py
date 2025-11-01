@@ -11,7 +11,7 @@ async def get_cooking_session_by_id(db: AsyncSession, cooking_session_id: int) -
     result = await db.execute(select(CookingSession).filter(CookingSession.id == cooking_session_id))
     return result.scalar_one_or_none()
 
-async def get_prompt_history_by_cooking_session_id(db: AsyncSession, cooking_session_id: int) -> Optional[PromptHistory]:
+async def get_prompt_history_by_cooking_session_id(db: AsyncSession, cooking_session_id: int, user_id: str) -> Optional[PromptHistory]:
     """Retrieve the prompt history by cooking session ID."""
 
     # Step 1: Get the cooking session to know its current state
@@ -19,6 +19,8 @@ async def get_prompt_history_by_cooking_session_id(db: AsyncSession, cooking_ses
     cooking_session = result.scalars().first()
 
     if not cooking_session:
+        return None
+    if cooking_session.user_id != user_id:
         return None
 
     # Step 2: Get the matching prompt history (same session and same state)
@@ -75,11 +77,14 @@ async def create_cooking_session(db: AsyncSession,
 
 async def update_cooking_session_state(db: AsyncSession,
                                cooking_session_id: int,
-                               new_state: int) -> Optional[CookingSession]:
+                               new_state: int,
+                               current_user_id: str) -> Optional[CookingSession]:
     """Update the state of an existing cooking session in the database."""
     result = await db.execute(select(CookingSession).filter(CookingSession.id == cooking_session_id))
     cooking_session = result.scalar_one_or_none()
     if not cooking_session:
+        return None
+    if cooking_session.user_id != current_user_id:
         return None
     cooking_session.state = new_state
     db.add(cooking_session)
@@ -88,11 +93,14 @@ async def update_cooking_session_state(db: AsyncSession,
     return cooking_session
 
 async def delete_cooking_session(db: AsyncSession,
-                               cooking_session_id: int) -> bool:
+                               cooking_session_id: int,
+                               current_user_id: str) -> bool:
     """Delete a cooking session from the database."""
     result = await db.execute(select(CookingSession).filter(CookingSession.id == cooking_session_id))
     cooking_session = result.scalar_one_or_none()
     if not cooking_session:
+        return False
+    if cooking_session.user_id != current_user_id:
         return False
     await db.delete(cooking_session)
     await db.commit()

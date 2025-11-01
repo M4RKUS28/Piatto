@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Clock, Users, FolderOpen, Plus } from 'lucide-react';
+import { Clock, FolderOpen, Plus } from 'lucide-react';
 import { PiLeaf, PiEgg, PiCow } from 'react-icons/pi';
 import { getUserRecipes } from '../../api/recipeApi';
 import { getUserCollections, createCollection } from '../../api/collectionApi';
@@ -54,7 +54,7 @@ const formatDifficulty = (difficulty, t) => {
   if (lowerDifficulty === 'medium') return t('difficulty.medium', { ns: 'common', defaultValue: 'Medium' });
   if (lowerDifficulty === 'hard') return t('difficulty.hard', { ns: 'common', defaultValue: 'Hard' });
 
-  return difficulty.charAt(0).toUpperpper() + difficulty.slice(1);
+  return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 };
 
 // Helper function to get difficulty color classes
@@ -101,8 +101,9 @@ export default function RecipeLibrary() {
   const [selectedCollection, setSelectedCollection] = useState(null);
   const [showDeleteRecipeModal, setShowDeleteRecipeModal] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const queryString = searchParams.toString();
 
-  const fetchRecipes = async () => {
+  const fetchRecipes = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -148,7 +149,7 @@ export default function RecipeLibrary() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchParams]);
 
   const handleCreateCollection = async () => {
     if (!newCollectionName.trim()) return;
@@ -211,20 +212,20 @@ export default function RecipeLibrary() {
 
   useEffect(() => {
     fetchRecipes();
-  }, []);
+  }, [fetchRecipes]);
 
   return (
     <div className="p-4 sm:p-6 md:p-8">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto space-y-8 sm:space-y-10">
         {/* Header */}
-        <div className="mb-6 md:mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-[#035035] mb-2">{t("library.title")}</h1>
-            <p className="text-sm sm:text-base text-[#2D2D2D] opacity-60">{t("library.subtitle")}</p>
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#035035]">{t("library.title")}</h1>
+            <p className="text-sm sm:text-base text-[#2D2D2D] opacity-70">{t("library.subtitle")}</p>
           </div>
           <Link
             to="/app"
-            className="px-6 py-3 rounded-full border-2 border-[#035035] text-[#035035] font-semibold hover:bg-[#035035] hover:text-white transition-all text-center min-h-[44px] flex items-center justify-center"
+            className="px-6 py-3 rounded-full border-2 border-[#035035] text-[#035035] font-semibold hover:bg-[#035035] hover:text-white transition-all text-center min-h-[44px] flex items-center justify-center w-full md:w-auto"
           >
             {t("library.backToDashboard")}
           </Link>
@@ -247,15 +248,23 @@ export default function RecipeLibrary() {
           <>
             {/* Latest Recipes Section - Horizontal scroll with 6 recipes */}
             {latestRecipes.length > 0 && (
-              <div className="mb-8 md:mb-10">
-                <h2 className="text-2xl sm:text-3xl font-bold text-[#035035] mb-4">{t("library.latestRecipes", "Latest Recipes")}</h2>
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-[#035035]">{t("library.latestRecipes", "Latest Recipes")}</h2>
+                  <Link
+                    to={queryString ? `/app/recipes/all?${queryString}` : '/app/recipes/all'}
+                    className="text-sx font-semibold text-[#FF9B7B] hover:text-[#035035] transition-colors"
+                  >
+                    {t("library.viewAllRecipes", "View all recipes")}
+                  </Link>
+                </div>
                 <div className="overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
-                  <div className="flex gap-4 min-w-min">
+                  <div className="flex gap-3 sm:gap-4 min-w-min">
                     {latestRecipes.map((recipe) => {
                       const isNew = newRecipeIds.has(recipe.id);
 
                       return (
-                        <div key={recipe.id} className="flex-shrink-0 w-[180px] sm:w-[200px]">
+                        <div key={recipe.id} className="flex-shrink-0 w-[220px] sm:w-[200px]">
                           <Link
                             to={`/app/recipe/${recipe.id}`}
                             className={`block bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-300 ${
@@ -330,12 +339,12 @@ export default function RecipeLibrary() {
             )}
 
             {/* Collections Section */}
-            <div className="mb-8 md:mb-10">
-              <div className="flex items-center justify-between mb-4">
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <h2 className="text-2xl sm:text-3xl font-bold text-[#035035]">{t("library.collections", "Collections")}</h2>
                 <button
                   onClick={() => setShowCreateModal(true)}
-                  className="bg-[#FF9B7B] text-white px-4 py-2 rounded-full font-semibold hover:scale-105 transition-all flex items-center gap-2 min-h-[44px]"
+                  className="bg-[#FF9B7B] text-white px-5 py-3 rounded-full font-semibold hover:scale-105 transition-all flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto"
                 >
                   <Plus className="w-5 h-5" />
                   <span>{t("library.newCollection", "New Collection")}</span>
@@ -343,27 +352,27 @@ export default function RecipeLibrary() {
               </div>
 
               {collections.length === 0 ? (
-                <div className="bg-white rounded-2xl border-2 border-dashed border-[#F5F5F5] p-8 text-center">
+                <div className="bg-white rounded-2xl border-2 border-dashed border-[#F5F5F5] p-6 sm:p-8 text-center">
                   <FolderOpen className="w-16 h-16 mx-auto mb-4 text-[#2D2D2D] opacity-20" />
-                  <h3 className="text-xl font-bold text-[#2D2D2D] mb-2">{t("library.noCollections", "No collections yet")}</h3>
-                  <p className="text-[#2D2D2D] opacity-60 mb-4">{t("library.noCollectionsDescription", "Create your first collection to organize recipes")}</p>
+                  <h3 className="text-lg sm:text-xl font-bold text-[#2D2D2D] mb-2">{t("library.noCollections", "No collections yet")}</h3>
+                  <p className="text-sm sm:text-base text-[#2D2D2D] opacity-60 mb-4">{t("library.noCollectionsDescription", "Create your first collection to organize recipes")}</p>
                   <button
                     onClick={() => setShowCreateModal(true)}
-                    className="bg-[#035035] text-white px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all min-h-[44px]"
+                    className="bg-[#035035] text-white px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all min-h-[44px] w-full sm:w-auto"
                   >
                     {t("library.createNewCollection", "Create New Collection")}
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
                   {collections.map((collection) => (
                     <div key={collection.id} className="relative">
                       <Link
                         to={`/app/collection/${collection.id}`}
-                        className="block bg-white rounded-xl border-2 border-[#035035]/30 overflow-hidden hover:shadow-lg hover:border-[#035035] hover:-translate-y-1 transition-all cursor-pointer"
+                        className="block bg-white rounded-2xl border-2 border-[#035035]/30 overflow-hidden hover:shadow-lg hover:border-[#035035] hover:-translate-y-1 transition-all cursor-pointer"
                       >
                         {/* Image Collage */}
-                        <div className="bg-[#FFF8F0] h-36 sm:h-44 flex items-center justify-center overflow-hidden relative">
+                        <div className="bg-[#FFF8F0] h-40 sm:h-44 flex items-center justify-center overflow-hidden relative">
                           <CollectionImageCollage imageUrls={collection.preview_image_urls || []} />
 
                           {/* Menu Button - top right inside image */}
@@ -377,15 +386,15 @@ export default function RecipeLibrary() {
                         </div>
 
                         {/* Content */}
-                        <div className="p-3">
+                        <div className="p-4">
                           <div className="flex items-center gap-1 mb-2 flex-wrap">
                             <span className="text-[10px] font-semibold text-[#035035] bg-[#035035]/10 px-2 py-0.5 rounded-full whitespace-nowrap">
                               <FolderOpen className="w-3 h-3 inline mr-0.5 -mt-0.5" />
                               {t("library.collectionLabel", "Collection")}
                             </span>
                           </div>
-                          <h3 className="text-sm font-bold text-[#2D2D2D] mb-2 line-clamp-2">{collection.name}</h3>
-                          <div className="flex items-center gap-2 text-xs text-[#2D2D2D] opacity-60 flex-wrap">
+                          <h3 className="text-base font-bold text-[#2D2D2D] mb-2 line-clamp-2">{collection.name}</h3>
+                          <div className="flex items-center gap-2 text-xs sm:text-sm text-[#2D2D2D] opacity-60 flex-wrap">
                             <span className="whitespace-nowrap">
                               {collection.recipe_count} {collection.recipe_count === 1 ? t("library.recipe", "Recipe") : t("library.recipes", "Recipes")}
                             </span>

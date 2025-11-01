@@ -5,12 +5,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..models.db_recipe import InstructionStep
 
 
-async def get_instructions_by_recipe_id(db: AsyncSession, recipe_id: int) -> List[InstructionStep]:
-    """Retrieve all instruction steps for a recipe, ordered by step_number."""
+async def get_instructions_by_recipe_id(db: AsyncSession, recipe_id: int, user_id: str) -> List[InstructionStep]:
+    """Retrieve all instruction steps join with recipe by recipe ID and check user ownership."""
     result = await db.execute(
-        select(InstructionStep)
-        .filter(InstructionStep.recipe_id == recipe_id)
-        .order_by(InstructionStep.step_number)
+        select(InstructionStep).filter(
+            InstructionStep.recipe_id == recipe_id,
+            InstructionStep.recipe.has(user_id=user_id)
+        ).order_by(InstructionStep.step_number)
     )
     return result.scalars().all()
 
@@ -78,10 +79,13 @@ async def update_instruction_steps(
     return await create_instruction_steps(db, recipe_id, steps)
 
 
-async def delete_instruction_steps(db: AsyncSession, recipe_id: int) -> bool:
+async def delete_instruction_steps(db: AsyncSession, recipe_id: int, user_id: str) -> bool:
     """Delete all instruction steps for a recipe."""
     await db.execute(
-        delete(InstructionStep).where(InstructionStep.recipe_id == recipe_id)
+        delete(InstructionStep).where(
+            InstructionStep.recipe_id == recipe_id,
+            InstructionStep.recipe.user_id == user_id
+        )
     )
     await db.commit()
     return True

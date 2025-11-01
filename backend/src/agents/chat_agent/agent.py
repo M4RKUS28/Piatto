@@ -15,13 +15,19 @@ class ChatAgent:
     async def run(self, user_id: str, state: dict, content: types.Content):
         async with self.client.aio.live.connect(model=self.model, config=self.config) as session:
             await session.send_client_content(
-                turns={"role": "user", "parts": [
-                    {"role": "system", "text": self.system_prompt},
-                    {"text": content.parts[0].text}
-                ]}, turn_complete=True
+                turns=[
+                    types.Content(
+                        role="user",
+                        parts=[
+                            types.Part(text=self.system_prompt),
+                            *content.parts
+                        ]
+                    )
+                ],
+                turn_complete=True
             )
 
-        async for response in session.receive():
-            if response.text is not None:
-                # HIER KANNST DU DEN TEXT ZURÜCK STREAMEN e.g.
-                yield response.text
+            async for response in session.receive():
+                if response.text is not None:
+                    # HIER KANNST DU DEN TEXT ZURÜCK STREAMEN e.g.
+                    yield response.text

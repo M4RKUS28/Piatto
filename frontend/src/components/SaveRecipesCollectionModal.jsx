@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, Search, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getUserCollections, createCollection, updateCollectionRecipes } from '../api/collectionApi';
 import { getImageUrl } from '../utils/imageUtils';
 import LoadingSpinner from './LoadingSpinner';
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next';
 
 /**
  * SaveRecipesCollectionModal component - Multi-step wizard for saving recipes to collections
@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next'
  * @param {Function} props.onSave - Callback when recipes are saved: onSave(recipeIds, recipeCollectionMap)
  */
 export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, onSave }) {
+  const { t } = useTranslation('recipeGeneration');
   const [collections, setCollections] = useState([]);
   const [currentStep, setCurrentStep] = useState(0); // Current recipe index
 
@@ -34,9 +35,24 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
   const [newCollectionDescription, setNewCollectionDescription] = useState('');
   const [creatingCollection, setCreatingCollection] = useState(false);
 
+  const fetchCollections = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const allCollections = await getUserCollections();
+      setCollections(allCollections);
+    } catch (err) {
+  console.error('Failed to fetch collections:', err);
+  setError(t('collectionsModal.errors.fetchCollections', 'Failed to load collections'));
+    } finally {
+      setLoading(false);
+    }
+  }, [t]);
+
   useEffect(() => {
     if (isOpen) {
-      fetchCollections();
+      void fetchCollections();
       // Initialize with empty selections only if not already set
       setRecipeSelections(prevSelections => {
         const initialSelections = new Map();
@@ -51,22 +67,7 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
       setSearchQuery('');
       setError(null);
     }
-  }, [isOpen, recipes]);
-
-  const fetchCollections = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const allCollections = await getUserCollections();
-      setCollections(allCollections);
-    } catch (err) {
-      console.error('Failed to fetch collections:', err);
-      setError('Fehler beim Laden der Sammlungen');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [fetchCollections, isOpen, recipes]);
 
   const handleToggleCollection = (collectionId) => {
     const currentRecipe = recipes[currentStep];
@@ -111,8 +112,8 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
       setNewCollectionName('');
       setNewCollectionDescription('');
     } catch (err) {
-      console.error('Failed to create collection:', err);
-      setError('Sammlung konnte nicht erstellt werden');
+  console.error('Failed to create collection:', err);
+  setError(t('collectionsModal.errors.createCollection', 'Collection could not be created'));
     } finally {
       setCreatingCollection(false);
     }
@@ -120,13 +121,7 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
 
   const handleNext = () => {
     const currentRecipe = recipes[currentStep];
-    const currentSelections = recipeSelections.get(currentRecipe.id);
-
-    // Validate current step
-    if (!currentSelections || currentSelections.size === 0) {
-      setError('Bitte wähle mindestens eine Sammlung aus');
-      return;
-    }
+    const currentSelections = recipeSelections.get(currentRecipe.id) || new Set();
 
     setError(null);
 
@@ -137,7 +132,7 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
       const nextRecipeId = recipes[currentStep + 1].id;
 
       // Only inherit selections if the next recipe hasn't been visited yet
-      if (!visitedRecipes.has(nextRecipeId)) {
+      if (!visitedRecipes.has(nextRecipeId) && currentSelections.size > 0) {
         setRecipeSelections(prevSelections => {
           const nextSelections = prevSelections.get(nextRecipeId);
 
@@ -168,33 +163,17 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
   };
 
   const handleSave = async () => {
-    const currentRecipe = recipes[currentStep];
-    const currentSelections = recipeSelections.get(currentRecipe.id);
-
-    // Validate current (last) step
-    if (!currentSelections || currentSelections.size === 0) {
-      setError('Bitte wähle mindestens eine Sammlung aus');
-      return;
-    }
-
     setSaving(true);
     setError(null);
 
     try {
-      // Validate all recipes have at least one collection
-      for (const [recipeId, collectionIds] of recipeSelections.entries()) {
-        if (collectionIds.size === 0) {
-          const recipe = recipes.find(r => r.id === recipeId);
-          setError(`Bitte wähle mindestens eine Sammlung für "${recipe.title}" aus`);
-          setSaving(false);
-          return;
-        }
-      }
-
       // Build a map of collectionId -> Set of recipeIds
       const collectionToRecipes = new Map();
 
       for (const [recipeId, collectionIds] of recipeSelections.entries()) {
+        if (!collectionIds || collectionIds.size === 0) {
+          continue;
+        }
         for (const collectionId of collectionIds) {
           if (!collectionToRecipes.has(collectionId)) {
             // Initialize with existing recipes from the collection
@@ -219,8 +198,8 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
 
       onClose();
     } catch (err) {
-      console.error('Failed to save recipes to collections:', err);
-      setError('Speichern fehlgeschlagen. Bitte versuche es erneut.');
+  console.error('Failed to save recipes to collections:', err);
+  setError(t('collectionsModal.errors.save', 'Failed to save. Please try again.'));
     } finally {
       setSaving(false);
     }
@@ -247,9 +226,14 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
         <div className="p-6 border-b border-[#F5F5F5]">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-2xl font-bold text-[#035035]">In Sammlung speichern</h2>
+              <h2 className="text-2xl font-bold text-[#035035]">
+                {t('collectionsModal.title', 'Save to collection')}
+              </h2>
               <p className="text-sm text-[#2D2D2D] opacity-60 mt-1">
-                Schritt {currentStep + 1} von {recipes.length}
+                {t('collectionsModal.stepIndicator', 'Step {{current}} of {{total}} · Collection selection optional', {
+                  current: currentStep + 1,
+                  total: recipes.length,
+                })}
               </p>
             </div>
             <button
@@ -300,13 +284,17 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#2D2D2D] opacity-40" />
                 <input
                   type="text"
-                  placeholder="Sammlungen durchsuchen..."
+                  placeholder={t('collectionsModal.searchPlaceholder', 'Search collections...')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 rounded-full border-2 border-[#F5F5F5] focus:border-[#035035] focus:outline-none transition-all"
                   disabled={saving}
                 />
               </div>
+
+              <p className="text-xs text-[#2D2D2D] opacity-60 mb-4">
+                {t('collectionsModal.optionalHint', 'You can also save recipes without selecting a collection.')}
+              </p>
 
               {/* Create Collection Button */}
               {!showCreateForm ? (
@@ -316,21 +304,23 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
                   className="w-full mb-4 py-3 rounded-full border-2 border-dashed border-[#035035] text-[#035035] font-semibold hover:bg-[#035035]/5 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   <Plus className="w-5 h-5" />
-                  <span>Neue Sammlung erstellen</span>
+                  <span>{t('collectionsModal.createButton', 'Create new collection')}</span>
                 </button>
               ) : (
                 <div className="mb-4 p-4 bg-[#F5F5F5] rounded-2xl">
-                  <h3 className="font-semibold text-[#035035] mb-3">Neue Sammlung</h3>
+                  <h3 className="font-semibold text-[#035035] mb-3">
+                    {t('collectionsModal.createForm.title', 'New collection')}
+                  </h3>
                   <input
                     type="text"
-                    placeholder="Name"
+                    placeholder={t('collectionsModal.createForm.namePlaceholder', 'Name')}
                     value={newCollectionName}
                     onChange={(e) => setNewCollectionName(e.target.value)}
                     className="w-full px-4 py-2 rounded-full border-2 border-white focus:border-[#035035] focus:outline-none transition-all mb-2"
                     disabled={saving}
                   />
                   <textarea
-                    placeholder="Beschreibung (optional)"
+                    placeholder={t('collectionsModal.createForm.descriptionPlaceholder', 'Description (optional)')}
                     value={newCollectionDescription}
                     onChange={(e) => setNewCollectionDescription(e.target.value)}
                     rows={2}
@@ -347,14 +337,16 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
                       className="flex-1 py-2 rounded-full border-2 border-[#2D2D2D]/20 text-[#2D2D2D] font-semibold hover:bg-white transition-all"
                       disabled={creatingCollection || saving}
                     >
-                      Abbrechen
+                      {t('collectionsModal.createForm.cancel', 'Cancel')}
                     </button>
                     <button
                       onClick={handleCreateCollection}
                       className="flex-1 py-2 rounded-full bg-[#035035] text-white font-semibold hover:scale-105 transition-all disabled:opacity-50"
                       disabled={!newCollectionName.trim() || creatingCollection || saving}
                     >
-                      {creatingCollection ? 'Erstellen...' : 'Erstellen'}
+                      {creatingCollection
+                        ? t('collectionsModal.createForm.creating', 'Creating...')
+                        : t('collectionsModal.createForm.create', 'Create')}
                     </button>
                   </div>
                 </div>
@@ -364,7 +356,9 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
               <div className="space-y-2">
                 {filteredCollections.length === 0 ? (
                   <p className="text-center py-8 text-[#2D2D2D] opacity-60">
-                    {searchQuery ? 'Keine Sammlungen gefunden' : 'Noch keine Sammlungen vorhanden'}
+                    {searchQuery
+                      ? t('collectionsModal.empty.noResults', 'No collections found')
+                      : t('collectionsModal.empty.noCollections', 'No collections yet')}
                   </p>
                 ) : (
                   filteredCollections.map((collection) => {
@@ -416,7 +410,7 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
                 className="px-6 py-3 rounded-full border-2 border-[#035035] text-[#035035] font-semibold hover:bg-[#035035]/5 transition-all disabled:opacity-50 flex items-center gap-2"
               >
                 <ChevronLeft className="w-5 h-5" />
-                <span>Zurück</span>
+                <span>{t('collectionsModal.buttons.back', 'Back')}</span>
               </button>
             )}
 
@@ -427,7 +421,7 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
                 disabled={saving || loading}
                 className="flex-1 px-6 py-3 rounded-full bg-[#035035] text-white font-semibold hover:bg-[#024027] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                <span>Weiter</span>
+                <span>{t('collectionsModal.buttons.next', 'Next')}</span>
                 <ChevronRight className="w-5 h-5" />
               </button>
             ) : (
@@ -436,7 +430,9 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
                 disabled={saving || loading}
                 className="flex-1 px-6 py-3 rounded-full bg-[#035035] text-white font-semibold hover:bg-[#024027] transition-colors disabled:opacity-50"
               >
-                {saving ? 'Speichern...' : 'Speichern'}
+                {saving
+                  ? t('collectionsModal.buttons.saving', 'Saving...')
+                  : t('collectionsModal.buttons.save', 'Save')}
               </button>
             )}
           </div>

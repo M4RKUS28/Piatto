@@ -21,7 +21,9 @@ router = APIRouter(
 )
 
 @router.post("/generate", response_model=int)
-async def generate_recipes(request: GenerateRecipeRequest, background_tasks: BackgroundTasks = None, user_id: str = Depends(get_read_write_user_id)):
+async def generate_recipes(request: GenerateRecipeRequest,
+                           background_tasks: BackgroundTasks = None,
+                           user_id: str = Depends(get_read_write_user_id)):
     """
     Generate a recipes based on the user ID, prompt, and optional preparing session ID.
 
@@ -41,7 +43,8 @@ async def generate_recipes(request: GenerateRecipeRequest, background_tasks: Bac
 
 @router.get("/{preparing_session_id}/get_options", response_model=List[RecipePreview])
 async def get_recipe_options(preparing_session_id: int,
-                      db: AsyncSession = Depends(get_db)):
+                      db: AsyncSession = Depends(get_db),
+                      user_id: str = Depends(get_read_only_user_id)):
     """
     Get available recipe options based on the provided preparing session ID.
 
@@ -52,7 +55,8 @@ async def get_recipe_options(preparing_session_id: int,
         List[RecipePreview]: A list of recipe previews.
     """
     print("!!! Hello from get_recipe_options !!!")
-    recipes = await recipe_crud.get_recipe_previews_by_preparing_session_id(db, preparing_session_id)
+    recipes = await recipe_crud.get_recipe_previews_by_preparing_session_id(db, preparing_session_id,
+                                                                            user_id=user_id)
     if recipes is None:
         raise HTTPException(status_code=404, detail="Preparing session not found")
 
@@ -62,11 +66,16 @@ async def get_recipe_options(preparing_session_id: int,
             id=recipe.id,
             title=recipe.title,
             description=recipe.description,
+            image_url=getattr(recipe, "image_url", None),
+            total_time_minutes=getattr(recipe, "total_time_minutes", None),
+            difficulty=getattr(recipe, "difficulty", None),
+            food_category=getattr(recipe, "food_category", None),
         ))
     return result
 
 @router.delete("/{preparing_session_id}/finish")
-async def finish_session(preparing_session_id: int, db: AsyncSession = Depends(get_db)):
+async def finish_session(preparing_session_id: int, db: AsyncSession = Depends(get_db),
+                      user_id: str = Depends(get_read_only_user_id)):
     """
     Finish a preparing session based on the provided session ID.
 
@@ -77,7 +86,7 @@ async def finish_session(preparing_session_id: int, db: AsyncSession = Depends(g
         dict: A confirmation message.
     """
 
-    await preparing_crud.delete_preparing_session(db, preparing_session_id)
+    await preparing_crud.delete_preparing_session(db, preparing_session_id, user_id)
     return
 
 

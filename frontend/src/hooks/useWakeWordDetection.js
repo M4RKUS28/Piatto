@@ -16,7 +16,7 @@ const useWakeWordDetection = () => {
   const restartTimerRef = useRef(null);
   const retryCountRef = useRef(0);
   const maxRetries = 3;
-  const restartInterval = 55000; // Restart every 55 seconds to avoid browser timeout
+  const restartInterval = 5000; // Restart every 5 seconds to avoid browser timeout
 
   // Debug log helper
   const debugLog = useCallback((message, data = null) => {

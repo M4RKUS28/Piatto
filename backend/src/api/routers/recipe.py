@@ -55,12 +55,14 @@ async def create_recipe(request: GenerateRecipeRequest, db: AsyncSession = Depen
         title=request.title,
         description=request.description,
         ingredients=request.ingredients,
-        instructions=_serialize_instructions_payload(request.instructions),
+    instructions=_serialize_instructions_payload(request.instructions) or "[]",
         image_url=request.image_url,
         total_time_minutes=request.total_time_minutes,
         difficulty=request.difficulty,
         food_category=request.food_category,
-        prompt=request.prompt if hasattr(request, 'prompt') else None,
+    prompt=getattr(request, 'prompt', ""),
+        important_notes=getattr(request, 'important_notes', None),
+        cooking_overview=getattr(request, 'cooking_overview', None),
     )
     if not recipe:
         raise HTTPException(status_code=400, detail="Recipe creation failed")
@@ -68,7 +70,8 @@ async def create_recipe(request: GenerateRecipeRequest, db: AsyncSession = Depen
 
 @router.get("/{recipe_id}/get", response_model=RecipeSchema)
 async def get_recipe(recipe_id: int,
-                     db : AsyncSession = Depends(get_db)):
+                     db : AsyncSession = Depends(get_db),
+                     user_id: str = Depends(get_read_only_user_id)):
     """
     Retrieve a recipe based on the provided recipe ID.
 
@@ -82,6 +85,8 @@ async def get_recipe(recipe_id: int,
     recipe = await recipe_crud.get_recipe_by_id(db, recipe_id)
     if not recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
+    if recipe.user_id != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this recipe")
     return _serialize_recipe(recipe)
 
 @router.get("/get_all", response_model=List[RecipeSchema])
@@ -102,7 +107,9 @@ async def get_all_recipes(user_id: str = Depends(get_read_only_user_id),
 
 
 @router.put("/change_ai", response_model=RecipeSchema)
-async def change_recipe_ai(request: ChangeRecipeAIRequest):
+async def change_recipe_ai(request: ChangeRecipeAIRequest, 
+                           user_id: str = Depends(get_read_write_user_id),
+                           db: AsyncSession = Depends(get_db)):
     """
     Modify a recipe using AI based on the user ID, change prompt, and recipe ID.
 
@@ -112,11 +119,12 @@ async def change_recipe_ai(request: ChangeRecipeAIRequest):
     Returns:
         Recipe: The modified recipe.
     """
-    return await agent_service.change_recipe(request.change_prompt, request.recipe_id)
+    return await agent_service.change_recipe(request.change_prompt, db=db, recipe_id=request.recipe_id, user_id=user_id)
 
 @router.put("/change_manual", response_model=RecipeSchema)
 async def change_recipe_manual(request: ChangeRecipeManualRequest,
-                               db: AsyncSession = Depends(get_db)):
+                               db: AsyncSession = Depends(get_db),
+                               user_id: str = Depends(get_read_write_user_id)):
     """
     Modify a recipe manually based on the user ID, recipe ID and new recipe.
 
@@ -137,6 +145,9 @@ async def change_recipe_manual(request: ChangeRecipeManualRequest,
         total_time_minutes=request.total_time_minutes,
         difficulty=request.difficulty,
         food_category=request.food_category,
+        important_notes=request.important_notes,
+        cooking_overview=request.cooking_overview,
+        user_id=user_id
     )
     if not recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
@@ -144,7 +155,8 @@ async def change_recipe_manual(request: ChangeRecipeManualRequest,
 
 @router.post("/{recipe_id}/save")
 async def save_recipe(recipe_id: int,
-                      db: AsyncSession = Depends(get_db)):
+                      db: AsyncSession = Depends(get_db),
+                      user_id: str = Depends(get_read_write_user_id)):
     """
     Save a recipe based on the provided recipe ID.
 
@@ -152,21 +164,23 @@ async def save_recipe(recipe_id: int,
         int: The recipe ID.
     """
 
-    await recipe_crud.update_recipe(db, recipe_id, is_permanent=True)
+    await recipe_crud.update_recipe(db, recipe_id, is_permanent=True, user_id=user_id)
     return
 
 
 @router.post("/{recipe_id}/unsave")
 async def unsave_recipe(recipe_id: int,
-                        db: AsyncSession = Depends(get_db)):
+                        db: AsyncSession = Depends(get_db),
+                        user_id: str = Depends(get_read_write_user_id)):
     """Mark a recipe as temporary by clearing its permanent flag."""
 
-    await recipe_crud.update_recipe(db, recipe_id, is_permanent=False)
+    await recipe_crud.update_recipe(db, recipe_id, is_permanent=False, user_id=user_id)
     return
 
 @router.delete("/{recipe_id}/delete")
 async def delete_recipe(recipe_id: int,
-                        db: AsyncSession = Depends(get_db)):
+                        db: AsyncSession = Depends(get_db),
+                        user_id: str = Depends(get_read_write_user_id)):
     """
     Delete a recipe based on the provided recipe ID.
 
@@ -174,7 +188,7 @@ async def delete_recipe(recipe_id: int,
         recipe_id (int): The ID of the recipe to delete.
     """
 
-    await recipe_crud.delete_recipe(db, recipe_id)
+    await recipe_crud.delete_recipe(db, recipe_id, user_id=user_id)
     return
 
 
@@ -229,6 +243,8 @@ def _serialize_recipe(recipe) -> RecipeSchema:
         total_time_minutes=recipe.total_time_minutes,
         difficulty=recipe.difficulty,
         food_category=recipe.food_category,
+        important_notes=recipe.important_notes or "No special notes provided.",
+        cooking_overview=recipe.cooking_overview or "Follow the instructions sequentially to complete the recipe.",
     )
 
 

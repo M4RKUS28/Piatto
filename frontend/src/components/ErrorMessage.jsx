@@ -1,5 +1,9 @@
+import { useTranslation } from 'react-i18next';
+
 export default function ErrorMessage({ message, onRetry }) {
-  const { t } = useTranslation('errors')
+        const { t } = useTranslation('errors');
+
+        const resolvedMessage = message || t('generic.message', 'An unexpected error occurred. Please try again.');
 
         return (
                 <div className="flex flex-col items-center justify-center p-6 sm:p-8 text-center">
@@ -20,11 +24,11 @@ export default function ErrorMessage({ message, onRetry }) {
                         </div>
 
                         <p className="text-[#2D2D2D] text-base sm:text-lg font-medium mb-2 break-words px-4">
-                                Oops! Something went wrong
+                                {t('generic.title', 'Oops! Something went wrong')}
                         </p>
 
                         <p className="text-sm sm:text-base text-[#2D2D2D] opacity-70 mb-6 max-w-md break-words px-4">
-                                {message || 'An unexpected error occurred. Please try again.'}
+                                {resolvedMessage}
                         </p>
 
                         {onRetry && (
@@ -33,10 +37,10 @@ export default function ErrorMessage({ message, onRetry }) {
                                         className="bg-[#FF9B7B] text-white px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all shadow-md hover:shadow-lg min-h-[44px] text-sm sm:text-base"
                                         style={{
                                                 transitionDuration: '300ms',
-                                                transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)'
+                                                transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
                                         }}
                                 >
-                                        Try Again
+                                        {t('generic.tryAgain', 'Try Again')}
                                 </button>
                         )}
                 </div>

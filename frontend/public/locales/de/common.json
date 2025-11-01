@@ -36,29 +36,70 @@
     "finish": "Fertig"
   },
   "time": {
-    "min": "Min",
+    "na": "N/A",
+    "min": "Min.",
     "minutes": "Minuten",
-    "hours": "Stunden"
+    "hours": "Stunden",
+    "h": "Std"
   },
   "difficulty": {
+    "na": "N/A",
     "easy": "Einfach",
     "medium": "Mittel",
     "hard": "Schwierig"
   },
   "foodCategory": {
+    "na": "N/A",
     "vegan": "Vegan",
+    "veganSub": "Pflanzlich",
     "vegetarian": "Vegetarisch",
+    "vegetarianSub": "Enthält Milchprodukte/Eier",
     "beef": "Rind",
+    "beefSub": "Auf Rindfleisch basierend",
     "pork": "Schwein",
+    "porkSub": "Auf Schweinefleisch basierend",
     "chicken": "Huhn",
+    "chickenSub": "Geflügel",
     "lamb": "Lamm",
+    "lambSub": "Auf Lammfleisch basierend",
     "fish": "Fisch",
+    "fishSub": "Auf Fisch basierend",
     "seafood": "Meeresfrüchte",
-    "mixedMeat": "Gemischtes Fleisch"
+    "seafoodSub": "Auf Meeresfrüchten basierend",
+    "mixedMeat": "Gemischtes Fleisch",
+    "mixedMeatSub": "Mehrere Fleischsorten"
   },
   "language": {
     "label": "Sprache",
     "english": "Englisch",
     "german": "Deutsch"
+  },
+  "wakeWord": {
+    "messages": {
+      "unknownError": "Unbekannter Fehler"
+    },
+    "headerTitle": "Benutzerdefinierte Wake-Word-Erkennung",
+    "headerSubtitle": "Lauscht auf: „{{phrase}}“",
+    "statusListening": "Hört zu",
+    "controls": {
+      "start": "\u25b6 Zuhören starten",
+      "stop": "\u23f9 Zuhören stoppen"
+    },
+    "feedback": {
+      "detected": "„{{phrase}}“ erkannt!",
+      "confidence": "Vertrauen: {{value}}%",
+      "total": "Gesamt: {{count}}"
+    },
+    "setup": {
+      "title": "Ersteinrichtung erforderlich:",
+      "step1": "Trainiere dein benutzerdefiniertes „{{phrase}}“-Modell (siehe CUSTOM_WAKE_WORD_TRAINING.md)",
+      "step2": "Lege <code>{{file}}</code> in <code>{{folder}}</code> ab",
+      "step3": "Klicke auf „Zuhören starten“, um die Erkennung zu beginnen"
+    },
+    "debug": {
+      "description": "\ud83d\udca1 Verwendet ein benutzertrainiertes ONNX-Modell für die Erkennung von „{{phrase}}“.",
+      "currentConfidence": "Aktuelles Vertrauen: {{value}}%",
+      "logs": "Öffne die Browser-Konsole für detaillierte Erkennungsprotokolle."
+    }
   }
 }

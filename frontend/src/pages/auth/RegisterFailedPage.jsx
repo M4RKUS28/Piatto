@@ -33,7 +33,7 @@ export default function RegisterFailedPage() {
           {/* Action Buttons */}
           <div className="space-y-3">
             <Link
-              to="/register"
+              to="/auth/register"
               className="w-full bg-[#035035] text-white py-3 rounded-full font-semibold text-lg hover:scale-105 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -68,7 +68,7 @@ export default function RegisterFailedPage() {
             </ul>
             <p className="text-sm text-[#2D2D2D] mt-4">
               {t('registerFailed.hasAccount', 'Already have an account?')}{' '}
-              <Link to="/login" className="text-[#FF9B7B] hover:text-[#035035] font-semibold">
+              <Link to="/auth/login" className="text-[#FF9B7B] hover:text-[#035035] font-semibold">
                 {t('registerFailed.signIn', 'Sign In')}
               </Link>
             </p>

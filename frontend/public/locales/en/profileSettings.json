@@ -1,0 +1,28 @@
+{
+  "title": "Profile Settings",
+  "subtitle": "Manage your account information",
+  "username": "Username",
+  "email": "Email",
+  "avatarHint": "Tap or click your avatar to upload a new profile image.",
+  "uploading": "Uploading...",
+  "imageUploaded": "Image uploaded. Click \"Save Changes\" to apply it to your profile.",
+  "noChanges": "No changes to save",
+  "updateSuccess": "Profile updated successfully!",
+  "updateFailed": "Failed to update profile. Please try again.",
+  "uploadFailed": "Failed to upload image. Please try again.",
+  "saveChanges": "Save Changes",
+  "saving": "Saving...",
+  "uploadingImage": "Uploading image...",
+  "language": {
+    "title": "Language",
+    "subtitle": "Choose your preferred language"
+  },
+  "accountInfo": {
+    "title": "Account Information",
+    "created": "Account Created",
+    "lastLogin": "Last Login",
+    "streak": "Login Streak",
+    "days": "days"
+  },
+  "loading": "Loading..."
+}

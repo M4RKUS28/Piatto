@@ -14,6 +14,8 @@ class Recipe(Base):
     description = Column(Text, nullable=False)
     prompt = Column(Text, nullable=False)
     instructions = Column(Text, nullable=True)  # Store as JSON string
+    important_notes = Column(Text, nullable=False, server_default="No special notes provided.")
+    cooking_overview = Column(Text, nullable=False, server_default="Follow the instructions sequentially to complete the recipe.")
     image_url = Column(String(255), nullable=True)
     is_permanent = Column(Boolean, default=False)
     total_time_minutes = Column(Integer, nullable=True)

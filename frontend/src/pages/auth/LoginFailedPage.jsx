@@ -33,7 +33,7 @@ export default function LoginFailedPage() {
           {/* Action Buttons */}
           <div className="space-y-3">
             <Link
-              to="/login"
+              to="/auth/login"
               className="w-full bg-[#035035] text-white py-3 rounded-full font-semibold text-lg hover:scale-105 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
             >
               <ArrowLeft className="w-5 h-5" />

@@ -47,7 +47,7 @@ export default function OAuthLoginFailedPage() {
             </button>
 
             <Link
-              to="/login"
+              to="/auth/login"
               className="w-full bg-white border-2 border-[#F5F5F5] text-[#2D2D2D] py-3 rounded-full font-semibold text-lg hover:border-[#035035] hover:scale-105 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -98,7 +98,7 @@ export default function OAuthLoginFailedPage() {
               {t('oauth.preferEmail', 'Prefer to use email and password instead?')}
             </p>
             <Link
-              to="/login"
+              to="/auth/login"
               className="inline-block text-[#FF9B7B] hover:text-[#035035] font-semibold text-sm"
             >
               {t('oauth.signInWithEmail', 'Sign in with Email →')}
