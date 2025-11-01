@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Search, Clock, Users, Filter, ArrowLeft } from 'lucide-react';
 import { PiLeaf, PiEgg, PiCow } from 'react-icons/pi';
@@ -11,7 +11,7 @@ import EditCollectionsModal from '../../components/EditCollectionsModal';
 import DeleteRecipeModal from '../../components/DeleteRecipeModal';
 import CollectionImageCollage from '../../components/CollectionImageCollage';
 import { getImageUrl } from '../../utils/imageUtils';
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next';
 
 // Helper function to get food category display (icon and label)
 const getFoodCategoryDisplay = (category, t) => {
@@ -92,8 +92,32 @@ export default function CollectionRecipesView() {
   const [showDeleteRecipeModal, setShowDeleteRecipeModal] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const navigate = useNavigate();
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [difficultyFilters, setDifficultyFilters] = useState([]);
+  const [timeFilters, setTimeFilters] = useState([]);
+  const [meatTypeFilters, setMeatTypeFilters] = useState([]);
 
-  const fetchCollection = async () => {
+  const activeFilterCount = difficultyFilters.length + timeFilters.length + meatTypeFilters.length;
+
+  const toggleDifficultyFilter = (value) => {
+    setDifficultyFilters((prev) =>
+      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
+    );
+  };
+
+  const toggleTimeFilter = (value) => {
+    setTimeFilters((prev) =>
+      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
+    );
+  };
+
+  const toggleMeatTypeFilter = (value) => {
+    setMeatTypeFilters((prev) =>
+      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
+    );
+  };
+
+  const fetchCollection = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -128,11 +152,11 @@ export default function CollectionRecipesView() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [collectionId, t]);
 
   useEffect(() => {
     fetchCollection();
-  }, [collectionId]);
+  }, [fetchCollection]);
 
   const handleEditCollections = (recipeId) => {
     setSelectedRecipeId(recipeId);
@@ -151,16 +175,67 @@ export default function CollectionRecipesView() {
     setShowCollectionsModal(false);
   };
 
-  // Filter recipes based on search query
-  const filteredRecipes = recipes.filter(recipe => {
-    if (!searchQuery.trim()) return true;
+  const filteredRecipes = recipes.filter((recipe) => {
+    const query = searchQuery.trim().toLowerCase();
+    const matchesSearch = query
+      ? recipe.name.toLowerCase().includes(query) || recipe.description.toLowerCase().includes(query)
+      : true;
 
-    const query = searchQuery.toLowerCase();
-    const titleMatch = recipe.name.toLowerCase().includes(query);
-    const descriptionMatch = recipe.description.toLowerCase().includes(query);
+    const difficultyValue = recipe.difficulty?.toLowerCase() || '';
+    const matchesDifficulty =
+      difficultyFilters.length > 0 ? difficultyFilters.includes(difficultyValue) : true;
 
-    return titleMatch || descriptionMatch;
+    const totalTime = typeof recipe.total_time_minutes === 'number' ? recipe.total_time_minutes : null;
+    let matchesTime = true;
+    if (timeFilters.length > 0) {
+      if (totalTime === null) {
+        matchesTime = false;
+      } else {
+        matchesTime = timeFilters.some((filter) => {
+          if (filter === '0-30') {
+            return totalTime <= 30;
+          }
+          if (filter === '30-60') {
+            return totalTime > 30 && totalTime <= 60;
+          }
+          if (filter === '60+') {
+            return totalTime > 60;
+          }
+          return false;
+        });
+      }
+    }
+
+    const foodCategory = recipe.food_category || '';
+    const matchesMeat =
+      meatTypeFilters.length > 0 ? meatTypeFilters.includes(foodCategory) : true;
+
+    return matchesSearch && matchesDifficulty && matchesTime && matchesMeat;
   });
+
+  const difficultyOptions = [
+    { value: 'easy', label: t('view.filterDifficultyEasy', 'Easy') },
+    { value: 'medium', label: t('view.filterDifficultyMedium', 'Medium') },
+    { value: 'hard', label: t('view.filterDifficultyHard', 'Hard') }
+  ];
+
+  const timeOptions = [
+    { value: '0-30', label: `0-30 ${t('view.filterMinutes', 'min')}` },
+    { value: '30-60', label: `30-60 ${t('view.filterMinutes', 'min')}` },
+    { value: '60+', label: t('view.filterOverSixty', 'More than 60 min') }
+  ];
+
+  const meatTypeOptions = [
+    { value: 'vegan', label: t('foodCategory.vegan', { ns: 'common', defaultValue: 'Vegan' }) },
+    { value: 'vegetarian', label: t('foodCategory.vegetarian', { ns: 'common', defaultValue: 'Vegetarian' }) },
+    { value: 'beef', label: t('foodCategory.beef', { ns: 'common', defaultValue: 'Beef' }) },
+    { value: 'pork', label: t('foodCategory.pork', { ns: 'common', defaultValue: 'Pork' }) },
+    { value: 'chicken', label: t('foodCategory.chicken', { ns: 'common', defaultValue: 'Chicken' }) },
+    { value: 'lamb', label: t('foodCategory.lamb', { ns: 'common', defaultValue: 'Lamb' }) },
+    { value: 'fish', label: t('foodCategory.fish', { ns: 'common', defaultValue: 'Fish' }) },
+    { value: 'seafood', label: t('foodCategory.seafood', { ns: 'common', defaultValue: 'Seafood' }) },
+    { value: 'mixed-meat', label: t('foodCategory.mixedMeat', { ns: 'common', defaultValue: 'Mixed Meat' }) }
+  ];
 
   return (
     <div className="p-4 sm:p-6 md:p-8">
@@ -224,7 +299,7 @@ export default function CollectionRecipesView() {
         {!loading && !error && recipes.length > 0 && (
           <>
             {/* Search and Filter Bar */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 md:mb-8">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#2D2D2D] opacity-40" />
                 <input
@@ -235,11 +310,123 @@ export default function CollectionRecipesView() {
                   className="w-full pl-12 pr-4 py-3 rounded-full border-2 border-[#F5F5F5] focus:border-[#035035] focus:outline-none transition-all text-base min-h-[44px]"
                 />
               </div>
-              <button className="bg-white border-2 border-[#035035] text-[#035035] px-6 py-3 rounded-full font-semibold hover:bg-[#035035] hover:text-white transition-all flex items-center justify-center gap-2 min-h-[44px] min-w-[120px]">
+              <button
+                type="button"
+                onClick={() => setShowFilterPanel((prev) => !prev)}
+                className="bg-white border-2 border-[#035035] text-[#035035] px-6 py-3 rounded-full font-semibold hover:bg-[#035035] hover:text-white transition-all flex items-center justify-center gap-2 min-h-[44px] min-w-[140px]"
+              >
                 <Filter className="w-5 h-5" />
                 <span>{t('view.filter', 'Filter')}</span>
+                {activeFilterCount > 0 && (
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#FF9B7B] text-white text-xs font-bold">
+                    {activeFilterCount}
+                  </span>
+                )}
               </button>
             </div>
+
+            {showFilterPanel && (
+              <div className="mb-6 md:mb-8 bg-white border-2 border-[#F5F5F5] rounded-2xl p-4 sm:p-6 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-3">
+                    <p className="text-sm font-semibold text-[#035035]">
+                      {t('view.filterDifficulty', 'Difficulty')}
+                    </p>
+                    <div className="space-y-2">
+                      {difficultyOptions.map((option) => (
+                        <label
+                          key={option.value}
+                          className="flex items-center gap-3 text-sm text-[#2D2D2D]"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={difficultyFilters.includes(option.value)}
+                            onChange={() => toggleDifficultyFilter(option.value)}
+                            className="w-4 h-4 text-[#035035] border-2 border-[#035035]/60 rounded focus:ring-[#035035]"
+                          />
+                          <span>{option.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <p className="text-sm font-semibold text-[#035035]">
+                      {t('view.filterTime', 'Total time')}
+                    </p>
+                    <div className="space-y-2">
+                      {timeOptions.map((option) => (
+                        <label
+                          key={option.value}
+                          className="flex items-center gap-3 text-sm text-[#2D2D2D]"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={timeFilters.includes(option.value)}
+                            onChange={() => toggleTimeFilter(option.value)}
+                            className="w-4 h-4 text-[#035035] border-2 border-[#035035]/60 rounded focus:ring-[#035035]"
+                          />
+                          <span>{option.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <p className="text-sm font-semibold text-[#035035]">
+                      {t('view.filterMeatType', 'Meat type')}
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {meatTypeOptions.map((option) => (
+                        <label
+                          key={option.value}
+                          className="flex items-center gap-3 text-sm text-[#2D2D2D]"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={meatTypeFilters.includes(option.value)}
+                            onChange={() => toggleMeatTypeFilter(option.value)}
+                            className="w-4 h-4 text-[#035035] border-2 border-[#035035]/60 rounded focus:ring-[#035035]"
+                          />
+                          <span>{option.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4">
+                  <p className="text-sm text-[#2D2D2D] opacity-60">
+                    {activeFilterCount > 0
+                      ? t('view.activeFiltersCount', {
+                          count: activeFilterCount,
+                          defaultValue: '{{count}} active filters'
+                        })
+                      : t('view.noActiveFilters', 'No filters applied')}
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDifficultyFilters([]);
+                        setTimeFilters([]);
+                        setMeatTypeFilters([]);
+                      }}
+                      className="px-5 py-2 rounded-full border-2 border-[#F5F5F5] text-sm font-semibold text-[#035035] hover:bg-[#F5F5F5] transition-all"
+                    >
+                      {t('view.clearFilters', 'Clear filters')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowFilterPanel(false)}
+                      className="px-5 py-2 rounded-full bg-[#035035] text-white text-sm font-semibold hover:scale-105 transition-all"
+                    >
+                      {t('view.applyFilters', 'Apply filters')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* No Results Message */}
             {filteredRecipes.length === 0 && (
