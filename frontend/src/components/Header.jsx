@@ -26,9 +26,8 @@ export default function Header({ showAuthButtons = true }) {
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
-            <Link to="/#features" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">{t('navigation.features')}</Link>
             <Link to="/#how-it-works" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">{t('navigation.howItWorks')}</Link>
-            <Link to="/#recipes" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">{t('navigation.recipes')}</Link>
+            <Link to="/#features" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">{t('navigation.features')}</Link>
             <Link to="/about" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">{t('navigation.about')}</Link>
           </div>
 

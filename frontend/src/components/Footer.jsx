@@ -12,7 +12,7 @@ export default function Footer() {
   return (
     <footer className="bg-[#035035] text-white py-12">
       <div className="container mx-auto px-6">
-        <div className="grid md:grid-cols-4 gap-8 mb-8">
+  <div className="grid md:grid-cols-4 lg:grid-cols-5 gap-8 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
               <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
@@ -50,35 +50,34 @@ export default function Footer() {
               <li><a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity">TikTok</a></li>
               <li><a href="https://pinterest.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity">Pinterest</a></li>
             </ul>
+          </div>
 
-            {/* Language Selector */}
-            <div className="mt-6">
-              <h4 className="font-bold mb-3 flex items-center gap-2">
-                <Globe className="w-4 h-4" />
-                {t('language.label')}
-              </h4>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => changeLanguage('en')}
-                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
-                    i18n.language === 'en'
-                      ? 'bg-white text-[#035035]'
-                      : 'bg-white bg-opacity-20 hover:bg-opacity-30 text-white'
-                  }`}
-                >
-                  EN
-                </button>
-                <button
-                  onClick={() => changeLanguage('de')}
-                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
-                    i18n.language === 'de'
-                      ? 'bg-white text-[#035035]'
-                      : 'bg-white bg-opacity-20 hover:bg-opacity-30 text-white'
-                  }`}
-                >
-                  DE
-                </button>
-              </div>
+          <div>
+            <h4 className="font-bold mb-4 flex items-center gap-2">
+              <Globe className="w-4 h-4" />
+              {t('language.label')}
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => changeLanguage('en')}
+                className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
+                  i18n.language === 'en'
+                    ? 'bg-white text-[#035035]'
+                    : 'bg-white bg-opacity-20 hover:bg-opacity-30 text-white'
+                }`}
+              >
+                EN
+              </button>
+              <button
+                onClick={() => changeLanguage('de')}
+                className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
+                  i18n.language === 'de'
+                    ? 'bg-white text-[#035035]'
+                    : 'bg-white bg-opacity-20 hover:bg-opacity-30 text-white'
+                }`}
+              >
+                DE
+              </button>
             </div>
           </div>
         </div>
