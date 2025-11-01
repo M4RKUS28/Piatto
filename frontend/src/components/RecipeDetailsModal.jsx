@@ -96,7 +96,7 @@ export default function RecipeDetailsModal({
 			aria-modal="true"
 			aria-label={recipe?.title || t('options.details.title', 'Recipe details')}
 		>
-			<div className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl overflow-hidden" onClick={event => event.stopPropagation()}>
+			<div className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden" onClick={event => event.stopPropagation()}>
 				<div className="flex flex-col sm:flex-row">
 					{showImage && (
 						<div className="sm:w-1/3 bg-[#F5F5F5] flex items-center justify-center">
