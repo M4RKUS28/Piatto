@@ -253,7 +253,7 @@ export default function RecipeLibrary() {
                   <h2 className="text-2xl sm:text-3xl font-bold text-[#035035]">{t("library.latestRecipes", "Latest Recipes")}</h2>
                   <Link
                     to={queryString ? `/app/recipes/all?${queryString}` : '/app/recipes/all'}
-                    className="text-sm font-semibold text-[#FF9B7B] hover:text-[#035035] transition-colors"
+                    className="text-sx font-semibold text-[#FF9B7B] hover:text-[#035035] transition-colors"
                   >
                     {t("library.viewAllRecipes", "View all recipes")}
                   </Link>
