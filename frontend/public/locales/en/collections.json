@@ -1,0 +1,22 @@
+{
+  "title": "Edit Collection",
+  "searchPlaceholder": "Search collections...",
+  "createNew": "Create New Collection",
+  "newCollection": "New Collection",
+  "namePlaceholder": "Name",
+  "descriptionPlaceholder": "Description (optional)",
+  "cancel": "Cancel",
+  "create": "Create",
+  "creating": "Creating...",
+  "noCollectionsFound": "No collections found",
+  "noCollections": "No collections yet",
+  "save": "Save",
+  "saving": "Saving...",
+  "delete": "Delete",
+  "deleting": "Deleting...",
+  "deleteConfirm": "Are you sure you want to delete this recipe?",
+  "errorLoading": "Failed to load collections",
+  "errorSaving": "Failed to save. Please try again.",
+  "errorDeleting": "Failed to delete. Please try again.",
+  "errorCreating": "Failed to create collection"
+}

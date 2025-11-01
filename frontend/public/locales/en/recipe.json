@@ -1,12 +1,42 @@
 {
   "totalTime": "Total Time",
+  "difficultyLabel": "Difficulty",
   "difficulty": "Difficulty",
   "ingredients": "Ingredients",
   "nutrition": "Nutrition",
+  "forServings": "For {{count}} serving",
+  "forServings_plural": "For {{count}} servings",
+  "tabs": {
+    "ingredients": "Ingredients",
+    "nutrition": "Nutrition"
+  },
   "servings": {
     "for": "For",
     "serving": "serving",
     "servings": "servings"
+  },
+  "nutrition": {
+    "title": "Nutrition Facts",
+    "servingsPerRecipe": "{{count}} servings per recipe",
+    "servingSize": "Serving size is calculated from the recipe",
+    "amountPerServing": "Amount per serving",
+    "dailyValue": "% Daily Value*",
+    "totalFat": "Total Fat",
+    "saturatedFat": "Saturated Fat",
+    "trans": "Trans",
+    "fat": "Fat",
+    "transFat": "Trans Fat",
+    "cholesterol": "Cholesterol",
+    "sodium": "Sodium",
+    "totalCarbohydrate": "Total Carbohydrate",
+    "dietaryFiber": "Dietary Fiber",
+    "totalSugars": "Total Sugars",
+    "protein": "Protein",
+    "vitaminD": "Vitamin D",
+    "calcium": "Calcium",
+    "iron": "Iron",
+    "potassium": "Potassium",
+    "disclaimer": "* The % Daily Value (DV) tells you how much a nutrient in a serving of food contributes to a daily diet. 2,000 calories a day is used for general nutrition advice."
   },
   "nutritionFacts": {
     "title": "Nutrition Facts",
@@ -29,6 +59,10 @@
     "potassium": "Potassium",
     "disclaimer": "* The % Daily Value (DV) tells you how much a nutrient in a serving of food contributes to a daily diet. 2,000 calories a day is used for general nutrition advice."
   },
+  "editCollection": "Edit Collection",
+  "deleteRecipe": "Delete Recipe",
+  "deleteConfirm": "Are you sure you want to delete this recipe?",
+  "deleteFailed": "Failed to delete recipe",
   "actions": {
     "share": "Share",
     "print": "Print",
@@ -36,12 +70,13 @@
     "deleteRecipe": "Delete Recipe"
   },
   "errors": {
+    "noId": "No recipe ID provided",
     "notFound": "Recipe not found. It may have been deleted.",
     "serverError": "Server error. Please try again later.",
     "networkError": "Network error. Please check your connection.",
-    "loadFailed": "Failed to load recipe. Please try again."
+    "loadFailed": "Failed to load recipe. Please try again.",
+    "dataNotAvailable": "Recipe data not available"
   },
-  "deleteConfirm": "Do you really want to delete this recipe?",
   "deleteError": "Error deleting recipe",
   "minimizedLabel": "RECIPE",
   "library": {

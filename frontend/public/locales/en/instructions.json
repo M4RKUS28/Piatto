@@ -1,0 +1,8 @@
+{
+  "title": "Cooking Instructions",
+  "subtitle": "Follow the steps along the path to complete your recipe.",
+  "generating": "Generating Instructions...",
+  "generatingDescription": "Our AI chef is preparing detailed cooking instructions for your recipe. This usually takes just a few moments.",
+  "errorTitle": "Oops! Something went wrong",
+  "errorLoading": "Failed to load instructions. Please try again."
+}

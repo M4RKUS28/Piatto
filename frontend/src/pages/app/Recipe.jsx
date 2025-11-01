@@ -140,7 +140,7 @@ const nutritionData = {
 };
 
 const Recipe = ({ recipeId }) => {
-  const { t } = useTranslation(['pages', 'common']);
+  const { t } = useTranslation(['recipe', 'common']);
   const navigate = useNavigate();
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -154,7 +154,7 @@ const Recipe = ({ recipeId }) => {
   useEffect(() => {
     const fetchRecipe = async () => {
       if (!recipeId) {
-        setError(t('recipe.errors.noId', 'No recipe ID provided'));
+        setError(t('errors.noId', 'No recipe ID provided'));
         setLoading(false);
         return;
       }
@@ -171,13 +171,13 @@ const Recipe = ({ recipeId }) => {
         console.error('Failed to fetch recipe:', err);
 
         if (err.response?.status === 404) {
-          setError(t('recipe.errors.notFound', 'Recipe not found. It may have been deleted.'));
+          setError(t('errors.notFound', 'Recipe not found. It may have been deleted.'));
         } else if (err.response?.status >= 500) {
-          setError(t('recipe.errors.serverError', 'Server error. Please try again later.'));
+          setError(t('errors.serverError', 'Server error. Please try again later.'));
         } else if (!err.response) {
-          setError(t('recipe.errors.networkError', 'Network error. Please check your connection.'));
+          setError(t('errors.networkError', 'Network error. Please check your connection.'));
         } else {
-          setError(t('recipe.errors.loadFailed', 'Failed to load recipe. Please try again.'));
+          setError(t('errors.loadFailed', 'Failed to load recipe. Please try again.'));
         }
       } finally {
         setLoading(false);
@@ -209,7 +209,7 @@ const Recipe = ({ recipeId }) => {
   };
 
   const handleDeleteRecipe = async () => {
-    if (!window.confirm(t('recipe.deleteConfirm', 'Are you sure you want to delete this recipe?'))) {
+    if (!window.confirm(t('deleteConfirm', 'Are you sure you want to delete this recipe?'))) {
       return;
     }
 
@@ -218,7 +218,7 @@ const Recipe = ({ recipeId }) => {
       navigate('/app/recipes');
     } catch (err) {
       console.error('Failed to delete recipe:', err);
-      alert(t('recipe.deleteFailed', 'Failed to delete recipe'));
+      alert(t('deleteFailed', 'Failed to delete recipe'));
     }
   };
 
@@ -228,69 +228,69 @@ const Recipe = ({ recipeId }) => {
 
   const NutritionLabel = ({ servingCount }) => (
     <div className="border-2 border-black p-4 font-sans max-w-sm mx-auto">
-      <h2 className="font-black text-4xl font-serif">{t('recipe.nutrition.title', 'Nutrition Facts')}</h2>
+      <h2 className="font-black text-4xl font-serif">{t('nutrition.title', 'Nutrition Facts')}</h2>
       <div className="border-b border-gray-400 pb-1 mb-1">
-        <p>{t('recipe.nutrition.servingsPerRecipe', { count: servingCount, defaultValue: `${servingCount} servings per recipe` })}</p>
-        <p className="font-bold">{t('recipe.nutrition.servingSize', 'Serving size is calculated from the recipe')}</p>
+        <p>{t('nutrition.servingsPerRecipe', { count: servingCount, defaultValue: `${servingCount} servings per recipe` })}</p>
+        <p className="font-bold">{t('nutrition.servingSize', 'Serving size is calculated from the recipe')}</p>
       </div>
       <div className="flex justify-between items-end border-b-8 border-black py-1">
-        <p className="font-bold">{t('recipe.nutrition.amountPerServing', 'Amount per serving')}</p>
+        <p className="font-bold">{t('nutrition.amountPerServing', 'Amount per serving')}</p>
         <p className="font-black text-5xl">{nutritionData.calories}</p>
       </div>
-      <div className="text-right font-bold border-b border-gray-400 py-1">{t('recipe.nutrition.dailyValue', '% Daily Value*')}</div>
+      <div className="text-right font-bold border-b border-gray-400 py-1">{t('nutrition.dailyValue', '% Daily Value*')}</div>
 
       <div className="flex justify-between border-b border-gray-400 py-1">
-        <p><span className="font-bold">{t('recipe.nutrition.totalFat', 'Total Fat')}</span> {nutritionData.totalFat.amount}g</p>
+        <p><span className="font-bold">{t('nutrition.totalFat', 'Total Fat')}</span> {nutritionData.totalFat.amount}g</p>
         <p className="font-bold">{nutritionData.totalFat.dv}%</p>
       </div>
       <div className="flex justify-between border-b border-gray-400 py-1 ml-4">
-        <p>{t('recipe.nutrition.saturatedFat', 'Saturated Fat')} {nutritionData.saturatedFat.amount}g</p>
+        <p>{t('nutrition.saturatedFat', 'Saturated Fat')} {nutritionData.saturatedFat.amount}g</p>
         <p className="font-bold">{nutritionData.saturatedFat.dv}%</p>
       </div>
       <div className="border-b border-gray-400 py-1 ml-4">
-        <p><i>{t('recipe.nutrition.trans', 'Trans')}</i> {t('recipe.nutrition.fat', 'Fat')} {nutritionData.transFat.amount}g</p>
+        <p><i>{t('nutrition.trans', 'Trans')}</i> {t('nutrition.fat', 'Fat')} {nutritionData.transFat.amount}g</p>
       </div>
       <div className="flex justify-between border-b border-gray-400 py-1">
-        <p><span className="font-bold">{t('recipe.nutrition.cholesterol', 'Cholesterol')}</span> {nutritionData.cholesterol.amount}mg</p>
+        <p><span className="font-bold">{t('nutrition.cholesterol', 'Cholesterol')}</span> {nutritionData.cholesterol.amount}mg</p>
         <p className="font-bold">{nutritionData.cholesterol.dv}%</p>
       </div>
       <div className="flex justify-between border-b border-gray-400 py-1">
-        <p><span className="font-bold">{t('recipe.nutrition.sodium', 'Sodium')}</span> {nutritionData.sodium.amount}mg</p>
+        <p><span className="font-bold">{t('nutrition.sodium', 'Sodium')}</span> {nutritionData.sodium.amount}mg</p>
         <p className="font-bold">{nutritionData.sodium.dv}%</p>
       </div>
       <div className="flex justify-between border-b-4 border-black py-1">
-        <p><span className="font-bold">{t('recipe.nutrition.totalCarbohydrate', 'Total Carbohydrate')}</span> {nutritionData.totalCarbohydrate.amount}g</p>
+        <p><span className="font-bold">{t('nutrition.totalCarbohydrate', 'Total Carbohydrate')}</span> {nutritionData.totalCarbohydrate.amount}g</p>
         <p className="font-bold">{nutritionData.totalCarbohydrate.dv}%</p>
       </div>
       <div className="flex justify-between border-b border-gray-400 py-1 ml-4">
-        <p>{t('recipe.nutrition.dietaryFiber', 'Dietary Fiber')} {nutritionData.dietaryFiber.amount}g</p>
+        <p>{t('nutrition.dietaryFiber', 'Dietary Fiber')} {nutritionData.dietaryFiber.amount}g</p>
         <p className="font-bold">{nutritionData.dietaryFiber.dv}%</p>
       </div>
       <div className="border-b border-gray-400 py-1 ml-4">
-        <p>{t('recipe.nutrition.totalSugars', 'Total Sugars')} {nutritionData.totalSugars.amount}g</p>
+        <p>{t('nutrition.totalSugars', 'Total Sugars')} {nutritionData.totalSugars.amount}g</p>
       </div>
       <div className="border-b-8 border-black py-1">
-        <p><span className="font-bold">{t('recipe.nutrition.protein', 'Protein')}</span> {nutritionData.protein.amount}g</p>
+        <p><span className="font-bold">{t('nutrition.protein', 'Protein')}</span> {nutritionData.protein.amount}g</p>
       </div>
 
       <div className="flex justify-between border-b border-gray-400 py-1">
-        <p>{t('recipe.nutrition.vitaminD', 'Vitamin D')} {nutritionData.vitaminD.amount}mcg</p>
+        <p>{t('nutrition.vitaminD', 'Vitamin D')} {nutritionData.vitaminD.amount}mcg</p>
         <span>{nutritionData.vitaminD.dv}%</span>
       </div>
       <div className="flex justify-between border-b border-gray-400 py-1">
-        <p>{t('recipe.nutrition.calcium', 'Calcium')} {nutritionData.calcium.amount}mg</p>
+        <p>{t('nutrition.calcium', 'Calcium')} {nutritionData.calcium.amount}mg</p>
         <span>{nutritionData.calcium.dv}%</span>
       </div>
       <div className="flex justify-between border-b border-gray-400 py-1">
-        <p>{t('recipe.nutrition.iron', 'Iron')} {nutritionData.iron.amount}mg</p>
+        <p>{t('nutrition.iron', 'Iron')} {nutritionData.iron.amount}mg</p>
         <span>{nutritionData.iron.dv}%</span>
       </div>
       <div className="flex justify-between border-b border-gray-400 py-1">
-        <p>{t('recipe.nutrition.potassium', 'Potassium')} {nutritionData.potassium.amount}mg</p>
+        <p>{t('nutrition.potassium', 'Potassium')} {nutritionData.potassium.amount}mg</p>
         <span>{nutritionData.potassium.dv}%</span>
       </div>
 
-      <p className="text-sm mt-2">{t('recipe.nutrition.disclaimer', '* The % Daily Value (DV) tells you how much a nutrient in a serving of food contributes to a daily diet. 2,000 calories a day is used for general nutrition advice.')}</p>
+      <p className="text-sm mt-2">{t('nutrition.disclaimer', '* The % Daily Value (DV) tells you how much a nutrient in a serving of food contributes to a daily diet. 2,000 calories a day is used for general nutrition advice.')}</p>
     </div>
   );
 
@@ -320,7 +320,7 @@ const Recipe = ({ recipeId }) => {
     return (
       <div className="h-full flex items-center justify-center">
         <ErrorMessage
-          message={t('recipe.errors.dataNotAvailable', 'Recipe data not available')}
+          message={t('errors.dataNotAvailable', 'Recipe data not available')}
           onRetry={() => navigate('/app/library')}
         />
       </div>
@@ -387,7 +387,7 @@ const Recipe = ({ recipeId }) => {
                     className="w-full px-4 py-3 text-left hover:bg-[#F5F5F5] transition-colors flex items-center gap-3"
                   >
                     <FolderOpen className="w-5 h-5 text-[#035035]" />
-                    <span className="text-[#2D2D2D] font-medium">{t('recipe.editCollection', 'Edit Collection')}</span>
+                    <span className="text-[#2D2D2D] font-medium">{t('editCollection', 'Edit Collection')}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -397,7 +397,7 @@ const Recipe = ({ recipeId }) => {
                     className="w-full px-4 py-3 text-left hover:bg-red-50 transition-colors flex items-center gap-3"
                   >
                     <PiTrash className="w-5 h-5 text-red-500" />
-                    <span className="text-red-500 font-medium">{t('recipe.deleteRecipe', 'Delete Recipe')}</span>
+                    <span className="text-red-500 font-medium">{t('deleteRecipe', 'Delete Recipe')}</span>
                   </button>
                 </div>
               )}
@@ -421,12 +421,12 @@ const Recipe = ({ recipeId }) => {
           <div className="flex flex-col items-center gap-1 sm:gap-2">
             <PiClock className="h-6 w-6 sm:h-7 sm:w-7 text-[#035035]" />
             <span className="text-xs sm:text-sm font-medium">{formatTime(recipe.total_time_minutes, t)}</span>
-            <span className="text-xs text-gray-500 hidden sm:block">{t('recipe.totalTime', 'Total Time')}</span>
+            <span className="text-xs text-gray-500 hidden sm:block">{t('totalTime', 'Total Time')}</span>
           </div>
           <div className="flex flex-col items-center gap-1 sm:gap-2">
             <PiCookingPot className="h-6 w-6 sm:h-7 sm:w-7 text-[#035035]" />
             <span className={`text-xs sm:text-sm font-bold ${getDifficultyTextColor(recipe.difficulty)}`}>{formatDifficulty(recipe.difficulty, t)}</span>
-            <span className="text-xs text-gray-500 hidden sm:block">{t('recipe.difficultyLabel', 'Difficulty')}</span>
+            <span className="text-xs text-gray-500 hidden sm:block">{t('difficultyLabel', 'Difficulty')}</span>
           </div>
           <div className="flex flex-col items-center gap-1 sm:gap-2">
             {(() => {
@@ -453,7 +453,7 @@ const Recipe = ({ recipeId }) => {
                 : 'text-gray-500 hover:text-[#035035]'
                 }`}
             >
-              {t('recipe.tabs.ingredients', 'Ingredients')}
+              {t('tabs.ingredients', 'Ingredients')}
             </button>
             {recipe.nutrition && (
               <button
@@ -463,7 +463,7 @@ const Recipe = ({ recipeId }) => {
                   : 'text-gray-500 hover:text-[#035035]'
                   }`}
               >
-                {t('recipe.tabs.nutrition', 'Nutrition')}
+                {t('tabs.nutrition', 'Nutrition')}
               </button>
             )}
           </div>
@@ -472,7 +472,7 @@ const Recipe = ({ recipeId }) => {
             {activeTab === 'ingredients' && (
               <div>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-[#F5F5F5] p-3 sm:p-4 rounded-lg gap-3 sm:gap-0">
-                  <span className="font-medium text-sm sm:text-base">{t('recipe.forServings', { count: servings, defaultValue: `For ${servings} serving${servings > 1 ? 's' : ''}` })}</span>
+                  <span className="font-medium text-sm sm:text-base">{t('forServings', { count: servings, defaultValue: `For ${servings} serving${servings > 1 ? 's' : ''}` })}</span>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleServingChange(-1)}

@@ -1,0 +1,22 @@
+{
+  "title": "Sammlung bearbeiten",
+  "searchPlaceholder": "Sammlungen durchsuchen...",
+  "createNew": "Neue Sammlung erstellen",
+  "newCollection": "Neue Sammlung",
+  "namePlaceholder": "Name",
+  "descriptionPlaceholder": "Beschreibung (optional)",
+  "cancel": "Abbrechen",
+  "create": "Erstellen",
+  "creating": "Erstellen...",
+  "noCollectionsFound": "Keine Sammlungen gefunden",
+  "noCollections": "Noch keine Sammlungen",
+  "save": "Speichern",
+  "saving": "Speichern...",
+  "delete": "Löschen",
+  "deleting": "Löschen...",
+  "deleteConfirm": "Möchtest du dieses Rezept wirklich löschen?",
+  "errorLoading": "Fehler beim Laden der Sammlungen",
+  "errorSaving": "Speichern fehlgeschlagen. Bitte versuche es erneut.",
+  "errorDeleting": "Löschen fehlgeschlagen. Bitte versuche es erneut.",
+  "errorCreating": "Sammlung konnte nicht erstellt werden"
+}
