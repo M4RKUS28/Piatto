@@ -301,7 +301,7 @@ export default function RegisterPage() {
           <div className="mt-6 text-center">
             <p className={`text-[#2D2D2D] ${helperTextSize}`}>
               {t('register.hasAccount', 'Already have an account?')}{' '}
-              <Link to="/login" className="text-[#FF9B7B] hover:text-[#035035] transition-colors font-semibold">
+              <Link to="/auth/login" className="text-[#FF9B7B] hover:text-[#035035] transition-colors font-semibold">
                 {t('register.signIn', 'Sign In')}
               </Link>
             </p>

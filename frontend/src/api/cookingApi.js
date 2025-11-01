@@ -1,5 +1,50 @@
 import { apiWithCookies } from './baseApi';
 
+const COOKING_SESSION_STORAGE_KEY = 'piatto_current_cooking_session_id';
+
+const isBrowser = typeof window !== 'undefined';
+
+const storeCookingSessionId = (sessionId) => {
+  try {
+    if (!sessionId && sessionId !== 0) {
+      return;
+    }
+
+    if (isBrowser && window.localStorage) {
+      window.localStorage.setItem(
+        COOKING_SESSION_STORAGE_KEY,
+        JSON.stringify(Number(sessionId))
+      );
+    }
+  } catch (err) {
+    console.warn('Failed to persist cooking session ID:', err);
+  }
+};
+
+const getStoredCookingSessionId = () => {
+  try {
+    if (isBrowser && window.localStorage) {
+      const raw = window.localStorage.getItem(COOKING_SESSION_STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+  } catch (err) {
+    console.warn('Failed to read stored cooking session ID:', err);
+  }
+  return null;
+};
+
+const clearStoredCookingSessionId = () => {
+  try {
+    if (isBrowser && window.localStorage) {
+      window.localStorage.removeItem(COOKING_SESSION_STORAGE_KEY);
+    }
+  } catch (err) {
+    console.warn('Failed to clear stored cooking session ID:', err);
+  }
+};
+
 /**
  * Start a cooking session for a recipe
  * @param {number} recipeId - The recipe ID
@@ -9,6 +54,7 @@ import { apiWithCookies } from './baseApi';
 export const startCookingSession = async (recipeId) => {
   try {
     const response = await apiWithCookies.post(`/cooking/${recipeId}/start`);
+    storeCookingSessionId(response.data);
     return response.data;
   } catch (error) {
     // Log all errors to console with full error details for debugging
@@ -96,8 +142,13 @@ export const updateCookingState = async (cookingSessionId, newState) => {
  * @throws {Error} If the request fails
  */
 export const getPromptHistory = async (cookingSessionId) => {
+  const sessionIdToUse = cookingSessionId ?? getStoredCookingSessionId();
+  if (!sessionIdToUse && sessionIdToUse !== 0) {
+    throw new Error('No cooking session ID available for prompt history request.');
+  }
+
   try {
-    const response = await apiWithCookies.get(`/cooking/${cookingSessionId}/get_prompt_history`);
+    const response = await apiWithCookies.get(`/cooking/${sessionIdToUse}/get_prompt_history`);
     return response.data;
   } catch (error) {
     // Log all errors to console with full error details for debugging
@@ -125,9 +176,14 @@ export const getPromptHistory = async (cookingSessionId) => {
  * @throws {Error} If the request fails
  */
 export const askCookingQuestion = async (cookingSessionId, prompt) => {
+  const sessionIdToUse = cookingSessionId ?? getStoredCookingSessionId();
+  if (!sessionIdToUse && sessionIdToUse !== 0) {
+    throw new Error('No cooking session ID available for cooking question.');
+  }
+
   try {
     const response = await apiWithCookies.post('/cooking/ask_question', {
-      cooking_session_id: cookingSessionId,
+      cooking_session_id: sessionIdToUse,
       prompt,
     });
     return response.data;
@@ -157,8 +213,14 @@ export const askCookingQuestion = async (cookingSessionId, prompt) => {
  * @throws {Error} If the request fails
  */
 export const finishCookingSession = async (cookingSessionId) => {
+  const sessionIdToUse = cookingSessionId ?? getStoredCookingSessionId();
+  if (!sessionIdToUse && sessionIdToUse !== 0) {
+    throw new Error('No cooking session ID available to finish.');
+  }
+
   try {
-    const response = await apiWithCookies.delete(`/cooking/${cookingSessionId}/finish`);
+    const response = await apiWithCookies.delete(`/cooking/${sessionIdToUse}/finish`);
+    clearStoredCookingSessionId();
     return response.data;
   } catch (error) {
     // Log all errors to console with full error details for debugging

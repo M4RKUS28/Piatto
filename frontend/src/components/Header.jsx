@@ -43,13 +43,13 @@ export default function Header({ showAuthButtons = true }) {
               ) : (
                 <div className={`flex items-center ${isMobile ? 'gap-2' : 'gap-3'}`}>
                   <Link
-                    to="/login"
+                    to="/auth/login"
                     className={`text-[#035035] hover:text-[#FF9B7B] transition-colors font-semibold ${isExtraSmall ? 'text-xs' : isMobile ? 'text-sm' : ''}`}
                   >
                     {t('navigation.signIn')}
                   </Link>
                   <Link
-                    to="/register"
+                    to="/auth/register"
                     className={`bg-[#035035] text-white rounded-full font-semibold hover:scale-105 transition-all shadow-md hover:shadow-lg ${isExtraSmall ? 'px-2.5 py-2 text-xs' : isMobile ? 'px-4 py-2 text-sm' : 'px-6 py-3'}`}
                   >
                     {t('navigation.getStartedFree')}

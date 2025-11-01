@@ -223,7 +223,7 @@ def _build_login_failed_redirect(reason: str) -> RedirectResponse:
         )
 
     safe_reason = quote_plus(reason) if reason else ""
-    url = f"{frontend_base_url}/login-failed"
+    url = f"{frontend_base_url}/auth/login-failed"
     if safe_reason:
         url = f"{url}?reason={safe_reason}"
     return RedirectResponse(url=url)

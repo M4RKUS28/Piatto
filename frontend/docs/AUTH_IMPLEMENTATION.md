@@ -13,11 +13,11 @@
 - Shows loading state during authentication check
 
 ### 3. **Authentication Pages**
-- ✅ **Login Page** (`/login`) - Email/password + Google OAuth
-- ✅ **Register Page** (`/register`) - Email/password + Google OAuth + Privacy checkbox
+- ✅ **Login Page** (`/auth/login`) - Email/password + Google OAuth
+- ✅ **Register Page** (`/auth/register`) - Email/password + Google OAuth + Privacy checkbox
 - ✅ **OAuth Callback** (`/auth/google/callback`) - Handles Google OAuth redirect
-- ✅ **Login Failed** (`/login-failed`) - Error page with helpful messages
-- ✅ **Register Failed** (`/register-failed`) - Registration error page
+- ✅ **Login Failed** (`/auth/login-failed`) - Error page with helpful messages
+- ✅ **Register Failed** (`/auth/register-failed`) - Registration error page
 
 ### 4. **Informational Pages**
 - ✅ **404 Not Found** (`*`) - Custom branded error page

@@ -35,7 +35,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
 
         {/* Auth pages with minimal AuthLayout (no auth buttons, no footer) */}
-        <Route element={<AuthLayout />}>
+        <Route path="/app" element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/oauth/callback" element={<OAuthCallbackPage />} />

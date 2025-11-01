@@ -208,7 +208,7 @@ export default function LoginPage() {
           <div className="mt-8 text-center">
             <p className={`text-[#2D2D2D] ${helperTextSize}`}>
               {t('login.noAccount', "Don't have an account?")}{' '}
-              <Link to="/register" className="text-[#FF9B7B] hover:text-[#035035] transition-colors font-semibold">
+              <Link to="/auth/register" className="text-[#FF9B7B] hover:text-[#035035] transition-colors font-semibold">
                 {t('login.signUp', 'Sign Up')}
               </Link>
             </p>

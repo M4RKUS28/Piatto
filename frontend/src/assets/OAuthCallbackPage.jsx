@@ -102,7 +102,7 @@ function OAuthCallbackPage() {
             message: t('notifications.oauthCallback.messageErrorSession'),
             color: 'red',
           });
-          navigate('/login?error=session_verification_failed');
+          navigate('/auth/login?error=session_verification_failed');
         }
       } catch (error) {
         console.error('OAuthCallbackPage: Error during fetchAndSetCurrentUser (cookie auth):', error);
@@ -116,13 +116,13 @@ function OAuthCallbackPage() {
 
         if (detailMessage) {
           console.log('OAuthCallbackPage: Backend detail error detected:', detailMessage);
-          navigate(`/login-failed?reason=${encodeURIComponent(detailMessage)}`);
+          navigate(`/auth/login-failed?reason=${encodeURIComponent(detailMessage)}`);
           return;
         }
 
         if (fallbackMessage) {
           console.log('OAuthCallbackPage: Backend error message detected:', fallbackMessage);
-          navigate(`/login-failed?reason=${encodeURIComponent(fallbackMessage)}`);
+          navigate(`/auth/login-failed?reason=${encodeURIComponent(fallbackMessage)}`);
           return;
         }
 
