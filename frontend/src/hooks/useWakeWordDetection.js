@@ -15,8 +15,11 @@ const useWakeWordDetection = () => {
   const recognitionRef = useRef(null);
   const restartTimerRef = useRef(null);
   const retryCountRef = useRef(0);
+  const isActiveRef = useRef(false); // Ref to track active state for callbacks
+  const lastDetectionTimeRef = useRef(0); // Track last detection time for debounce
   const maxRetries = 3;
-  const restartInterval = 5000; // Restart every 5 seconds to avoid browser timeout
+  const restartInterval = 30000; // Restart every 30 seconds to avoid browser timeout
+  const debounceInterval = 3000; // Debounce detection for 3 seconds
 
   // Debug log helper
   const debugLog = useCallback((message, data = null) => {
@@ -51,7 +54,7 @@ const useWakeWordDetection = () => {
   // Check if transcript contains wake word
   const checkForWakeWord = useCallback((transcript) => {
     const normalizedTranscript = transcript.toLowerCase().trim();
-    const wakeWords = ['hey piatto', 'hey piato', 'hi piatto', 'hi piato']; // Include common mishearings
+    const wakeWords = ['hey piatto', 'hey piato', 'hi piatto', 'hi piato', 'hey piattu', 'hi piattu', 'hey piattu', 'hey piatou', 'hey biatto']; // Include common mishearings
 
     return wakeWords.some(word => normalizedTranscript.includes(word));
   }, []);
@@ -83,11 +86,21 @@ const useWakeWordDetection = () => {
         debugLog(`Heard: "${transcript}" (${isFinal ? 'final' : 'interim'})`);
 
         if (checkForWakeWord(transcript)) {
-          debugLog('🎯 WAKE WORD DETECTED! "Hey Piatto" was heard!');
-          setDetectionCount(prev => prev + 1);
-          setLastDetectedTime(new Date());
+          const now = Date.now();
+          const timeSinceLastDetection = now - lastDetectionTimeRef.current;
 
-          // TODO: Add callback here to trigger audio streaming to backend
+          // Check if enough time has passed since last detection (debounce)
+          if (timeSinceLastDetection >= debounceInterval) {
+            debugLog('🎯 WAKE WORD DETECTED! "Hey Piatto" was heard!');
+            lastDetectionTimeRef.current = now;
+            setDetectionCount(prev => prev + 1);
+            setLastDetectedTime(new Date());
+
+            // TODO: Add callback here to trigger audio streaming to backend
+          } else {
+            const remainingTime = Math.ceil((debounceInterval - timeSinceLastDetection) / 1000);
+            debugLog(`⏳ Wake word heard but debounced (wait ${remainingTime}s)`);
+          }
         }
       };
 
@@ -97,11 +110,13 @@ const useWakeWordDetection = () => {
         if (event.error === 'not-allowed' || event.error === 'permission-denied') {
           setError('Microphone permission denied. Please allow microphone access and try again.');
           setIsActive(false);
+          isActiveRef.current = false;
           setIsListening(false);
           debugLog('Microphone permission denied - stopping');
         } else if (event.error === 'audio-capture') {
           setError('Microphone access error. Please check your browser settings and reload the page. Make sure your microphone is not being used by another application.');
           setIsActive(false);
+          isActiveRef.current = false;
           setIsListening(false);
           debugLog('Audio capture error - microphone might be in use or blocked by browser policy');
         } else if (event.error === 'no-speech') {
@@ -121,12 +136,12 @@ const useWakeWordDetection = () => {
         setIsListening(false);
 
         // Auto-restart if still active and not at max retries
-        if (isActive && retryCountRef.current < maxRetries) {
+        if (isActiveRef.current && retryCountRef.current < maxRetries) {
           debugLog(`Auto-restarting (attempt ${retryCountRef.current + 1}/${maxRetries})...`);
           retryCountRef.current += 1;
 
           setTimeout(() => {
-            if (isActive) {
+            if (isActiveRef.current) {
               try {
                 recognitionRef.current?.start();
               } catch (err) {
@@ -153,7 +168,7 @@ const useWakeWordDetection = () => {
         setError(`Failed to start: ${err.message}`);
       }
     }
-  }, [isActive, initializeSpeechRecognition, checkForWakeWord, debugLog]);
+  }, [initializeSpeechRecognition, checkForWakeWord, debugLog]);
 
   // Stop listening
   const stopListening = useCallback(() => {
@@ -175,6 +190,7 @@ const useWakeWordDetection = () => {
 
     setIsListening(false);
     setIsActive(false);
+    isActiveRef.current = false;
     retryCountRef.current = 0;
     debugLog('✓ Stopped listening');
   }, [debugLog]);
@@ -220,6 +236,7 @@ const useWakeWordDetection = () => {
       stopListening();
     } else {
       setIsActive(true);
+      isActiveRef.current = true;
       setError(null);
       retryCountRef.current = 0;
       debugLog('=== STARTING WAKE WORD DETECTION ===');
