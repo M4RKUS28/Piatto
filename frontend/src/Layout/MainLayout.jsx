@@ -181,7 +181,7 @@ export default function MainLayout({ children }) {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-[#F5F5F5] shadow-sm">
+      <header className="sticky top-0 z-50 bg-[#F5EFE6] backdrop-blur-sm border-b border-[#F5F5F5] shadow-sm">
         <div className="flex items-center justify-between px-6 py-3">
           {/* Logo */}
           <Link

@@ -324,12 +324,12 @@ export default function RecipeGeneration({ onClose, collectionContext: collectio
 
 
 	return (
-		<div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4 py-6 sm:px-6 lg:px-8 overflow-y-auto">
+		<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm px-4 py-6 sm:px-6 lg:px-8 overflow-y-auto">
 			<div className="relative w-full max-w-5xl my-auto">
 				{onClose && (
 					<button
 						onClick={handleFinishCurrentSession}
-						className="absolute -top-2 -right-2 z-50 bg-white/80 hover:bg-white text-gray-600 hover:text-gray-800 rounded-full p-2 shadow-md transition-all"
+						className="absolute -top-2 -right-2 z-[10000] bg-white/80 hover:bg-white text-gray-600 hover:text-gray-800 rounded-full p-2 shadow-md transition-all"
 						aria-label="Close"
 					>
 						<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
