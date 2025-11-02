@@ -180,7 +180,7 @@ const CookingInstructions = ({
   const sessionActive = Boolean(cookingSessionId) && !sessionFinished;
   const hasActiveStep = focusedStep !== null;
   const totalSteps = instructions?.length ?? 0;
-  const isLastStep = hasActiveStep && totalSteps > 0 ? focusedStep === totalSteps - 1 : false;
+  const isLastStep = hasActiveStep && totalSteps > 0 ? focusedStep === totalSteps : false;
   const navigationBusy = isNavigating || isFinishingSession;
 
   // Timer state management
@@ -402,27 +402,32 @@ const CookingInstructions = ({
     }
   }, []);
 
-  const navigateToStep = React.useCallback(async (index, { scroll = true, sessionIdOverride } = {}) => {
-    if (!instructions || index < 0 || index >= instructions.length) {
+  const navigateToStep = React.useCallback(async (step, { scroll = true, sessionIdOverride } = {}) => {
+    if (!instructions || step < 1 || step > instructions.length) {
       return;
     }
 
+    console.log('🔄 Switching state:', { from: focusedStep, to: step });
+
     setSessionError(null);
     setNavigationError(null);
-    setFocusedStep(index);
+    setFocusedStep(step);
     setOpenChatStep(null);
 
+    const arrayIndex = step - 1; // Convert 1-based to 0-based for array access
+
     if (scroll) {
-      scrollStepIntoView(index);
+      scrollStepIntoView(arrayIndex);
     }
 
     const sessionIdToUse = sessionIdOverride ?? cookingSessionId;
 
-    if (sessionIdToUse && previousSyncedStep.current !== index) {
+    if (sessionIdToUse && previousSyncedStep.current !== step) {
       setIsNavigating(true);
       try {
-        await updateCookingState(sessionIdToUse, index);
-        previousSyncedStep.current = index;
+        await updateCookingState(sessionIdToUse, step);
+        previousSyncedStep.current = step;
+        console.log('✅ State updated successfully. Current state:', step);
       } catch (err) {
         console.error('Failed to update cooking state:', err);
         setNavigationError(t('instructions.syncError', 'Kochstatus konnte nicht aktualisiert werden. Bitte versuche es erneut.'));
@@ -430,7 +435,7 @@ const CookingInstructions = ({
         setIsNavigating(false);
       }
     }
-  }, [instructions, cookingSessionId, scrollStepIntoView, t]);
+  }, [instructions, cookingSessionId, scrollStepIntoView, t, focusedStep]);
 
   const handleStepClick = React.useCallback((index) => {
     if (!sessionActive) {
@@ -438,13 +443,15 @@ const CookingInstructions = ({
       return;
     }
 
-    navigateToStep(index);
+    navigateToStep(index + 1); // Convert 0-based array index to 1-based step
   }, [sessionActive, navigateToStep, t]);
 
   const handleStartCooking = React.useCallback(async () => {
     if (!recipeId || !instructions || instructions.length === 0) {
       return;
     }
+
+    console.log('🚀 Starting cooking session. Initial state will be: 1');
 
     setSessionError(null);
     setNavigationError(null);
@@ -462,7 +469,8 @@ const CookingInstructions = ({
     try {
       const sessionId = await startCookingSession(parseInt(recipeId, 10));
       setCookingSessionId(sessionId);
-      await navigateToStep(0, { sessionIdOverride: sessionId });
+      console.log('✅ Cooking session started with ID:', sessionId);
+      await navigateToStep(1, { sessionIdOverride: sessionId });
     } catch (err) {
       console.error('Failed to start cooking session:', err);
       setSessionError(t('instructions.startError', 'Die Kochsession konnte nicht gestartet werden. Bitte versuche es erneut.'));
@@ -472,7 +480,7 @@ const CookingInstructions = ({
   }, [recipeId, instructions, navigateToStep, t]);
 
   const handlePreviousStep = React.useCallback(() => {
-    if (!sessionActive || !hasActiveStep || focusedStep === 0) {
+    if (!sessionActive || !hasActiveStep || focusedStep === 1) {
       return;
     }
 
@@ -489,7 +497,7 @@ const CookingInstructions = ({
       return;
     }
 
-    if (focusedStep >= totalSteps - 1) {
+    if (focusedStep >= totalSteps) {
       if (!cookingSessionId) {
         return;
       }
@@ -555,10 +563,10 @@ const CookingInstructions = ({
         }
 
         const parsedState = Number(session.state);
-        const safeState = Number.isFinite(parsedState) ? parsedState : 0;
+        const safeState = Number.isFinite(parsedState) ? parsedState : 1;
         const clampedStep = Math.min(
-          Math.max(safeState, 0),
-          Math.max(instructions.length - 1, 0)
+          Math.max(safeState, 1),
+          instructions.length
         );
 
         setCookingSessionId(session.id);
@@ -568,9 +576,10 @@ const CookingInstructions = ({
         setOpenChatStep(null);
         previousSyncedStep.current = clampedStep;
 
+        console.log('🔄 Restored cooking session. Session ID:', session.id, 'Initial state:', clampedStep);
         setFocusedStep(clampedStep);
         requestAnimationFrame(() => {
-          scrollStepIntoView(clampedStep);
+          scrollStepIntoView(clampedStep - 1); // Convert 1-based to 0-based for array access
         });
       } catch (err) {
         console.error('Failed to restore cooking session:', err);
@@ -763,15 +772,15 @@ const CookingInstructions = ({
           ) : (
             <div className="bg-white border-2 border-[#A8C9B8] rounded-2xl px-4 py-5 sm:px-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
               <div className="text-sm sm:text-base text-[#2D2D2D] font-medium">
-                {t('instructions.currentStep', 'Aktueller Schritt')}: {hasActiveStep ? `${focusedStep + 1}/${totalSteps}` : '—'}
+                {t('instructions.currentStep', 'Aktueller Schritt')}: {hasActiveStep ? `${focusedStep}/${totalSteps}` : '—'}
               </div>
               <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={handlePreviousStep}
-                  disabled={!hasActiveStep || focusedStep === 0 || navigationBusy}
+                  disabled={!hasActiveStep || focusedStep === 1 || navigationBusy}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    !hasActiveStep || focusedStep === 0 || navigationBusy
+                    !hasActiveStep || focusedStep === 1 || navigationBusy
                       ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                       : 'bg-white border-2 border-[#035035] text-[#035035] hover:bg-[#f1f9f5]'
                   }`}
@@ -875,10 +884,10 @@ const CookingInstructions = ({
                 ref={(el) => (stepRefs.current[index] = el)}
                 circleRef={(el) => (circleRefs.current[index] = el)}
                 instruction={instruction}
-                content={buildInstructionContent(instruction, index, timerData, handlers, focusedStep === index, sessionActive)}
+                content={buildInstructionContent(instruction, index, timerData, handlers, focusedStep === index + 1, sessionActive)}
                 index={index}
                 circleRadius={circleRadius}
-                isFocused={focusedStep === index}
+                isFocused={focusedStep === index + 1}
                 hasActiveStep={hasActiveStep}
                 isInteractive={sessionActive}
                 onClick={() => handleStepClick(index)}

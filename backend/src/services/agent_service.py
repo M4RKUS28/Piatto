@@ -237,7 +237,7 @@ class AgentService:
         if cooking_session.user_id != user_id:
             raise HTTPException(status_code=403, detail="Not authorized to interact with this cooking session")
 
-        recipe = await recipe_crud.get_recipe_by_id(db, cooking_session.recipe_id)
+        recipe: Optional[Recipe] = await recipe_crud.get_recipe_by_id(db, cooking_session.recipe_id)
         if recipe is None:
             raise HTTPException(status_code=404, detail="Recipe not found for this cooking session")
 
@@ -246,6 +246,13 @@ class AgentService:
             raise HTTPException(status_code=500, detail="Failed to retrieve prompt history for cooking session")
 
         query = get_chat_agent_query(prompt, recipe, cooking_session, prompt_history)
+
+        # Log the final query sent to the chat agent
+        logger.info("=" * 80)
+        logger.info("CHAT AGENT QUERY")
+        logger.info("=" * 80)
+        logger.info("%s", query)
+        logger.info("=" * 80)
 
         # STREAMING BACK THE AGENTS RESONSE @MARKUS
         response_chunks = []
