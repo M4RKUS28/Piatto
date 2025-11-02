@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Search, Clock, Users, Filter, ArrowLeft } from 'lucide-react';
+import { Search, Clock, Users, Filter, ArrowLeft, Wine, CupSoda } from 'lucide-react';
 import { PiLeaf, PiEgg, PiCow } from 'react-icons/pi';
 import { getCollectionById } from '../../api/collectionApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -17,11 +17,21 @@ import { useTranslation } from 'react-i18next';
 const getFoodCategoryDisplay = (category, t) => {
   if (!category) return null;
 
-  if (category === 'vegan') {
+  const normalized = category.toLowerCase().replace(/_/g, '-');
+
+  if (normalized === 'vegan') {
     return { icon: PiLeaf, label: t('foodCategory.vegan', { ns: 'common', defaultValue: 'Vegan' }) };
   }
-  if (category === 'vegetarian') {
+  if (normalized === 'vegetarian') {
     return { icon: PiEgg, label: t('foodCategory.vegetarian', { ns: 'common', defaultValue: 'Vegetarian' }) };
+  }
+
+  if (normalized === 'alcoholic') {
+    return { icon: Wine, label: t('foodCategory.alcoholic', { ns: 'common', defaultValue: 'Alcoholic' }) };
+  }
+
+  if (normalized === 'non-alcoholic') {
+    return { icon: CupSoda, label: t('foodCategory.nonAlcoholic', { ns: 'common', defaultValue: 'Non-alcoholic' }) };
   }
 
   // Meat categories
@@ -35,8 +45,8 @@ const getFoodCategoryDisplay = (category, t) => {
     'mixed-meat': t('foodCategory.mixedMeat', { ns: 'common', defaultValue: 'Mixed Meat' }),
   };
 
-  if (meatLabels[category]) {
-    return { icon: PiCow, label: meatLabels[category] };
+  if (meatLabels[normalized]) {
+    return { icon: PiCow, label: meatLabels[normalized] };
   }
 
   return null;
@@ -95,9 +105,9 @@ export default function CollectionRecipesView() {
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [difficultyFilters, setDifficultyFilters] = useState([]);
   const [timeFilters, setTimeFilters] = useState([]);
-  const [meatTypeFilters, setMeatTypeFilters] = useState([]);
+  const [categoryFilters, setCategoryFilters] = useState([]);
 
-  const activeFilterCount = difficultyFilters.length + timeFilters.length + meatTypeFilters.length;
+  const activeFilterCount = difficultyFilters.length + timeFilters.length + categoryFilters.length;
 
   const toggleDifficultyFilter = (value) => {
     setDifficultyFilters((prev) =>
@@ -111,8 +121,8 @@ export default function CollectionRecipesView() {
     );
   };
 
-  const toggleMeatTypeFilter = (value) => {
-    setMeatTypeFilters((prev) =>
+  const toggleCategoryFilter = (value) => {
+    setCategoryFilters((prev) =>
       prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
     );
   };
@@ -207,10 +217,11 @@ export default function CollectionRecipesView() {
     }
 
     const foodCategory = recipe.food_category || '';
-    const matchesMeat =
-      meatTypeFilters.length > 0 ? meatTypeFilters.includes(foodCategory) : true;
+    const normalizedCategory = foodCategory.toLowerCase().replace(/_/g, '-');
+    const matchesCategory =
+      categoryFilters.length > 0 ? categoryFilters.includes(normalizedCategory) : true;
 
-    return matchesSearch && matchesDifficulty && matchesTime && matchesMeat;
+    return matchesSearch && matchesDifficulty && matchesTime && matchesCategory;
   });
 
   const difficultyOptions = [
@@ -225,9 +236,11 @@ export default function CollectionRecipesView() {
     { value: '60+', label: t('view.filterOverSixty', 'More than 60 min') }
   ];
 
-  const meatTypeOptions = [
+  const categoryOptions = [
     { value: 'vegan', label: t('foodCategory.vegan', { ns: 'common', defaultValue: 'Vegan' }) },
     { value: 'vegetarian', label: t('foodCategory.vegetarian', { ns: 'common', defaultValue: 'Vegetarian' }) },
+    { value: 'alcoholic', label: t('foodCategory.alcoholic', { ns: 'common', defaultValue: 'Alcoholic' }) },
+    { value: 'non-alcoholic', label: t('foodCategory.nonAlcoholic', { ns: 'common', defaultValue: 'Non-alcoholic' }) },
     { value: 'beef', label: t('foodCategory.beef', { ns: 'common', defaultValue: 'Beef' }) },
     { value: 'pork', label: t('foodCategory.pork', { ns: 'common', defaultValue: 'Pork' }) },
     { value: 'chicken', label: t('foodCategory.chicken', { ns: 'common', defaultValue: 'Chicken' }) },
@@ -374,18 +387,18 @@ export default function CollectionRecipesView() {
 
                   <div className="space-y-3">
                     <p className="text-sm font-semibold text-[#035035]">
-                      {t('view.filterMeatType', 'Meat type')}
+                      {t('view.filterCategory', 'Category')}
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {meatTypeOptions.map((option) => (
+                      {categoryOptions.map((option) => (
                         <label
                           key={option.value}
                           className="flex items-center gap-3 text-sm text-[#2D2D2D]"
                         >
                           <input
                             type="checkbox"
-                            checked={meatTypeFilters.includes(option.value)}
-                            onChange={() => toggleMeatTypeFilter(option.value)}
+                            checked={categoryFilters.includes(option.value)}
+                            onChange={() => toggleCategoryFilter(option.value)}
                             className="w-4 h-4 text-[#035035] border-2 border-[#035035]/60 rounded focus:ring-[#035035]"
                           />
                           <span>{option.label}</span>
@@ -410,7 +423,7 @@ export default function CollectionRecipesView() {
                       onClick={() => {
                         setDifficultyFilters([]);
                         setTimeFilters([]);
-                        setMeatTypeFilters([]);
+                        setCategoryFilters([]);
                       }}
                       className="px-5 py-2 rounded-full border-2 border-[#F5F5F5] text-sm font-semibold text-[#035035] hover:bg-[#F5F5F5] transition-all"
                     >

@@ -92,6 +92,7 @@
     "noCollectionsDescription": "Create your first collection to organize recipes",
     "createNewCollection": "Create New Collection",
     "filter": "Filter",
+    "filterCategory": "Category",
     "serverError": "Server error. Please try again later.",
     "networkError": "Network error. Please check your connection.",
     "loadFailed": "Failed to load recipes. Please try again.",

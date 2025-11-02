@@ -78,6 +78,7 @@
     "recipes": "Recipes",
     "searchPlaceholder": "Search recipes...",
     "filter": "Filter",
+    "filterCategory": "Category",
     "noResults": "No results found",
     "noResultsSubtitle": "Try different search terms",
     "empty": "No recipes in this collection",

@@ -4,7 +4,7 @@ import {
   PiHeart, PiShareNetwork, PiPrinter, PiClock,
   PiCookingPot, PiMinus, PiPlus, PiCow, PiDotsThreeVertical, PiTrash, PiLeaf, PiEgg
 } from 'react-icons/pi';
-import { FolderOpen } from 'lucide-react';
+import { FolderOpen, Wine, CupSoda } from 'lucide-react';
 import { getRecipeById, deleteRecipe } from '../../api/recipeApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorMessage from '../../components/ErrorMessage';
@@ -23,19 +23,37 @@ const getFoodCategoryDisplay = (category, t) => {
     };
   }
 
+  const normalized = category.toLowerCase().replace(/_/g, '-');
+
   // Vegan and vegetarian
-  if (category === 'vegan') {
+  if (normalized === 'vegan') {
     return {
       icon: PiLeaf,
       label: t('foodCategory.vegan', { ns: 'common', defaultValue: 'Vegan' }),
       sublabel: t('foodCategory.veganSub', { ns: 'common', defaultValue: 'Plant-based' })
     };
   }
-  if (category === 'vegetarian') {
+  if (normalized === 'vegetarian') {
     return {
       icon: PiEgg,
       label: t('foodCategory.vegetarian', { ns: 'common', defaultValue: 'Vegetarian' }),
       sublabel: t('foodCategory.vegetarianSub', { ns: 'common', defaultValue: 'Contains dairy/eggs' })
+    };
+  }
+
+  if (normalized === 'alcoholic') {
+    return {
+      icon: Wine,
+      label: t('foodCategory.alcoholic', { ns: 'common', defaultValue: 'Alcoholic' }),
+      sublabel: t('foodCategory.alcoholicSub', { ns: 'common', defaultValue: 'Contains alcohol' })
+    };
+  }
+
+  if (normalized === 'non-alcoholic') {
+    return {
+      icon: CupSoda,
+      label: t('foodCategory.nonAlcoholic', { ns: 'common', defaultValue: 'Non-alcoholic' }),
+      sublabel: t('foodCategory.nonAlcoholicSub', { ns: 'common', defaultValue: 'Alcohol-free' })
     };
   }
 
@@ -71,7 +89,7 @@ const getFoodCategoryDisplay = (category, t) => {
     },
   };
 
-  const meatInfo = meatLabels[category];
+  const meatInfo = meatLabels[normalized];
   if (meatInfo) {
     return { icon: PiCow, ...meatInfo };
   }

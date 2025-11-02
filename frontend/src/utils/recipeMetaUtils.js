@@ -1,10 +1,10 @@
-import { Clock } from 'lucide-react';
+import { Clock, Wine, CupSoda } from 'lucide-react';
 import { PiLeaf, PiEgg, PiCow } from 'react-icons/pi';
 
 export const getFoodCategoryDisplay = (category, t) => {
   if (!category) return null;
 
-  const normalized = category.toLowerCase();
+  const normalized = category.toLowerCase().replace(/_/g, '-').replace(/\s+/g, '-');
 
   if (normalized === 'vegan') {
     return {
@@ -17,6 +17,20 @@ export const getFoodCategoryDisplay = (category, t) => {
     return {
       icon: PiEgg,
       label: t('foodCategory.vegetarian', { ns: 'common', defaultValue: 'Vegetarian' })
+    };
+  }
+
+  if (normalized === 'alcoholic') {
+    return {
+      icon: Wine,
+      label: t('foodCategory.alcoholic', { ns: 'common', defaultValue: 'Alcoholic' })
+    };
+  }
+
+  if (normalized === 'non-alcoholic') {
+    return {
+      icon: CupSoda,
+      label: t('foodCategory.nonAlcoholic', { ns: 'common', defaultValue: 'Non-alcoholic' })
     };
   }
 

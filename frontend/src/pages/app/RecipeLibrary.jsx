@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Clock, FolderOpen, Plus } from 'lucide-react';
+import { Clock, FolderOpen, Plus, Wine, CupSoda } from 'lucide-react';
 import { PiLeaf, PiEgg, PiCow } from 'react-icons/pi';
 import { getUserRecipes } from '../../api/recipeApi';
 import { getUserCollections, createCollection } from '../../api/collectionApi';
@@ -20,11 +20,21 @@ import { useTranslation } from 'react-i18next'
 const getFoodCategoryDisplay = (category, t) => {
   if (!category) return null;
 
-  if (category === 'vegan') {
+  const normalized = category.toLowerCase().replace(/_/g, '-');
+
+  if (normalized === 'vegan') {
     return { icon: PiLeaf, label: t('foodCategory.vegan', { ns: 'common', defaultValue: 'Vegan' }) };
   }
-  if (category === 'vegetarian') {
+  if (normalized === 'vegetarian') {
     return { icon: PiEgg, label: t('foodCategory.vegetarian', { ns: 'common', defaultValue: 'Vegetarian' }) };
+  }
+
+  if (normalized === 'alcoholic') {
+    return { icon: Wine, label: t('foodCategory.alcoholic', { ns: 'common', defaultValue: 'Alcoholic' }) };
+  }
+
+  if (normalized === 'non-alcoholic') {
+    return { icon: CupSoda, label: t('foodCategory.nonAlcoholic', { ns: 'common', defaultValue: 'Non-alcoholic' }) };
   }
 
   // Meat categories
@@ -38,8 +48,8 @@ const getFoodCategoryDisplay = (category, t) => {
     'mixed-meat': t('foodCategory.mixedMeat', { ns: 'common', defaultValue: 'Mixed Meat' }),
   };
 
-  if (meatLabels[category]) {
-    return { icon: PiCow, label: meatLabels[category] };
+  if (meatLabels[normalized]) {
+    return { icon: PiCow, label: meatLabels[normalized] };
   }
 
   return null;

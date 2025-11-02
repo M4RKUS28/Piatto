@@ -92,6 +92,7 @@
     "noCollectionsDescription": "Erstelle deine erste Sammlung, um Rezepte zu organisieren",
     "createNewCollection": "Neue Sammlung erstellen",
     "filter": "Filtern",
+    "filterCategory": "Kategorie",
     "serverError": "Serverfehler. Bitte versuche es später erneut.",
     "networkError": "Netzwerkfehler. Bitte überprüfe deine Verbindung.",
     "loadFailed": "Rezepte konnten nicht geladen werden. Bitte versuche es erneut.",
