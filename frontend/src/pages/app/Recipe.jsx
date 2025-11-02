@@ -1,14 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  PiHeart, PiShareNetwork, PiPrinter, PiClock,
-  PiCookingPot, PiMinus, PiPlus, PiCow, PiDotsThreeVertical, PiTrash, PiLeaf, PiEgg
+  PiClock,
+  PiCookingPot, PiMinus, PiPlus, PiCow, PiLeaf, PiEgg
 } from 'react-icons/pi';
-import { FolderOpen, Wine, CupSoda } from 'lucide-react';
-import { getRecipeById, deleteRecipe } from '../../api/recipeApi';
+import { Wine, CupSoda } from 'lucide-react';
+import { getRecipeById } from '../../api/recipeApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorMessage from '../../components/ErrorMessage';
-import EditCollectionsModal from '../../components/EditCollectionsModal';
 import { getImageUrl } from '../../utils/imageUtils';
 import { useTranslation } from 'react-i18next'
 import useMediaQuery from '../../hooks/useMediaQuery';
@@ -166,9 +165,6 @@ const Recipe = ({ recipeId }) => {
   const [error, setError] = useState(null);
   const [servings, setServings] = useState(4);
   const [activeTab, setActiveTab] = useState('ingredients');
-  const [showMenu, setShowMenu] = useState(false);
-  const [showCollectionsModal, setShowCollectionsModal] = useState(false);
-  const menuRef = useRef(null);
   const isMobile = useMediaQuery('(max-width: 768px)');
 
   useEffect(() => {
@@ -207,43 +203,8 @@ const Recipe = ({ recipeId }) => {
     fetchRecipe();
   }, [recipeId, t]);
 
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setShowMenu(false);
-      }
-    };
-
-    if (showMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showMenu]);
-
   const handleServingChange = (increment) => {
     setServings(prev => Math.max(1, prev + increment));
-  };
-
-  const handleDeleteRecipe = async () => {
-    if (!window.confirm(t('deleteConfirm', 'Are you sure you want to delete this recipe?'))) {
-      return;
-    }
-
-    try {
-      await deleteRecipe(recipeId);
-      navigate('/app/recipes');
-    } catch (err) {
-      console.error('Failed to delete recipe:', err);
-      alert(t('deleteFailed', 'Failed to delete recipe'));
-    }
-  };
-
-  const handleRecipeDeleted = () => {
-    navigate('/app/recipes');
   };
 
   const NutritionLabel = ({ servingCount }) => (
@@ -369,60 +330,14 @@ const Recipe = ({ recipeId }) => {
   return (
     <div className="h-full overflow-y-auto no-scrollbar bg-white">
       <div className="p-4 sm:p-6 md:p-8">
-        {/* Header with Share, Print, and Menu buttons */}
-        <div className={`flex items-start justify-between gap-4 mb-4 ${isMobile ? 'flex-col' : ''}`}>
-          <div className="flex-1">
-            <h1 className="font-poppins font-bold text-xl sm:text-2xl text-[#035035] break-words">
-              {recipe.title}
-            </h1>
-            <p className="mt-1 text-sm sm:text-base text-[#2D2D2D]/80 break-words">
-              {recipe.description}
-            </p>
-          </div>
-          <div className={`flex gap-2 flex-shrink-0 ${isMobile ? 'self-stretch justify-end' : ''}`}>
-            <button className="p-3 border-2 border-[#A8C9B8] rounded-full text-[#035035] hover:bg-[#A8C9B8]/30 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
-              <PiShareNetwork className="h-5 w-5" />
-            </button>
-            <button className="p-3 border-2 border-[#A8C9B8] rounded-full text-[#035035] hover:bg-[#A8C9B8]/30 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
-              <PiPrinter className="h-5 w-5" />
-            </button>
-
-            {/* Menu Button */}
-            <div className="relative" ref={menuRef}>
-              <button
-                onClick={() => setShowMenu(!showMenu)}
-                className="p-3 border-2 border-[#A8C9B8] rounded-full text-[#035035] hover:bg-[#A8C9B8]/30 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
-              >
-                <PiDotsThreeVertical className="h-5 w-5" />
-              </button>
-
-              {/* Dropdown Menu */}
-              {showMenu && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-[#F5F5F5] py-2 z-50">
-                  <button
-                    onClick={() => {
-                      setShowMenu(false);
-                      setShowCollectionsModal(true);
-                    }}
-                    className="w-full px-4 py-3 text-left hover:bg-[#F5F5F5] transition-colors flex items-center gap-3"
-                  >
-                    <FolderOpen className="w-5 h-5 text-[#035035]" />
-                    <span className="text-[#2D2D2D] font-medium">{t('editCollection', 'Edit Collection')}</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowMenu(false);
-                      handleDeleteRecipe();
-                    }}
-                    className="w-full px-4 py-3 text-left hover:bg-red-50 transition-colors flex items-center gap-3"
-                  >
-                    <PiTrash className="w-5 h-5 text-red-500" />
-                    <span className="text-red-500 font-medium">{t('deleteRecipe', 'Delete Recipe')}</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+        {/* Header */}
+        <div className="mb-4">
+          <h1 className="font-poppins font-bold text-xl sm:text-2xl text-[#035035] break-words">
+            {recipe.title}
+          </h1>
+          <p className="mt-1 text-sm sm:text-base text-[#2D2D2D]/80 break-words">
+            {recipe.description}
+          </p>
         </div>
 
         {/* Image */}
@@ -529,14 +444,6 @@ const Recipe = ({ recipeId }) => {
           </div>
         </div>
       </div>
-
-      {/* Edit Collections Modal */}
-      <EditCollectionsModal
-        recipeId={recipeId}
-        isOpen={showCollectionsModal}
-        onClose={() => setShowCollectionsModal(false)}
-        onRecipeDeleted={handleRecipeDeleted}
-      />
     </div>
   );
 };
