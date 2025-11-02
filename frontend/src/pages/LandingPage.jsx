@@ -299,24 +299,24 @@ export default function LandingPage() {
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#FFBC99] via-[#FF9B7B] to-[#FF7A59] text-[#035035] shadow">
                     <Cpu className="w-4 h-4" />
                   </span>
-                  <span className="text-sm font-semibold text-white tracking-wide">{t('ai.badge', 'Powered by Google AI')}</span>
+                  <span className="text-sm font-semibold text-white tracking-wide">{t('ai.badge', 'Powered by Google ADK')}</span>
                 </div>
                 <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-                  {t('ai.title', 'Built with Google Gemini')}
+                  {t('ai.title', 'Built with Google ADK + Gemini')}
                 </h2>
                 <p className="text-lg sm:text-xl text-white/90 max-w-3xl mx-auto">
-                {t('ai.subtitle', 'Leveraging state-of-the-art AI technology from Google DeepMind to deliver the most intelligent cooking experience')}
-              </p>
-            </div>
+                  {t('ai.subtitle', 'Harnessing Google\'s Agent Developer Kit with Gemini models to launch resilient, production-ready culinary agents')}
+                </p>
+              </div>
 
               <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-12">
                 <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 hover:bg-white/15 transition-all hover:scale-105 duration-300">
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#7AD8B1] via-[#4FB98B] to-[#2A8968] flex items-center justify-center mb-6 shadow-lg shadow-[#1A5D46]/40">
                     <Brain className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-4">{t('ai.multimodal.title', 'Multimodal Understanding')}</h3>
+                  <h3 className="text-2xl font-bold text-white mb-4">{t('ai.multimodal.title', 'Agentic Blueprints')}</h3>
                   <p className="text-white/80 leading-relaxed">
-                    {t('ai.multimodal.description', 'Gemini processes text, images, and context simultaneously to understand your cooking needs and generate perfect recipes tailored to you')}
+                    {t('ai.multimodal.description', 'ADK\'s starter kits map intents, tools, and context so your culinary agent understands every step from pantry scan to plating.')}
                   </p>
                 </div>
 
@@ -324,9 +324,9 @@ export default function LandingPage() {
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#FFE08A] via-[#FFC15A] to-[#FF9B48] flex items-center justify-center mb-6 shadow-lg shadow-[#B26A1D]/40">
                     <Zap className="w-8 h-8 text-[#035035]" />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-4">{t('ai.realtime.title', 'Real-Time Guidance')}</h3>
+                  <h3 className="text-2xl font-bold text-white mb-4">{t('ai.realtime.title', 'Tool Orchestration')}</h3>
                   <p className="text-white/80 leading-relaxed">
-                    {t('ai.realtime.description', 'Get instant, context-aware cooking advice and step-by-step instructions powered by Gemini\'s advanced language understanding')}
+                    {t('ai.realtime.description', 'Wire Gemini agents into timers, shopping APIs, or smart appliances with ADK\'s action routing for uninterrupted guidance.')}
                   </p>
                 </div>
 
@@ -334,21 +334,21 @@ export default function LandingPage() {
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#B1D7FF] via-[#7AB8FF] to-[#4A90FF] flex items-center justify-center mb-6 shadow-lg shadow-[#1F4C8C]/45">
                     <Lightbulb className="w-8 h-8 text-white drop-shadow-md" />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-4">{t('ai.creative.title', 'Creative Innovation')}</h3>
+                  <h3 className="text-2xl font-bold text-white mb-4">{t('ai.creative.title', 'Adaptive Runtime')}</h3>
                   <p className="text-white/80 leading-relaxed">
-                    {t('ai.creative.description', 'Discover unique recipe combinations and cooking techniques powered by Gemini\'s vast knowledge and creative capabilities')}
+                    {t('ai.creative.description', 'Run multi-turn conversations with grounding, memory, and safety controls tuned by Google ADK for restaurant-grade reliability.')}
                   </p>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-white hover:text-white/80 transition-colors group">
+                  <span className="text-lg font-semibold">{t('ai.learnMore', 'Explore Google\'s Agent Developer Kit')}</span>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </a>
               </div>
             </div>
-
-            <div className="text-center">
-              <a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-white hover:text-white/80 transition-colors group">
-                <span className="text-lg font-semibold">{t('ai.learnMore', 'Learn more about Google Gemini')}</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </a>
-            </div>
-          </div>
-        </section>
+          </section>
 
   <section id="how-it-works" className="py-20 bg-white scroll-mt-28">
           <div className="container mx-auto px-4 sm:px-6">

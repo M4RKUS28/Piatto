@@ -1,71 +1,73 @@
 {
   "appName": "Piatto",
   "navigation": {
+    "tagline": "KI-kulinarischer Copilot",
     "features": "Funktionen",
     "howItWorks": "So funktioniert's",
     "recipes": "Rezepte",
-    "about": "Über uns",
+    "about": "\u00dcber uns",
     "dashboard": "Dashboard",
     "signIn": "Anmelden",
     "getStartedFree": "Kostenlos starten"
   },
   "footer": {
-    "tagline": "Dein KI-gestützter Kochbegleiter für köstliche Alltagsgerichte",
+    "tagline": "Dein KI-gest\u00fctzter Kochbegleiter f\u00fcr k\u00f6stliche Alltagsgerichte",
     "product": "Produkt",
     "company": "Unternehmen",
-    "connect": "Verbinden",
-    "aboutUs": "Über uns",
+    "connect": "Vernetzen",
+    "aboutUs": "\u00dcber uns",
     "contact": "Kontakt",
     "privacyPolicy": "Datenschutzrichtlinie",
-    "copyright": "© 2025 Piatto. Kochen wird zum Vergnügen, ein Rezept nach dem anderen."
+    "copyright": "\u00a9 2025 Piatto. Kochen wird zum Vergn\u00fcgen, ein Rezept nach dem anderen."
   },
   "buttons": {
     "startCooking": "Jetzt kochen",
+    "watchDemo": "Demo ansehen",
     "exploreRecipes": "Rezepte entdecken",
     "generateRecipe": "Rezept generieren",
     "findNewRecipes": "Neue Rezepte finden",
     "profileSettings": "Profileinstellungen",
     "save": "Speichern",
     "cancel": "Abbrechen",
-    "delete": "Löschen",
+    "delete": "L\u00f6schen",
     "edit": "Bearbeiten",
-    "close": "Schließen",
-    "confirm": "Bestätigen",
-    "back": "Zurück",
+    "close": "Schlie\u00dfen",
+    "confirm": "Best\u00e4tigen",
+    "back": "Zur\u00fcck",
     "next": "Weiter",
     "finish": "Fertig"
   },
   "time": {
-    "na": "N/A",
+    "na": "k.A.",
     "min": "Min.",
     "minutes": "Minuten",
     "hours": "Stunden",
-    "h": "Std"
+    "h": "Std."
   },
   "difficulty": {
-    "na": "N/A",
+    "na": "k.A.",
     "easy": "Einfach",
     "medium": "Mittel",
     "hard": "Schwierig"
   },
   "foodCategory": {
-    "na": "N/A",
+    "na": "k.A.",
     "vegan": "Vegan",
     "veganSub": "Pflanzlich",
     "vegetarian": "Vegetarisch",
-    "vegetarianSub": "Enthält Milchprodukte/Eier",
+    "vegetarianSub": "Mit Milchprodukten/Eiern",
     "beef": "Rind",
-    "beefSub": "Auf Rindfleisch basierend",
+    "beefSub": "Auf Rindfleischbasis",
     "pork": "Schwein",
-    "porkSub": "Auf Schweinefleisch basierend",
+    "porkSub": "Auf Schweinefleischbasis",
     "chicken": "Huhn",
-    "chickenSub": "Geflügel",
+    "chickenSub": "Gefl\u00fcgel",
     "lamb": "Lamm",
-    "lambSub": "Auf Lammfleisch basierend",
+    "lambSub": "Auf Lammfleischbasis",
     "fish": "Fisch",
-    "fishSub": "Auf Fisch basierend",
-    "seafood": "Meeresfrüchte",
-    "seafoodSub": "Auf Meeresfrüchten basierend",
+    "fishSub": "Auf Fischbasis",
+    "seafood": "Meeresfr\u00fcchte",
+    "seafoodSub": "Auf Meeresfr\u00fcchtebasis",
     "mixedMeat": "Gemischtes Fleisch",
     "mixedMeatSub": "Mehrere Fleischsorten"
   },
@@ -79,27 +81,27 @@
       "unknownError": "Unbekannter Fehler"
     },
     "headerTitle": "Benutzerdefinierte Wake-Word-Erkennung",
-    "headerSubtitle": "Lauscht auf: „{{phrase}}“",
-    "statusListening": "Hört zu",
+    "headerSubtitle": "Lauscht auf: \"{{phrase}}\"",
+    "statusListening": "H\u00f6rt zu",
     "controls": {
-      "start": "\u25b6 Zuhören starten",
-      "stop": "\u23f9 Zuhören stoppen"
+      "start": "\u25b6 Zuh\u00f6ren starten",
+      "stop": "\u23f9 Zuh\u00f6ren stoppen"
     },
     "feedback": {
-      "detected": "„{{phrase}}“ erkannt!",
+      "detected": "\"{{phrase}}\" erkannt!",
       "confidence": "Vertrauen: {{value}}%",
       "total": "Gesamt: {{count}}"
     },
     "setup": {
       "title": "Ersteinrichtung erforderlich:",
-      "step1": "Trainiere dein benutzerdefiniertes „{{phrase}}“-Modell (siehe CUSTOM_WAKE_WORD_TRAINING.md)",
-      "step2": "Lege <code>{{file}}</code> in <code>{{folder}}</code> ab",
-      "step3": "Klicke auf „Zuhören starten“, um die Erkennung zu beginnen"
+      "step1": "Trainiere dein benutzerdefiniertes \"{{phrase}}\"-Modell (siehe CUSTOM_WAKE_WORD_TRAINING.md).",
+      "step2": "Lege <code>{{file}}</code> in <code>{{folder}}</code> ab.",
+      "step3": "Klicke auf \"Zuh\u00f6ren starten\", um die Erkennung zu beginnen."
     },
     "debug": {
-      "description": "\ud83d\udca1 Verwendet ein benutzertrainiertes ONNX-Modell für die Erkennung von „{{phrase}}“.",
+      "description": "\ud83d\udca1 Verwendet ein benutzertrainiertes ONNX-Modell zur Erkennung von \"{{phrase}}\".",
       "currentConfidence": "Aktuelles Vertrauen: {{value}}%",
-      "logs": "Öffne die Browser-Konsole für detaillierte Erkennungsprotokolle."
+      "logs": "\u00d6ffne die Browser-Konsole f\u00fcr detaillierte Erkennungsprotokolle."
     }
   }
 }
