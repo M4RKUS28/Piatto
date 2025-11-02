@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useRef } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { Drumstick, Carrot, Milk, Beef, Pizza, Egg } from 'lucide-react';
 import axios from 'axios';
 
 export default function IngredientsStep({
@@ -45,6 +46,22 @@ export default function IngredientsStep({
 		}
 	};
 
+	const exampleIngredients = [
+		{ text: 'Chicken, Rice, Vegetables', icon: Drumstick, color: 'bg-gradient-to-br from-[#FFB88C] to-[#FFA86C]' },
+		{ text: 'Pasta, Tomatoes, Garlic', icon: Pizza, color: 'bg-gradient-to-br from-[#FF9B7B] to-[#FF8B6B]' },
+		{ text: 'Eggs, Flour, Milk', icon: Egg, color: 'bg-gradient-to-br from-[#F4E4C1] to-[#E9D4A1]' },
+		{ text: 'Beef, Potatoes, Onions', icon: Beef, color: 'bg-gradient-to-br from-[#D4846A] to-[#C4745A]' },
+		{ text: 'Tofu, Vegetables, Soy Sauce', icon: Carrot, color: 'bg-gradient-to-br from-[#A8C9B8] to-[#8BB9A8]' },
+		{ text: 'Cheese, Bread, Butter', icon: Milk, color: 'bg-gradient-to-br from-[#FFD88C] to-[#FFC86C]' },
+	];
+
+	const handleExampleClick = (example) => {
+		setIngredientsText(example);
+		if (validationError) {
+			setValidationError('');
+		}
+	};
+
 
 	return (
 		<div className="space-y-6">
@@ -56,8 +73,33 @@ export default function IngredientsStep({
 			</p>
 
 			<form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6" aria-label={t('ingredients.aria.form', 'Ingredients input form')}>
+				{/* Example Ingredients */}
+				<div className="flex flex-wrap gap-2 justify-center">
+					{exampleIngredients.map((example, index) => {
+						const Icon = example.icon;
+						return (
+							<button
+								key={index}
+								type="button"
+								onClick={() => handleExampleClick(example.text)}
+								disabled={loading || analyzing}
+								className={`${example.color} text-white px-4 py-2 rounded-full font-medium text-sm
+									hover:scale-105 active:scale-95 transition-all duration-200 shadow-md
+									disabled:opacity-50 disabled:cursor-not-allowed
+									flex items-center gap-2
+								`}
+							>
+								<Icon className="w-4 h-4" />
+								<span>{example.text}</span>
+							</button>
+						);
+					})}
+				</div>
+
 				<div className="relative">
-					<label htmlFor="ingredients-input" className="block text-xs sm:text-sm font-medium text-[#2D2D2D] mb-2">
+					<div className="absolute -top-1 -left-1 w-full h-full bg-gradient-to-br from-[#A8C9B8]/20 to-[#FF9B7B]/20 rounded-xl blur-xl -z-10"></div>
+					<label htmlFor="ingredients-input" className="block text-xs sm:text-sm font-medium text-[#2D2D2D] mb-2 flex items-center gap-2">
+						<Carrot className="w-4 h-4 text-[#A8C9B8]" />
 						{t('ingredients.label', 'Enter your ingredients')}
 					</label>
 					<div className="relative">
@@ -68,7 +110,7 @@ export default function IngredientsStep({
 							placeholder={t('ingredients.placeholder', 'Enter your ingredients, separated by commas...')}
 							disabled={loading || analyzing}
 							rows={6}
-							className={`w-full px-3 sm:px-4 py-3 pr-12 rounded-xl border-2 transition-all resize-vertical font-['Inter'] text-sm sm:text-base min-h-[120px] focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${validationError ? 'border-[#FF9B7B] focus:border-[#FF9B7B]' : 'border-[#F5F5F5] focus:border-[#035035]'}`}
+							className={`w-full px-3 sm:px-4 py-3 pr-12 rounded-xl border-2 transition-all resize-vertical font-['Inter'] text-sm sm:text-base min-h-[120px] bg-white focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${validationError ? 'border-[#FF9B7B] focus:border-[#FF9B7B]' : 'border-[#F5F5F5] focus:border-[#035035]'}`}
 							aria-invalid={validationError ? 'true' : 'false'}
 							aria-describedby={validationError ? 'ingredients-error' : undefined}
 							aria-label={t('ingredients.aria.ingredientsInput', 'List of ingredients you have available')}
