@@ -17,3 +17,5 @@ Every step needs an animation file, you can choose from the following:
 "big_knife.json" -> A big knife cutting
 "seasoning.json" -> A hand sprinkling some magic (seasoning)
 "finished_recipe.json" -> The animation for the last step
+"blender.json" -> A blender that blends
+"stir_drink.json" -> A drink being stirred
