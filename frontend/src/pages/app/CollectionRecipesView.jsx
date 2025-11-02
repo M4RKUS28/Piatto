@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Search, Clock, Users, Filter, ArrowLeft } from 'lucide-react';
+import { Search, Clock, Users, Filter, ArrowLeft, Plus } from 'lucide-react';
 import { PiLeaf, PiEgg, PiCow } from 'react-icons/pi';
 import { getCollectionById } from '../../api/collectionApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -11,7 +11,8 @@ import EditCollectionsModal from '../../components/EditCollectionsModal';
 import DeleteRecipeModal from '../../components/DeleteRecipeModal';
 import CollectionImageCollage from '../../components/CollectionImageCollage';
 import { getImageUrl } from '../../utils/imageUtils';
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next';
+import RecipeGeneration from './RecipeGeneration';
 
 // Helper function to get food category display (icon and label)
 const getFoodCategoryDisplay = (category, t) => {
@@ -91,6 +92,7 @@ export default function CollectionRecipesView() {
   const [selectedRecipeId, setSelectedRecipeId] = useState(null);
   const [showDeleteRecipeModal, setShowDeleteRecipeModal] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [showRecipeGenerationModal, setShowRecipeGenerationModal] = useState(false);
   const navigate = useNavigate();
 
   const fetchCollection = async () => {
@@ -194,6 +196,15 @@ export default function CollectionRecipesView() {
                   {recipes.length} {recipes.length === 1 ? t('view.recipe', 'Recipe') : t('view.recipes', 'Recipes')}
                 </p>
               </div>
+
+              {/* Create Recipe Button */}
+              <button
+                onClick={() => setShowRecipeGenerationModal(true)}
+                className="bg-[#035035] text-white px-6 py-3 rounded-full font-semibold hover:bg-[#024028] transition-all flex items-center gap-2 min-h-[44px] shadow-lg hover:shadow-xl"
+              >
+                <Plus className="w-5 h-5" />
+                <span>{t('view.createRecipe', 'Create Recipe')}</span>
+              </button>
             </div>
           )}
         </div>
@@ -216,7 +227,7 @@ export default function CollectionRecipesView() {
             title={t('view.empty', 'No recipes in this collection')}
             message={t('view.emptySubtitle', 'Add recipes to this collection by using the recipe menu to add them to a collection.')}
             actionLabel={t('view.generateRecipe', 'Generate Recipe')}
-            onAction={() => navigate('/app/generate', { state: { collectionId: parseInt(collectionId), collectionName: collection?.name } })}
+            onAction={() => setShowRecipeGenerationModal(true)}
           />
         )}
 
@@ -341,6 +352,20 @@ export default function CollectionRecipesView() {
         }}
         onDeleted={handleRecipeDeleted}
       />
+
+      {/* Recipe Generation Modal */}
+      {showRecipeGenerationModal && (
+        <RecipeGeneration
+          onClose={() => {
+            setShowRecipeGenerationModal(false);
+            fetchCollection(); // Refresh recipes after modal closes
+          }}
+          collectionContext={{
+            collectionId: parseInt(collectionId),
+            collectionName: collection?.name
+          }}
+        />
+      )}
     </div>
   );
 }
