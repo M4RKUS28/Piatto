@@ -94,6 +94,16 @@
       "save": "Failed to save. Please try again."
     }
   },
+  "modal": {
+    "title": "Generate New Recipe",
+    "close": "Close"
+  },
+  "confirmClose": {
+    "title": "Cancel Recipe Generation?",
+    "message": "Are you sure you want to cancel? Your current recipe options will be lost.",
+    "keep": "Keep Working",
+    "cancel": "Yes, Cancel"
+  },
   "steps": {
     "step1": "Step 1: What do you want to cook?",
     "step2": "Step 2: What ingredients do you have?",

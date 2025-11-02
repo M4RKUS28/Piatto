@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { updateUser } from '../../api/authApi';
+import { updateUser, deleteCurrentUser } from '../../api/authApi';
 import { uploadPublicFile } from '../../api/filesApi';
-import { User, Mail, Save, AlertCircle, CheckCircle, Globe } from 'lucide-react';
+import { User, Mail, Save, AlertCircle, CheckCircle, Globe, LogOut, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import './ProfileSettings.css';
 
@@ -36,7 +37,8 @@ const extractErrorMessage = (error, fallback) => {
 
 export default function ProfileSettings() {
 	const { t, i18n } = useTranslation(['profileSettings', 'common']);
-	const { user, fetchAndSetCurrentUser } = useAuth();
+	const navigate = useNavigate();
+	const { user, fetchAndSetCurrentUser, logout } = useAuth();
 	const [formData, setFormData] = useState({
 		username: '',
 		email: '',
@@ -45,6 +47,9 @@ export default function ProfileSettings() {
 	const [loading, setLoading] = useState(false);
 	const [isUploadingImage, setIsUploadingImage] = useState(false);
 	const [message, setMessage] = useState({ type: '', text: '' });
+	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const [deleteConfirmUsername, setDeleteConfirmUsername] = useState('');
+	const [isDeleting, setIsDeleting] = useState(false);
 	const fileInputRef = useRef(null);
 
 	const changeLanguage = (lng) => {
@@ -122,6 +127,35 @@ export default function ProfileSettings() {
 			setMessage({ type: 'error', text: errorMessage });
 		} finally {
 			setLoading(false);
+		}
+	};
+
+	const handleLogout = async () => {
+		try {
+			await logout();
+			navigate('/');
+		} catch (error) {
+			console.error('Logout error:', error);
+			setMessage({ type: 'error', text: t('logoutFailed', 'Failed to logout. Please try again.') });
+		}
+	};
+
+	const handleDeleteAccount = async () => {
+		if (deleteConfirmUsername !== user.username) {
+			return;
+		}
+
+		setIsDeleting(true);
+		try {
+			await deleteCurrentUser();
+			await logout();
+			navigate('/');
+		} catch (error) {
+			console.error('Delete account error:', error);
+			const errorMessage = extractErrorMessage(error, t('deleteFailed', 'Failed to delete account. Please try again.'));
+			setMessage({ type: 'error', text: errorMessage });
+			setShowDeleteModal(false);
+			setIsDeleting(false);
 		}
 	};
 
@@ -292,7 +326,105 @@ export default function ProfileSettings() {
 						</div>
 					</div>
 				</div>
+
+				{/* Logout Button */}
+				<div className="bg-white rounded-2xl border border-[#F5F5F5] p-4 sm:p-6 shadow-sm">
+					<h3 className="text-lg font-semibold text-[#035035] mb-4">{t('sessionManagement.title', 'Session Management')}</h3>
+					<button
+						onClick={handleLogout}
+						className="w-full bg-[#2D2D2D] text-white px-6 py-3 sm:py-3.5 rounded-full font-semibold hover:bg-[#1a1a1a] transition-all shadow-md flex items-center justify-center gap-2"
+					>
+						<LogOut className="w-5 h-5" />
+						{t('logout.button', 'Logout')}
+					</button>
+				</div>
+
+				{/* Danger Zone - Delete Account */}
+				<div className="bg-red-50 rounded-2xl border-2 border-red-200 p-4 sm:p-6">
+					<h3 className="text-lg font-semibold text-red-700 mb-2">{t('dangerZone.title', 'Danger Zone')}</h3>
+					<p className="text-sm text-red-600 mb-4">
+						{t('dangerZone.description', 'Once you delete your account, there is no going back. Please be certain.')}
+					</p>
+					<p className="text-sm text-[#2D2D2D] opacity-70">
+						{t('dangerZone.deletePrompt', 'If you want to permanently delete your account, you can')}{' '}
+						<button
+							onClick={() => setShowDeleteModal(true)}
+							className="text-red-600 font-semibold hover:text-red-700 underline"
+						>
+							{t('dangerZone.deleteLink', 'delete your account')}
+						</button>
+						.
+					</p>
+				</div>
 			</div>
+
+			{/* Delete Account Confirmation Modal */}
+			{showDeleteModal && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+					<div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full">
+						<div className="flex items-start gap-4 mb-6">
+							<div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+								<Trash2 className="w-6 h-6 text-red-600" />
+							</div>
+							<div>
+								<h3 className="text-xl font-bold text-red-700 mb-2">
+									{t('deleteModal.title', 'Delete Account')}
+								</h3>
+								<p className="text-sm text-[#2D2D2D] opacity-80">
+									{t('deleteModal.warning', 'This action cannot be undone. This will permanently delete your account and remove all your data.')}
+								</p>
+							</div>
+						</div>
+
+						<div className="mb-6">
+							<label className="block text-sm font-semibold text-[#2D2D2D] mb-2">
+								{t('deleteModal.confirmLabel', 'Type your username to confirm')}
+							</label>
+							<p className="text-xs text-[#2D2D2D] opacity-60 mb-2">
+								{t('deleteModal.confirmHint', 'Please type {{username}} to confirm', { username: user.username })}
+							</p>
+							<input
+								type="text"
+								value={deleteConfirmUsername}
+								onChange={(e) => setDeleteConfirmUsername(e.target.value)}
+								placeholder={user.username}
+								className="w-full px-4 py-3 rounded-xl border-2 border-red-200 focus:outline-none focus:border-red-500 transition-all"
+								disabled={isDeleting}
+							/>
+						</div>
+
+						<div className="flex gap-3">
+							<button
+								onClick={() => {
+									setShowDeleteModal(false);
+									setDeleteConfirmUsername('');
+								}}
+								className="flex-1 px-4 py-3 rounded-full border-2 border-[#F5F5F5] text-[#2D2D2D] font-semibold hover:bg-[#F5F5F5] transition-all"
+								disabled={isDeleting}
+							>
+								{t('deleteModal.cancel', 'Cancel')}
+							</button>
+							<button
+								onClick={handleDeleteAccount}
+								className="flex-1 px-4 py-3 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+								disabled={deleteConfirmUsername !== user.username || isDeleting}
+							>
+								{isDeleting ? (
+									<>
+										<div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+										{t('deleteModal.deleting', 'Deleting...')}
+									</>
+								) : (
+									<>
+										<Trash2 className="w-5 h-5" />
+										{t('deleteModal.confirm', 'Delete Account')}
+									</>
+								)}
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

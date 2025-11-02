@@ -5,7 +5,6 @@ import LandingLayout from './Layout/LandingLayout.jsx'
 import AuthLayout from './Layout/AuthLayout.jsx'
 import LandingPage from './pages/LandingPage.jsx'
 import MainLayout from './Layout/MainLayout.jsx'
-import Dashboard from './pages/app/Dashboard.jsx'
 import RecipeLibrary from './pages/app/RecipeLibrary.jsx'
 import AllRecipesView from './pages/app/AllRecipesView.jsx'
 import RecipeView from "./pages/app/RecipeView.jsx"
@@ -57,7 +56,7 @@ function App() {
 
         {/* Protected app routes with MainLayout */}
         <Route path="/app" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-          <Route index element={<Dashboard />} />
+          <Route index element={<RecipeLibrary />} />
           {isMobile ? (
             <Route path="generate" element={<RecipeGenerationMobile />} />
           ) : (

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Clock, FolderOpen, Plus, Wine, CupSoda } from 'lucide-react';
+import { Clock, FolderOpen, Plus, Wine, CupSoda, ChefHat, Sparkles } from 'lucide-react';
 import { PiLeaf, PiEgg, PiCow } from 'react-icons/pi';
 import { getUserRecipes } from '../../api/recipeApi';
 import { getUserCollections, createCollection } from '../../api/collectionApi';
@@ -15,6 +15,8 @@ import DeleteRecipeModal from '../../components/DeleteRecipeModal';
 import CollectionImageCollage from '../../components/CollectionImageCollage';
 import { getImageUrl } from '../../utils/imageUtils';
 import { useTranslation } from 'react-i18next'
+import { useAuth } from '../../contexts/AuthContext';
+import useMediaQuery from '../../hooks/useMediaQuery';
 
 // Helper function to get food category display (icon and label)
 const getFoodCategoryDisplay = (category, t) => {
@@ -94,6 +96,8 @@ const formatTime = (minutes) => {
 
 export default function RecipeLibrary() {
   const { t } = useTranslation(["recipe", "common"])
+  const { user } = useAuth();
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const [searchParams] = useSearchParams();
   const [collections, setCollections] = useState([]);
   const [latestRecipes, setLatestRecipes] = useState([]);
@@ -236,12 +240,14 @@ export default function RecipeLibrary() {
   return (
     <div className="p-4 sm:p-6 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8 sm:space-y-10">
-        {/* Header */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-3xl sm:text-4xl font-bold text-[#035035]">{t("library.title")}</h1>
-            <p className="text-sm sm:text-base text-[#2D2D2D] opacity-70">{t("library.subtitle")}</p>
-          </div>
+        {/* Welcome Header */}
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#035035]">
+            {t("library.welcome", "Welcome back, {{username}}!", { username: user?.username || "Chef" })}
+          </h1>
+          <p className="text-lg sm:text-xl text-[#2D2D2D] opacity-70">
+            {t("library.welcomeSubtitle", "Let's cook something delicious today")}
+          </p>
         </div>
 
         {/* Loading State */}
@@ -259,8 +265,8 @@ export default function RecipeLibrary() {
         {/* Recipes Content */}
         {!loading && !error && (
           <>
-            {/* Latest Recipes Section - Horizontal scroll with 6 recipes */}
-            {latestRecipes.length > 0 && (
+            {/* Latest Recipes Section - Horizontal scroll with 6 recipes OR Empty State */}
+            {latestRecipes.length > 0 ? (
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <h2 className="text-2xl sm:text-3xl font-bold text-[#035035]">{t("library.latestRecipes", "Latest Recipes")}</h2>
@@ -347,6 +353,92 @@ export default function RecipeLibrary() {
                         </div>
                       );
                     })}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Empty State for No Recipes */}
+                <div className="relative bg-gradient-to-br from-[#FFF8F0] via-white to-[#FFF8F0] rounded-3xl border-2 border-dashed border-[#A8C9B8] p-8 sm:p-12 lg:p-16 text-center overflow-hidden">
+                  {/* Decorative Elements */}
+                  <div className="absolute top-0 left-0 w-32 h-32 bg-[#FF9B7B] opacity-5 rounded-full blur-3xl"></div>
+                  <div className="absolute bottom-0 right-0 w-40 h-40 bg-[#035035] opacity-5 rounded-full blur-3xl"></div>
+
+                  {/* Content */}
+                  <div className="relative z-10 max-w-2xl mx-auto space-y-6">
+                    <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-[#FF9B7B] to-[#FF8B6B] text-white shadow-lg mb-4">
+                      <ChefHat className="w-10 h-10 sm:w-12 sm:h-12" />
+                    </div>
+
+                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#035035]">
+                      {t("library.emptyState.title", "Your Culinary Journey Starts Here!")}
+                    </h2>
+
+                    <p className="text-base sm:text-lg text-[#2D2D2D] opacity-80 max-w-xl mx-auto">
+                      {t("library.emptyState.description", "It looks like you haven't created any recipes yet. Let our AI help you discover amazing dishes tailored to your taste!")}
+                    </p>
+
+                    {/* CTA Button */}
+                    <div className="pt-4">
+                      {isMobile ? (
+                        <Link
+                          to="/app/generate"
+                          className="inline-flex items-center gap-3 bg-gradient-to-r from-[#035035] to-[#046847] text-white px-8 sm:px-10 py-4 sm:py-5 rounded-full font-bold text-lg sm:text-xl hover:scale-105 transition-all shadow-lg hover:shadow-2xl"
+                        >
+                          <Sparkles className="w-6 h-6" />
+                          {t("library.emptyState.createFirst", "Create Your First Recipe")}
+                        </Link>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            // Trigger the modal open in MainLayout
+                            // We'll need to pass this function down as a prop
+                            window.dispatchEvent(new CustomEvent('openGenerateModal'));
+                          }}
+                          className="inline-flex items-center gap-3 bg-gradient-to-r from-[#035035] to-[#046847] text-white px-8 sm:px-10 py-4 sm:py-5 rounded-full font-bold text-lg sm:text-xl hover:scale-105 transition-all shadow-lg hover:shadow-2xl"
+                        >
+                          <Sparkles className="w-6 h-6" />
+                          {t("library.emptyState.createFirst", "Create Your First Recipe")}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Feature Highlights */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-8">
+                      <div className="space-y-2">
+                        <div className="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center mx-auto">
+                          <Sparkles className="w-6 h-6 text-[#FF9B7B]" />
+                        </div>
+                        <h3 className="font-semibold text-[#035035]">
+                          {t("library.emptyState.feature1Title", "AI-Powered")}
+                        </h3>
+                        <p className="text-sm text-[#2D2D2D] opacity-70">
+                          {t("library.emptyState.feature1Desc", "Personalized recipes just for you")}
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center mx-auto">
+                          <Clock className="w-6 h-6 text-[#A8C9B8]" />
+                        </div>
+                        <h3 className="font-semibold text-[#035035]">
+                          {t("library.emptyState.feature2Title", "Quick & Easy")}
+                        </h3>
+                        <p className="text-sm text-[#2D2D2D] opacity-70">
+                          {t("library.emptyState.feature2Desc", "Get recipes in seconds")}
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center mx-auto">
+                          <ChefHat className="w-6 h-6 text-[#035035]" />
+                        </div>
+                        <h3 className="font-semibold text-[#035035]">
+                          {t("library.emptyState.feature3Title", "Chef-Quality")}
+                        </h3>
+                        <p className="text-sm text-[#2D2D2D] opacity-70">
+                          {t("library.emptyState.feature3Desc", "Professional results at home")}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

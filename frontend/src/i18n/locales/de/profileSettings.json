@@ -24,5 +24,28 @@
     "streak": "Anmeldeserie",
     "days": "Tage"
   },
+  "sessionManagement": {
+    "title": "Sitzungsverwaltung"
+  },
+  "logout": {
+    "button": "Abmelden"
+  },
+  "logoutFailed": "Abmeldung fehlgeschlagen. Bitte versuche es erneut.",
+  "dangerZone": {
+    "title": "Gefahrenzone",
+    "description": "Sobald du deinen Account löschst, gibt es kein Zurück mehr. Bitte sei dir sicher.",
+    "deletePrompt": "Wenn du deinen Account dauerhaft löschen möchtest, kannst du",
+    "deleteLink": "deinen Account löschen"
+  },
+  "deleteModal": {
+    "title": "Account löschen",
+    "warning": "Diese Aktion kann nicht rückgängig gemacht werden. Dein Account und alle deine Daten werden dauerhaft gelöscht.",
+    "confirmLabel": "Gib deinen Benutzernamen zur Bestätigung ein",
+    "confirmHint": "Bitte tippe {{username}} zur Bestätigung ein",
+    "cancel": "Abbrechen",
+    "confirm": "Account löschen",
+    "deleting": "Lösche..."
+  },
+  "deleteFailed": "Account konnte nicht gelöscht werden. Bitte versuche es erneut.",
   "loading": "Wird geladen..."
 }

@@ -24,5 +24,28 @@
     "streak": "Login Streak",
     "days": "days"
   },
+  "sessionManagement": {
+    "title": "Session Management"
+  },
+  "logout": {
+    "button": "Logout"
+  },
+  "logoutFailed": "Failed to logout. Please try again.",
+  "dangerZone": {
+    "title": "Danger Zone",
+    "description": "Once you delete your account, there is no going back. Please be certain.",
+    "deletePrompt": "If you want to permanently delete your account, you can",
+    "deleteLink": "delete your account"
+  },
+  "deleteModal": {
+    "title": "Delete Account",
+    "warning": "This action cannot be undone. This will permanently delete your account and remove all your data.",
+    "confirmLabel": "Type your username to confirm",
+    "confirmHint": "Please type {{username}} to confirm",
+    "cancel": "Cancel",
+    "confirm": "Delete Account",
+    "deleting": "Deleting..."
+  },
+  "deleteFailed": "Failed to delete account. Please try again.",
   "loading": "Loading..."
 }

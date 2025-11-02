@@ -93,6 +93,16 @@
       "save": "Speichern fehlgeschlagen. Bitte versuche es erneut."
     }
   },
+  "modal": {
+    "title": "Neues Rezept erstellen",
+    "close": "Schließen"
+  },
+  "confirmClose": {
+    "title": "Rezepterstellung abbrechen?",
+    "message": "Bist du sicher, dass du abbrechen möchtest? Deine aktuellen Rezeptoptionen gehen verloren.",
+    "keep": "Weiter arbeiten",
+    "cancel": "Ja, abbrechen"
+  },
   "steps": {
     "step1": "Schritt 1: Was möchtest du kochen?",
     "step2": "Schritt 2: Welche Zutaten hast du?",

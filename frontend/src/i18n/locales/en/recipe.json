@@ -81,6 +81,19 @@
   "library": {
     "title": "Your Recipes",
     "subtitle": "Discover and save your favorite dishes",
+    "welcome": "Welcome back, {{username}}!",
+    "welcomeSubtitle": "Let's cook something delicious today",
+    "emptyState": {
+      "title": "Your Culinary Journey Starts Here!",
+      "description": "It looks like you haven't created any recipes yet. Let our AI help you discover amazing dishes tailored to your taste!",
+      "createFirst": "Create Your First Recipe",
+      "feature1Title": "AI-Powered",
+      "feature1Desc": "Personalized recipes just for you",
+      "feature2Title": "Quick & Easy",
+      "feature2Desc": "Get recipes in seconds",
+      "feature3Title": "Chef-Quality",
+      "feature3Desc": "Professional results at home"
+    },
     "backToDashboard": "Back to Dashboard",
     "backToLibrary": "Back to Library",
     "latestRecipes": "Latest Recipes",

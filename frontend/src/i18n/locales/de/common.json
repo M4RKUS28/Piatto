@@ -8,7 +8,10 @@
     "about": "Über uns",
     "dashboard": "Dashboard",
     "signIn": "Anmelden",
-    "getStartedFree": "Kostenlos starten"
+    "getStartedFree": "Kostenlos starten",
+    "generateNewRecipe": "Neues Rezept erstellen",
+    "profile": "Profil",
+    "settings": "Einstellungen"
   },
   "footer": {
     "tagline": "Dein KI-gestützter Kochbegleiter für köstliche Alltagsgerichte",

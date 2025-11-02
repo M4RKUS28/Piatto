@@ -8,7 +8,10 @@
     "about": "About",
     "dashboard": "Dashboard",
     "signIn": "Sign In",
-    "getStartedFree": "Get Started Free"
+    "getStartedFree": "Get Started Free",
+    "generateNewRecipe": "Generate New Recipe",
+    "profile": "Profile",
+    "settings": "Settings"
   },
   "footer": {
     "tagline": "Your AI-powered cooking companion for delicious everyday meals",

@@ -83,3 +83,12 @@ export const updateUser = async (userId, updateData) => {
   const response = await apiWithCookies.put(`/users/${userId}`, updateData);
   return response.data;
 };
+
+/**
+ * Delete current user account
+ * Requires authentication
+ */
+export const deleteCurrentUser = async () => {
+  const response = await apiWithCookies.delete('/users/me');
+  return response.data;
+};

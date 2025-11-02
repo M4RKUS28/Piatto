@@ -81,6 +81,19 @@
   "library": {
     "title": "Deine Rezepte",
     "subtitle": "Entdecke und speichere deine Lieblingsgerichte",
+    "welcome": "Willkommen zurück, {{username}}!",
+    "welcomeSubtitle": "Lass uns heute etwas Köstliches kochen",
+    "emptyState": {
+      "title": "Deine kulinarische Reise beginnt hier!",
+      "description": "Es sieht so aus, als hättest du noch keine Rezepte erstellt. Lass unsere KI dir helfen, fantastische Gerichte zu entdecken, die genau auf deinen Geschmack zugeschnitten sind!",
+      "createFirst": "Erstes Rezept erstellen",
+      "feature1Title": "KI-gestützt",
+      "feature1Desc": "Personalisierte Rezepte nur für dich",
+      "feature2Title": "Schnell & Einfach",
+      "feature2Desc": "Rezepte in Sekunden",
+      "feature3Title": "Profi-Qualität",
+      "feature3Desc": "Professionelle Ergebnisse zu Hause"
+    },
     "backToDashboard": "Zurück zum Dashboard",
     "backToLibrary": "Zurück zur Bibliothek",
     "latestRecipes": "Letzte Rezepte",
