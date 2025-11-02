@@ -12,8 +12,8 @@ export default function Header({ showAuthButtons = true }) {
   return (
     <nav className="bg-[#F5EFE6] border-b border-[#D4C5B0] sticky top-0 z-50">
       <div className={`w-full ${isMobile ? 'py-3 px-4' : 'py-4 px-6'}`}>
-        <div className={`flex items-center ${isMobile ? 'gap-3' : 'gap-0'} justify-between ${isMobile ? 'flex-wrap' : ''}`}>
-          <Link to="/" className="flex items-center gap-3">
+        <div className={`flex items-center ${isMobile ? 'gap-3' : ''} justify-between ${isMobile ? 'flex-wrap' : ''}`}>
+          <Link to="/" className="flex items-center gap-3 flex-shrink-0">
             <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} bg-white rounded-2xl shadow-md flex items-center justify-center`}>
               <img src="/logo_no_P.svg" alt="Piatto" className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} />
             </div>
@@ -32,7 +32,7 @@ export default function Header({ showAuthButtons = true }) {
             </div>
           </Link>
 
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-8 absolute left-1/2 transform -translate-x-1/2">
             <Link to="/#how-it-works" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-semibold">{t('navigation.howItWorks')}</Link>
             <Link to="/#features" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-semibold">{t('navigation.features')}</Link>
             <Link to="/about" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-semibold">{t('navigation.about')}</Link>

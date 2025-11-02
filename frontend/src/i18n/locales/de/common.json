@@ -11,7 +11,8 @@
     "getStartedFree": "Kostenlos starten",
     "generateNewRecipe": "Neues Rezept erstellen",
     "profile": "Profil",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "logout": "Abmelden"
   },
   "footer": {
     "tagline": "Dein KI-gestützter Kochbegleiter für köstliche Alltagsgerichte",

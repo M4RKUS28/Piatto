@@ -95,7 +95,8 @@
   },
   "modal": {
     "title": "Neues Rezept erstellen",
-    "close": "Schließen"
+    "close": "Schließen",
+    "closing": "Schließe..."
   },
   "confirmClose": {
     "title": "Rezepterstellung abbrechen?",

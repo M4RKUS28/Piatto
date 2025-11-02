@@ -353,6 +353,43 @@ export default function RecipeLibrary() {
                         </div>
                       );
                     })}
+
+                    {/* Create New Recipe Card */}
+                    <div className="flex-shrink-0 w-[220px] sm:w-[200px]">
+                      {isMobile ? (
+                        <Link
+                          to="/app/generate"
+                          className="block bg-gradient-to-br from-[#035035] to-[#046847] rounded-xl h-full flex flex-col items-center justify-center p-6 cursor-pointer hover:scale-105 transition-all shadow-lg hover:shadow-2xl min-h-[280px]"
+                        >
+                          <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-4">
+                            <Sparkles className="w-8 h-8 text-white" />
+                          </div>
+                          <h3 className="text-lg font-bold text-white text-center mb-2">
+                            {t("library.createNewRecipe", "Create New Recipe")}
+                          </h3>
+                          <p className="text-sm text-white/80 text-center">
+                            {t("library.createNewRecipeDesc", "Generate a new recipe with AI")}
+                          </p>
+                        </Link>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            window.dispatchEvent(new CustomEvent('openGenerateModal'));
+                          }}
+                          className="block bg-gradient-to-br from-[#035035] to-[#046847] rounded-xl h-full w-full flex flex-col items-center justify-center p-6 cursor-pointer hover:scale-105 transition-all shadow-lg hover:shadow-2xl min-h-[280px]"
+                        >
+                          <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-4">
+                            <Sparkles className="w-8 h-8 text-white" />
+                          </div>
+                          <h3 className="text-lg font-bold text-white text-center mb-2">
+                            {t("library.createNewRecipe", "Create New Recipe")}
+                          </h3>
+                          <p className="text-sm text-white/80 text-center">
+                            {t("library.createNewRecipeDesc", "Generate a new recipe with AI")}
+                          </p>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -478,7 +515,7 @@ export default function RecipeLibrary() {
                         className="block bg-white rounded-2xl border-2 border-[#035035]/30 overflow-hidden hover:shadow-lg hover:border-[#035035] hover:-translate-y-1 transition-all cursor-pointer"
                       >
                         {/* Image Collage */}
-                        <div className="bg-[#FFF8F0] h-40 sm:h-44 flex items-center justify-center overflow-hidden relative">
+                        <div className="bg-[#FFF8F0] h-32 sm:h-36 flex items-center justify-center overflow-hidden relative">
                           <CollectionImageCollage imageUrls={collection.preview_image_urls || []} />
 
                           {/* Menu Button - top right inside image */}
@@ -492,15 +529,15 @@ export default function RecipeLibrary() {
                         </div>
 
                         {/* Content */}
-                        <div className="p-4">
-                          <div className="flex items-center gap-1 mb-2 flex-wrap">
-                            <span className="text-[10px] font-semibold text-[#035035] bg-[#035035]/10 px-2 py-0.5 rounded-full whitespace-nowrap">
-                              <FolderOpen className="w-3 h-3 inline mr-0.5 -mt-0.5" />
+                        <div className="p-3">
+                          <div className="flex items-center gap-1 mb-1.5 flex-wrap">
+                            <span className="text-[9px] font-semibold text-[#035035] bg-[#035035]/10 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                              <FolderOpen className="w-2.5 h-2.5 inline mr-0.5 -mt-0.5" />
                               {t("library.collectionLabel", "Collection")}
                             </span>
                           </div>
-                          <h3 className="text-base font-bold text-[#2D2D2D] mb-2 line-clamp-2">{collection.name}</h3>
-                          <div className="flex items-center gap-2 text-xs sm:text-sm text-[#2D2D2D] opacity-60 flex-wrap">
+                          <h3 className="text-sm font-bold text-[#2D2D2D] mb-1.5 line-clamp-2">{collection.name}</h3>
+                          <div className="flex items-center gap-2 text-xs text-[#2D2D2D] opacity-60 flex-wrap">
                             <span className="whitespace-nowrap">
                               {collection.recipe_count} {collection.recipe_count === 1 ? t("library.recipe", "Recipe") : t("library.recipes", "Recipes")}
                             </span>

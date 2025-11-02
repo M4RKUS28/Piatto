@@ -96,7 +96,8 @@
   },
   "modal": {
     "title": "Generate New Recipe",
-    "close": "Close"
+    "close": "Close",
+    "closing": "Closing..."
   },
   "confirmClose": {
     "title": "Cancel Recipe Generation?",

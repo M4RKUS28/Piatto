@@ -99,6 +99,8 @@
     "latestRecipes": "Letzte Rezepte",
     "newBadge": "NEU",
     "viewAllRecipes": "Alle Rezepte anzeigen",
+    "createNewRecipe": "Neues Rezept erstellen",
+    "createNewRecipeDesc": "Generiere ein neues Rezept mit KI",
     "collections": "Sammlungen",
     "newCollection": "Neue Sammlung",
     "noCollections": "Noch keine Sammlungen",

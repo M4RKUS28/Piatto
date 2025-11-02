@@ -29,6 +29,7 @@ export default function RecipeGenerationModal({ isOpen, onClose }) {
   const [, setImageAnalysis] = useState(null);
   const [finishingSession, setFinishingSession] = useState(false);
   const [showConfirmClose, setShowConfirmClose] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
 
   const storeSessionId = useCallback((sessionId) => {
     if (typeof window === 'undefined') return;
@@ -234,6 +235,7 @@ export default function RecipeGenerationModal({ isOpen, onClose }) {
 
   const handleConfirmClose = async () => {
     setShowConfirmClose(false);
+    setIsClosing(true);
     if (preparingSessionId) {
       try {
         await finishPreparingSession(preparingSessionId);
@@ -252,6 +254,7 @@ export default function RecipeGenerationModal({ isOpen, onClose }) {
     setImageKey('');
     setInputMethod('text');
     setCurrentStep(1);
+    setIsClosing(false);
     onClose();
   };
 
@@ -305,6 +308,18 @@ export default function RecipeGenerationModal({ isOpen, onClose }) {
           className="absolute inset-0 bg-black/50 backdrop-blur-sm"
           onClick={handleCloseAttempt}
         />
+
+        {/* Loading Overlay when closing */}
+        {isClosing && (
+          <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/60">
+            <div className="bg-white rounded-2xl p-8 flex flex-col items-center gap-4">
+              <div className="w-16 h-16 border-4 border-[#035035] border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-lg font-semibold text-[#035035]">
+                {t('modal.closing', 'Closing...')}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Modal Content */}
         <div className="relative bg-white rounded-3xl shadow-2xl w-[80%] h-[95%] overflow-hidden flex flex-col">

@@ -11,7 +11,8 @@
     "getStartedFree": "Get Started Free",
     "generateNewRecipe": "Generate New Recipe",
     "profile": "Profile",
-    "settings": "Settings"
+    "settings": "Settings",
+    "logout": "Logout"
   },
   "footer": {
     "tagline": "Your AI-powered cooking companion for delicious everyday meals",
