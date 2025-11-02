@@ -42,7 +42,7 @@ export default function Header({ showAuthButtons = true }) {
             <>
               {isAuthenticated ? (
                 <Link
-                  to="/app"
+                  to="/"
                   className="bg-[#035035] text-white px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all shadow-md hover:shadow-lg"
                 >
                   {t('navigation.dashboard')}
