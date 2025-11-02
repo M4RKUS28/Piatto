@@ -27,7 +27,7 @@ class Recipe(BaseModel):
     image_url: Optional[str] = None
     total_time_minutes: Optional[int] = None
     difficulty: Optional[Literal["easy", "medium", "hard"]] = None
-    food_category: Optional[Literal["vegan", "vegetarian", "beef", "pork", "chicken", "lamb", "fish", "seafood", "mixed-meat"]] = None
+    food_category: Optional[Literal["vegan", "vegetarian", "beef", "pork", "chicken", "lamb", "fish", "seafood", "mixed-meat", "alcoholic", "non-alcoholic"]] = None
     important_notes: str
     cooking_overview: str
 
