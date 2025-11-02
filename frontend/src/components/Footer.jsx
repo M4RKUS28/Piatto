@@ -29,7 +29,6 @@ export default function Footer() {
             <h4 className="font-bold mb-4">{t('footer.product')}</h4>
             <ul className="space-y-2 text-sm opacity-80">
               <li><Link to="/#features" className="hover:opacity-100 transition-opacity">{t('navigation.features')}</Link></li>
-              <li><Link to="/#recipes" className="hover:opacity-100 transition-opacity">{t('navigation.recipes')}</Link></li>
               <li><Link to="/about" className="hover:opacity-100 transition-opacity">{t('navigation.about')}</Link></li>
             </ul>
           </div>
@@ -37,7 +36,6 @@ export default function Footer() {
           <div>
             <h4 className="font-bold mb-4">{t('footer.company')}</h4>
             <ul className="space-y-2 text-sm opacity-80">
-              <li><Link to="/about" className="hover:opacity-100 transition-opacity">{t('footer.aboutUs')}</Link></li>
               <li><Link to="/contact" className="hover:opacity-100 transition-opacity">{t('footer.contact')}</Link></li>
               <li><Link to="/privacy" className="hover:opacity-100 transition-opacity">{t('footer.privacyPolicy')}</Link></li>
             </ul>
@@ -46,9 +44,7 @@ export default function Footer() {
           <div>
             <h4 className="font-bold mb-4">{t('footer.connect')}</h4>
             <ul className="space-y-2 text-sm opacity-80">
-              <li><a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity">{t('footer.social.instagram', 'Instagram')}</a></li>
-              <li><a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity">{t('footer.social.tiktok', 'TikTok')}</a></li>
-              <li><a href="https://pinterest.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity">{t('footer.social.pinterest', 'Pinterest')}</a></li>
+              <li><a href="https://www.instagram.com/piatto_cooks/" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity">{t('footer.social.instagram', 'Instagram')}</a></li>
             </ul>
           </div>
 

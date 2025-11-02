@@ -24,6 +24,7 @@ import NotFoundPage from './pages/NotFoundPage.jsx'
 import PrivacyPage from './pages/PrivacyPage.jsx'
 import AboutPage from './pages/AboutPage.jsx'
 import ContactPage from './pages/ContactPage.jsx'
+import DownloadPage from './pages/DownloadPage.jsx'
 import useMediaQuery from './hooks/useMediaQuery.js'
 
 function App() {
@@ -49,6 +50,7 @@ function App() {
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/download" element={<DownloadPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
 

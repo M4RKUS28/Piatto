@@ -17,18 +17,25 @@ export default function Header({ showAuthButtons = true }) {
             <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} bg-white rounded-2xl shadow-md flex items-center justify-center`}>
               <img src="/logo_no_P.svg" alt="Piatto" className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} />
             </div>
-            <span
-              className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-[#035035]`}
-              style={{ fontFamily: 'Georgia, serif' }}
-            >
-              Piatto
-            </span>
+            <div className="flex flex-col">
+              <span
+                className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-[#035035]`}
+                style={{ fontFamily: 'Georgia, serif' }}
+              >
+                Piatto
+              </span>
+              {!isMobile && (
+                <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#2D2D2D]/70">
+                  {t('navigation.tagline', { defaultValue: 'AI Culinary Copilot' })}
+                </span>
+              )}
+            </div>
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
-            <Link to="/#how-it-works" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">{t('navigation.howItWorks')}</Link>
-            <Link to="/#features" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">{t('navigation.features')}</Link>
-            <Link to="/about" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-medium">{t('navigation.about')}</Link>
+            <Link to="/#how-it-works" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-semibold">{t('navigation.howItWorks')}</Link>
+            <Link to="/#features" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-semibold">{t('navigation.features')}</Link>
+            <Link to="/about" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-semibold">{t('navigation.about')}</Link>
           </div>
 
           {showAuthButtons && (
