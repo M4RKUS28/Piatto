@@ -239,9 +239,9 @@ export default function RecipeLibrary() {
 
   return (
     <div className="p-4 sm:p-6 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-8 sm:space-y-10">
+      <div className="max-w-7xl mx-auto space-y-6 sm:space-y-7">
         {/* Welcome Header */}
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-1">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#035035]">
             {t("library.welcome", "Welcome back, {{username}}!", { username: user?.username || "Chef" })}
           </h1>
@@ -287,7 +287,7 @@ export default function RecipeLibrary() {
                         <div key={recipe.id} className="flex-shrink-0 w-[220px] sm:w-[200px]">
                           <Link
                             to={`/app/recipe/${recipe.id}`}
-                            className={`block bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-300 ${
+                            className={`block bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-300 sm:min-h-[290px] ${
                               isNew
                                 ? 'border-[5px] border-[#FF9B7B] shadow-[0_0_30px_rgba(255,155,123,0.6)] hover:shadow-[0_0_40px_rgba(255,155,123,0.8)] hover:scale-[1.02]'
                                 : 'border border-[#F5F5F5] hover:shadow-lg hover:-translate-y-1'
@@ -359,15 +359,15 @@ export default function RecipeLibrary() {
                       {isMobile ? (
                         <Link
                           to="/app/generate"
-                          className="block bg-gradient-to-br from-[#035035] to-[#046847] rounded-xl h-full flex flex-col items-center justify-center p-6 cursor-pointer hover:scale-105 transition-all shadow-lg hover:shadow-2xl min-h-[280px]"
+                          className="block bg-white rounded-xl border-2 border-dashed border-[#A8C9B8] h-full flex flex-col items-center justify-center p-6 cursor-pointer hover:border-[#035035] hover:bg-[#FFF8F0] transition-all min-h-[280px]"
                         >
-                          <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-4">
-                            <Sparkles className="w-8 h-8 text-white" />
+                          <div className="w-16 h-16 rounded-full bg-[#035035]/10 flex items-center justify-center mb-4">
+                            <Sparkles className="w-8 h-8 text-[#035035]" />
                           </div>
-                          <h3 className="text-lg font-bold text-white text-center mb-2">
+                          <h3 className="text-base font-bold text-[#035035] text-center mb-2">
                             {t("library.createNewRecipe", "Create New Recipe")}
                           </h3>
-                          <p className="text-sm text-white/80 text-center">
+                          <p className="text-xs text-[#2D2D2D] opacity-60 text-center">
                             {t("library.createNewRecipeDesc", "Generate a new recipe with AI")}
                           </p>
                         </Link>
@@ -376,15 +376,15 @@ export default function RecipeLibrary() {
                           onClick={() => {
                             window.dispatchEvent(new CustomEvent('openGenerateModal'));
                           }}
-                          className="block bg-gradient-to-br from-[#035035] to-[#046847] rounded-xl h-full w-full flex flex-col items-center justify-center p-6 cursor-pointer hover:scale-105 transition-all shadow-lg hover:shadow-2xl min-h-[280px]"
+                          className="block bg-white rounded-xl border-2 border-dashed border-[#A8C9B8] h-full w-full flex flex-col items-center justify-center p-6 cursor-pointer hover:border-[#035035] hover:bg-[#FFF8F0] transition-all min-h-[280px]"
                         >
-                          <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-4">
-                            <Sparkles className="w-8 h-8 text-white" />
+                          <div className="w-16 h-16 rounded-full bg-[#035035]/10 flex items-center justify-center mb-4">
+                            <Sparkles className="w-8 h-8 text-[#035035]" />
                           </div>
-                          <h3 className="text-lg font-bold text-white text-center mb-2">
+                          <h3 className="text-base font-bold text-[#035035] text-center mb-2">
                             {t("library.createNewRecipe", "Create New Recipe")}
                           </h3>
-                          <p className="text-sm text-white/80 text-center">
+                          <p className="text-xs text-[#2D2D2D] opacity-60 text-center">
                             {t("library.createNewRecipeDesc", "Generate a new recipe with AI")}
                           </p>
                         </button>
