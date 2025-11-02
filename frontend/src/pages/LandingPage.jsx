@@ -1,9 +1,9 @@
-import { ChefHat, Sparkles, BookOpen, Clock } from 'lucide-react'
+import { ChefHat, Sparkles, BookOpen, Clock, Zap, Brain, Users, MessageSquare, Play, CheckCircle2, ArrowRight, Cpu, Lightbulb, TrendingUp } from 'lucide-react'
 import { PiLeaf, PiEgg, PiCow } from 'react-icons/pi'
+import { Link } from 'react-router-dom'
 import LandingLayout from '../Layout/LandingLayout.jsx'
 import { useTranslation } from 'react-i18next'
-
-
+import { useState, useEffect } from 'react'
 
 // Helper function to get food category display (icon and label)
 const getFoodCategoryDisplay = (category, t) => {
@@ -107,72 +107,81 @@ export default function LandingPage() {
   return (
     <LandingLayout>
       <div className="relative min-h-screen bg-white overflow-hidden">
-        <div className="hidden lg:block fixed top-20 right-20 w-64 h-64 rounded-full bg-[#A8C9B8] opacity-10 blur-3xl"></div>
-        <div className="hidden lg:block fixed bottom-40 left-10 w-80 h-80 rounded-full bg-[#FF9B7B] opacity-10 blur-3xl"></div>
+        {/* Animated background elements */}
+        <div className="hidden lg:block fixed top-20 right-20 w-96 h-96 rounded-full bg-[#A8C9B8] opacity-[0.02] blur-3xl animate-pulse-slow"></div>
+        <div className="hidden lg:block fixed bottom-40 left-10 w-96 h-96 rounded-full bg-[#FF9B7B] opacity-[0.02] blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+        <div className="hidden lg:block fixed top-1/2 left-1/2 w-64 h-64 rounded-full bg-[#035035] opacity-[0.015] blur-3xl animate-pulse-slow" style={{ animationDelay: '4s' }}></div>
 
-        <section className="container mx-auto px-4 sm:px-6 py-14 lg:py-24">
-          <div className="grid lg:grid-cols-2 items-center gap-12">
-            <div className="space-y-8">
-              <div className="inline-flex items-center gap-2 bg-[#FFF8F0] px-4 py-2 rounded-full border border-[#A8C9B8] w-max">
-                <Sparkles className="w-4 h-4 text-[#FF9B7B]" />
-                <span className="text-xs sm:text-sm font-medium text-[#035035]">{t('hero.badge', 'AI-Powered Cooking Assistant')}</span>
+        {/* Hero Section */}
+        <section className="container mx-auto px-4 sm:px-6 py-16 lg:py-28 relative">
+          <div className="grid lg:grid-cols-2 items-center gap-12 lg:gap-16">
+            <div className="space-y-8 animate-fade-in-up">
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FFF8F0] to-white px-4 py-2 rounded-full border-2 border-[#A8C9B8] w-max shadow-md hover:shadow-lg transition-shadow">
+                <Sparkles className="w-4 h-4 text-[#FF9B7B] animate-spin-slow" />
+                <span className="text-xs sm:text-sm font-semibold text-[#035035]">{t('hero.badge', 'AI-Powered Cooking Assistant')}</span>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#035035] leading-tight">
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-[#035035] leading-tight">
                 {t('hero.title', 'Your Personal Chef, Right in Your Pocket')}
               </h1>
 
-              <p className="text-base sm:text-lg text-[#2D2D2D] leading-relaxed">
+              <p className="text-lg sm:text-xl text-[#2D2D2D] leading-relaxed opacity-90">
                 {t('hero.description', 'Discover personalized recipes, get step-by-step cooking guidance, and turn your kitchen into a culinary playground with AI-powered creativity.')}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="bg-[#035035] text-white px-8 py-3 sm:py-4 rounded-full font-semibold text-base sm:text-lg hover:scale-105 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 w-full sm:w-auto">
-                  <ChefHat className="w-5 h-5" />
-                  {t('buttons.startCooking', { ns: 'common', defaultValue: 'Start Cooking' })}
-                </button>
-                <button className="bg-transparent border-2 border-[#FF9B7B] text-[#FF9B7B] px-8 py-3 sm:py-4 rounded-full font-semibold text-base sm:text-lg hover:bg-[#FF9B7B] hover:text-white transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
-                  <BookOpen className="w-5 h-5" />
-                  {t('buttons.exploreRecipes', { ns: 'common', defaultValue: 'Explore Recipes' })}
-                </button>
+                <Link to="/app" className="w-full sm:w-auto">
+                  <button className="group bg-gradient-to-r from-[#035035] to-[#046847] text-white px-10 py-4 rounded-full font-semibold text-lg hover:scale-105 transition-all shadow-lg hover:shadow-2xl flex items-center justify-center gap-2 w-full">
+                    <ChefHat className="w-5 h-5 group-hover:animate-bounce" />
+                    {t('buttons.startCooking', { ns: 'common', defaultValue: 'Start Cooking' })}
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </Link>
+                <a href="#demo-video">
+                  <button className="group bg-transparent border-2 border-[#FF9B7B] text-[#FF9B7B] px-10 py-4 rounded-full font-semibold text-lg hover:bg-[#FF9B7B] hover:text-white transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
+                    <Play className="w-5 h-5" />
+                    {t('buttons.watchDemo', { ns: 'common', defaultValue: 'Watch Demo' })}
+                  </button>
+                </a>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#FFF8F0] flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="w-5 h-5 text-[#035035]" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-8">
+                <div className="flex items-start gap-3 group">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FFF8F0] to-[#FFE8D5] flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md">
+                    <Brain className="w-6 h-6 text-[#035035]" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-[#035035] text-sm sm:text-base">{t('hero.aiRecipeGenerator', 'AI Recipe Generator')}</h3>
+                    <h3 className="font-bold text-[#035035] text-base sm:text-lg">{t('hero.aiRecipeGenerator', 'AI Recipe Generator')}</h3>
                     <p className="text-sm text-[#2D2D2D] opacity-80">{t('hero.aiRecipeGeneratorDesc', 'Custom recipes for your taste')}</p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#FFF8F0] flex items-center justify-center flex-shrink-0">
-                    <BookOpen className="w-5 h-5 text-[#035035]" />
+                <div className="flex items-start gap-3 group">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FFF8F0] to-[#FFE8D5] flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md">
+                    <MessageSquare className="w-6 h-6 text-[#035035]" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-[#035035] text-sm sm:text-base">{t('hero.interactiveGuide', 'Interactive Guide')}</h3>
+                    <h3 className="font-bold text-[#035035] text-base sm:text-lg">{t('hero.interactiveGuide', 'Interactive Guide')}</h3>
                     <p className="text-sm text-[#2D2D2D] opacity-80">{t('hero.interactiveGuideDesc', 'Step-by-step instructions')}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="relative flex justify-center lg:justify-end mt-10 lg:mt-0">
-              <div className="hidden sm:block absolute top-10 right-20 w-20 h-20 rounded-full bg-[#FF9B7B] opacity-20 animate-float"></div>
-              <div className="hidden sm:block absolute bottom-20 right-40 w-16 h-16 rounded-full bg-[#A8C9B8] opacity-20 animate-float" style={{ animationDelay: '1s' }}></div>
-              <div className="hidden sm:block absolute top-32 right-10 w-12 h-12 rounded-full bg-[#035035] opacity-10 animate-float" style={{ animationDelay: '2s' }}></div>
+            {/* Phone Mockup */}
+            <div className="relative flex justify-center lg:justify-end mt-10 lg:mt-0 animate-fade-in">
+              <div className="hidden sm:block absolute top-10 right-20 w-20 h-20 rounded-full bg-[#FF9B7B] opacity-[0.08] animate-float"></div>
+              <div className="hidden sm:block absolute bottom-20 right-40 w-16 h-16 rounded-full bg-[#A8C9B8] opacity-[0.08] animate-float" style={{ animationDelay: '1.5s' }}></div>
+              <div className="hidden sm:block absolute top-32 right-10 w-12 h-12 rounded-full bg-[#035035] opacity-[0.06] animate-float" style={{ animationDelay: '3s' }}></div>
 
-              <div className="relative z-10 w-[240px] sm:w-[300px] lg:w-[320px] aspect-[9/16] bg-[#2D2D2D] rounded-[2.5rem] sm:rounded-[3rem] shadow-2xl p-3 transform hover:scale-105 transition-transform duration-500">
-                <div className="absolute top-5 sm:top-6 left-1/2 transform -translate-x-1/2 w-24 sm:w-32 h-5 sm:h-6 bg-[#2D2D2D] rounded-full z-20"></div>
+              <div className="relative z-10 w-[280px] sm:w-[320px] lg:w-[360px] aspect-[9/16] bg-gradient-to-br from-[#2D2D2D] to-[#1a1a1a] rounded-[2.5rem] sm:rounded-[3rem] shadow-2xl p-3 transform hover:scale-105 transition-transform duration-500">
+                <div className="absolute top-6 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-[#2D2D2D] rounded-full z-20 shadow-inner"></div>
 
-                <div className="w-full h-full bg-white rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden">
-                  <div className="bg-[#035035] text-white p-6 pb-8 rounded-b-3xl">
+                <div className="w-full h-full bg-gradient-to-b from-white to-gray-50 rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden">
+                  <div className="bg-gradient-to-r from-[#035035] to-[#046847] text-white p-6 pb-8 rounded-b-3xl shadow-lg">
                     <div className="flex items-center justify-between mb-4">
                       <h2 className="text-2xl font-bold">{t('mockup.discover', 'Discover')}</h2>
-                      <div className="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
-                        <ChefHat className="w-5 h-5" />
+                      <div className="w-12 h-12 rounded-full bg-white bg-opacity-20 flex items-center justify-center backdrop-blur-sm">
+                        <ChefHat className="w-6 h-6" />
                       </div>
                     </div>
                     <p className="text-sm opacity-90">{t('mockup.whatToCook', 'What would you like to cook today?')}</p>
@@ -182,16 +191,15 @@ export default function LandingPage() {
                     {recipes.map((recipe, index) => (
                       <div
                         key={recipe.id}
-                        className="bg-white rounded-xl border border-[#F5F5F5] overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer"
+                        className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer"
                         style={{ animation: `slideIn 0.5s ease-out ${index * 0.1}s backwards` }}
                       >
-                        {/* Image */}
-                        <div className="bg-[#FFF8F0] h-32 flex items-center justify-center overflow-hidden relative">
+                        <div className="bg-gradient-to-br from-[#FFF8F0] to-[#FFE8D5] h-36 flex items-center justify-center overflow-hidden relative">
                           {recipe.image.startsWith('http') || recipe.image.startsWith('/') ? (
                             <img
                               src={recipe.image}
                               alt={recipe.name}
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
                               loading="lazy"
                             />
                           ) : (
@@ -199,10 +207,9 @@ export default function LandingPage() {
                           )}
                         </div>
 
-                        {/* Content */}
                         <div className="p-3">
                           <div className="flex items-center gap-1 mb-2 flex-wrap">
-                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${getDifficultyColorClasses(recipe.difficulty)}`}>
+                            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap ${getDifficultyColorClasses(recipe.difficulty)}`}>
                               {formatDifficulty(recipe.difficulty, t)}
                             </span>
                           </div>
@@ -234,111 +241,313 @@ export default function LandingPage() {
           </div>
         </section>
 
-  <section id="how-it-works" className="py-16 sm:py-20 scroll-mt-28">
+        {/* Demo Video Section */}
+        <section id="demo-video" className="py-20 bg-gradient-to-b from-white to-[#FFF8F0] scroll-mt-28">
           <div className="container mx-auto px-4 sm:px-6">
-            <div className="text-center mb-12 sm:mb-16">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#035035] mb-4">
+            <div className="text-center mb-12 animate-fade-in-up">
+              <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full border-2 border-[#FF9B7B] w-max mb-6 shadow-md">
+                <Play className="w-4 h-4 text-[#FF9B7B]" />
+                <span className="text-sm font-semibold text-[#035035]">{t('demo.badge', 'See Piatto in Action')}</span>
+              </div>
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#035035] mb-6">
+                {t('demo.title', 'Experience the Future of Cooking')}
+              </h2>
+              <p className="text-lg sm:text-xl text-[#2D2D2D] max-w-3xl mx-auto opacity-90">
+                {t('demo.subtitle', 'Watch how Piatto transforms your cooking experience with AI-powered guidance and personalized recipes')}
+              </p>
+            </div>
+
+            <div className="max-w-5xl mx-auto">
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-[#035035] to-[#046847] p-8 sm:p-12 aspect-video flex items-center justify-center group hover:scale-[1.02] transition-transform duration-300">
+                {/* Video placeholder - replace with your actual video */}
+                <div className="absolute inset-0 bg-black/20"></div>
+                <div className="relative z-10 text-center">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform cursor-pointer">
+                    <Play className="w-10 h-10 sm:w-12 sm:h-12 text-white ml-1" />
+                  </div>
+                  <p className="text-white text-lg sm:text-xl font-semibold">
+                    {t('demo.clickToWatch', 'Click to watch demo')}
+                  </p>
+                  <p className="text-white/80 text-sm mt-2">
+                    {t('demo.duration', '2 min overview')}
+                  </p>
+                </div>
+                {/* Replace the above placeholder with your video element:
+                <video
+                  className="w-full h-full object-cover"
+                  controls
+                  poster="/path-to-thumbnail.jpg"
+                >
+                  <source src="/path-to-your-demo-video.mp4" type="video/mp4" />
+                </video>
+                */}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Google Gemini AI Section */}
+        <section className="py-20 bg-gradient-to-br from-[#035035] via-[#046847] to-[#035035] relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-0 left-0 w-96 h-96 rounded-full bg-white blur-3xl"></div>
+            <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-white blur-3xl"></div>
+          </div>
+          
+          <div className="container mx-auto px-4 sm:px-6 relative z-10">
+              <div className="text-center mb-16 animate-fade-in-up">
+                <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md pl-3 pr-5 py-2 rounded-full border border-white/20 w-max mb-6 shadow-sm">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#FFBC99] via-[#FF9B7B] to-[#FF7A59] text-[#035035] shadow">
+                    <Cpu className="w-4 h-4" />
+                  </span>
+                  <span className="text-sm font-semibold text-white tracking-wide">{t('ai.badge', 'Powered by Google AI')}</span>
+                </div>
+                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
+                  {t('ai.title', 'Built with Google Gemini')}
+                </h2>
+                <p className="text-lg sm:text-xl text-white/90 max-w-3xl mx-auto">
+                {t('ai.subtitle', 'Leveraging state-of-the-art AI technology from Google DeepMind to deliver the most intelligent cooking experience')}
+              </p>
+            </div>
+
+              <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-12">
+                <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 hover:bg-white/15 transition-all hover:scale-105 duration-300">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#7AD8B1] via-[#4FB98B] to-[#2A8968] flex items-center justify-center mb-6 shadow-lg shadow-[#1A5D46]/40">
+                    <Brain className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-4">{t('ai.multimodal.title', 'Multimodal Understanding')}</h3>
+                  <p className="text-white/80 leading-relaxed">
+                    {t('ai.multimodal.description', 'Gemini processes text, images, and context simultaneously to understand your cooking needs and generate perfect recipes tailored to you')}
+                  </p>
+                </div>
+
+                <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 hover:bg-white/15 transition-all hover:scale-105 duration-300">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#FFE08A] via-[#FFC15A] to-[#FF9B48] flex items-center justify-center mb-6 shadow-lg shadow-[#B26A1D]/40">
+                    <Zap className="w-8 h-8 text-[#035035]" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-4">{t('ai.realtime.title', 'Real-Time Guidance')}</h3>
+                  <p className="text-white/80 leading-relaxed">
+                    {t('ai.realtime.description', 'Get instant, context-aware cooking advice and step-by-step instructions powered by Gemini\'s advanced language understanding')}
+                  </p>
+                </div>
+
+                <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 hover:bg-white/15 transition-all hover:scale-105 duration-300">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#B1D7FF] via-[#7AB8FF] to-[#4A90FF] flex items-center justify-center mb-6 shadow-lg shadow-[#1F4C8C]/45">
+                    <Lightbulb className="w-8 h-8 text-white drop-shadow-md" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-4">{t('ai.creative.title', 'Creative Innovation')}</h3>
+                  <p className="text-white/80 leading-relaxed">
+                    {t('ai.creative.description', 'Discover unique recipe combinations and cooking techniques powered by Gemini\'s vast knowledge and creative capabilities')}
+                  </p>
+              </div>
+            </div>
+
+            <div className="text-center">
+              <a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-white hover:text-white/80 transition-colors group">
+                <span className="text-lg font-semibold">{t('ai.learnMore', 'Learn more about Google Gemini')}</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </a>
+            </div>
+          </div>
+        </section>
+
+  <section id="how-it-works" className="py-20 bg-white scroll-mt-28">
+          <div className="container mx-auto px-4 sm:px-6">
+            <div className="text-center mb-16 animate-fade-in-up">
+              <div className="inline-flex items-center gap-2 bg-[#FFF8F0] px-4 py-2 rounded-full border-2 border-[#A8C9B8] w-max mb-6 shadow-md">
+                <TrendingUp className="w-4 h-4 text-[#FF9B7B]" />
+                <span className="text-sm font-semibold text-[#035035]">{t('howItWorks.badge', 'Simple Process')}</span>
+              </div>
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#035035] mb-6">
                 {t('howItWorks.title', 'How It Works')}
               </h2>
-              <p className="text-base sm:text-lg text-[#2D2D2D] max-w-2xl mx-auto">
+              <p className="text-lg sm:text-xl text-[#2D2D2D] max-w-3xl mx-auto opacity-90">
                 {t('howItWorks.subtitle', 'From idea to delicious meal in three simple steps')}
               </p>
             </div>
 
-            <div className="grid gap-6 sm:gap-8 md:grid-cols-3 max-w-5xl mx-auto">
-              <div className="relative">
-                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 h-full">
-                  <div className="w-16 h-16 rounded-full bg-[#FF9B7B] flex items-center justify-center mb-6 text-white text-2xl font-bold">
-                    1
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto mb-16">
+              <div className="relative group">
+                <div className="bg-gradient-to-br from-white to-[#FFF8F0] rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 h-full border-2 border-transparent hover:border-[#FF9B7B]">
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#FF9B7B] to-[#FF8B6B] flex items-center justify-center mb-6 text-white text-3xl font-bold shadow-lg group-hover:scale-110 transition-transform">
+                      1
+                    </div>
+                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-[#A8C9B8] rounded-full opacity-20 group-hover:scale-150 transition-transform"></div>
                   </div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-[#035035] mb-3 sm:mb-4">{t('howItWorks.step1.title', 'Share Your Preferences')}</h3>
-                  <p className="text-sm sm:text-base text-[#2D2D2D] leading-relaxed">
+                  <h3 className="text-2xl font-bold text-[#035035] mb-4">{t('howItWorks.step1.title', 'Share Your Preferences')}</h3>
+                  <p className="text-base text-[#2D2D2D] leading-relaxed opacity-80">
                     {t('howItWorks.step1.description', "Tell us what you're craving, dietary restrictions, available ingredients, or cooking time. Our AI understands your needs.")}
                   </p>
+                  <div className="mt-6 flex items-center gap-2 text-[#FF9B7B] font-semibold">
+                    <MessageSquare className="w-5 h-5" />
+                    <span className="text-sm">{t('howItWorks.step1.feature', 'Natural language input')}</span>
+                  </div>
                 </div>
-                <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-[#A8C9B8]"></div>
+                <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-[#A8C9B8] to-transparent"></div>
               </div>
 
-              <div className="relative">
-                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 h-full">
-                  <div className="w-16 h-16 rounded-full bg-[#035035] flex items-center justify-center mb-6 text-white text-2xl font-bold">
-                    2
+              <div className="relative group">
+                <div className="bg-gradient-to-br from-white to-[#FFF8F0] rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 h-full border-2 border-transparent hover:border-[#035035]">
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#035035] to-[#046847] flex items-center justify-center mb-6 text-white text-3xl font-bold shadow-lg group-hover:scale-110 transition-transform">
+                      2
+                    </div>
+                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-[#FF9B7B] rounded-full opacity-20 group-hover:scale-150 transition-transform"></div>
                   </div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-[#035035] mb-3 sm:mb-4">{t('howItWorks.step2.title', 'Get Personalized Recipes')}</h3>
-                  <p className="text-sm sm:text-base text-[#2D2D2D] leading-relaxed">
+                  <h3 className="text-2xl font-bold text-[#035035] mb-4">{t('howItWorks.step2.title', 'Get Personalized Recipes')}</h3>
+                  <p className="text-base text-[#2D2D2D] leading-relaxed opacity-80">
                     {t('howItWorks.step2.description', 'Receive custom recipes tailored to your taste, skill level, and kitchen setup. Save favorites to your personal collection.')}
                   </p>
+                  <div className="mt-6 flex items-center gap-2 text-[#035035] font-semibold">
+                    <Sparkles className="w-5 h-5" />
+                    <span className="text-sm">{t('howItWorks.step2.feature', 'AI-generated recipes')}</span>
+                  </div>
                 </div>
-                <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-[#A8C9B8]"></div>
+                <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-[#A8C9B8] to-transparent"></div>
               </div>
 
-              <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 h-full">
-                <div className="w-16 h-16 rounded-full bg-[#A8C9B8] flex items-center justify-center mb-6 text-white text-2xl font-bold">
-                  3
+              <div className="relative group">
+                <div className="bg-gradient-to-br from-white to-[#FFF8F0] rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 h-full border-2 border-transparent hover:border-[#A8C9B8]">
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#A8C9B8] to-[#98B9A8] flex items-center justify-center mb-6 text-white text-3xl font-bold shadow-lg group-hover:scale-110 transition-transform">
+                      3
+                    </div>
+                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-[#035035] rounded-full opacity-20 group-hover:scale-150 transition-transform"></div>
+                  </div>
+                  <h3 className="text-2xl font-bold text-[#035035] mb-4">{t('howItWorks.step3.title', 'Cook with Confidence')}</h3>
+                  <p className="text-base text-[#2D2D2D] leading-relaxed opacity-80">
+                    {t('howItWorks.step3.description', 'Follow interactive step-by-step guidance with tips, timers, and voice assistance. Create amazing dishes every time.')}
+                  </p>
+                  <div className="mt-6 flex items-center gap-2 text-[#A8C9B8] font-semibold">
+                    <CheckCircle2 className="w-5 h-5" />
+                    <span className="text-sm">{t('howItWorks.step3.feature', 'Step-by-step guidance')}</span>
+                  </div>
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-[#035035] mb-3 sm:mb-4">{t('howItWorks.step3.title', 'Cook with Confidence')}</h3>
-                <p className="text-sm sm:text-base text-[#2D2D2D] leading-relaxed">
-                  {t('howItWorks.step3.description', 'Follow interactive step-by-step guidance with tips, timers, and voice assistance. Create amazing dishes every time.')}
-                </p>
+              </div>
+            </div>
+
+            {/* Visual flow demonstration placeholder */}
+            <div className="max-w-4xl mx-auto">
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-[#FFF8F0] to-white p-12 aspect-video flex items-center justify-center group">
+                <div className="absolute inset-0 bg-gradient-to-r from-[#035035]/5 to-[#FF9B7B]/5"></div>
+                <div className="relative z-10 text-center">
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#035035] to-[#046847] flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform shadow-lg">
+                    <Play className="w-10 h-10 text-white ml-1" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-[#035035] mb-3">
+                    {t('howItWorks.visualization.title', 'See the Flow in Action')}
+                  </h3>
+                  <p className="text-[#2D2D2D] opacity-80">
+                    {t('howItWorks.visualization.description', 'Watch how seamlessly Piatto guides you from recipe discovery to the final dish')}
+                  </p>
+                </div>
+                {/* Replace with actual GIF or short video showing the app flow */}
               </div>
             </div>
           </div>
         </section>
 
-  <section id="features" className="bg-[#FFF8F0] py-16 sm:py-20 scroll-mt-28">
+  <section id="features" className="bg-gradient-to-b from-[#FFF8F0] to-white py-20 scroll-mt-28">
           <div className="container mx-auto px-4 sm:px-6">
-            <div className="text-center mb-12 sm:mb-16">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#035035] mb-4">
-                {t('features.title', 'Cooking Made Simple & Fun')}
+            <div className="text-center mb-16 animate-fade-in-up">
+              <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full border-2 border-[#035035] w-max mb-6 shadow-md">
+                <Sparkles className="w-4 h-4 text-[#035035]" />
+                <span className="text-sm font-semibold text-[#035035]">{t('features.badge', 'Features')}</span>
+              </div>
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#035035] mb-6">
+                {t('features.title', 'Everything You Need to Cook Like a Pro')}
               </h2>
-              <p className="text-base sm:text-lg text-[#2D2D2D] max-w-2xl mx-auto">
+              <p className="text-lg sm:text-xl text-[#2D2D2D] max-w-3xl mx-auto opacity-90">
                 {t('features.subtitle', 'From inspiration to the final dish, we guide you every step of the way')}
               </p>
             </div>
 
-            <div className="grid gap-6 sm:gap-8 md:grid-cols-2 max-w-4xl mx-auto">
-              <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
-                <div className="w-16 h-16 rounded-full bg-[#FFF8F0] flex items-center justify-center mb-6">
-                  <Sparkles className="w-8 h-8 text-[#FF9B7B]" />
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+              <div className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 border-2 border-transparent hover:border-[#FF9B7B] group">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#FF9B7B] to-[#FFB59B] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <Brain className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-[#035035] mb-3 sm:mb-4">{t('features.aiBrainstorming.title', 'AI Recipe Brainstorming')}</h3>
-                <p className="text-sm sm:text-base text-[#2D2D2D] leading-relaxed">
-                  {t('features.aiBrainstorming.description', "Tell us your preferences, dietary needs, or what's in your fridge. Our AI creates personalized recipes just for you, tailored to your taste and skill level.")}
+                <h3 className="text-2xl font-bold text-[#035035] mb-4">{t('features.aiBrainstorming.title', 'AI Recipe Brainstorming')}</h3>
+                <p className="text-base text-[#2D2D2D] leading-relaxed opacity-80">
+                  {t('features.aiBrainstorming.description', "Tell us your preferences, dietary needs, or what's in your fridge. Our AI creates personalized recipes just for you.")}
                 </p>
               </div>
 
-              <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
-                <div className="w-16 h-16 rounded-full bg-[#FFF8F0] flex items-center justify-center mb-6">
-                  <BookOpen className="w-8 h-8 text-[#035035]" />
+              <div className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 border-2 border-transparent hover:border-[#035035] group">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#035035] to-[#046847] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <BookOpen className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-[#035035] mb-3 sm:mb-4">{t('features.cookingGuide.title', 'Interactive Cooking Guide')}</h3>
-                <p className="text-sm sm:text-base text-[#2D2D2D] leading-relaxed">
-                  {t('features.cookingGuide.description', 'Follow along with step-by-step instructions, helpful tips, and voice assistance. Cook with confidence, no matter your experience level.')}
+                <h3 className="text-2xl font-bold text-[#035035] mb-4">{t('features.cookingGuide.title', 'Interactive Cooking Guide')}</h3>
+                <p className="text-base text-[#2D2D2D] leading-relaxed opacity-80">
+                  {t('features.cookingGuide.description', 'Follow step-by-step instructions with helpful tips, timers, and voice assistance. Cook with confidence.')}
+                </p>
+              </div>
+
+              <div className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 border-2 border-transparent hover:border-[#A8C9B8] group">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#A8C9B8] to-[#B8D9C8] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <MessageSquare className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-[#035035] mb-4">{t('features.chatAssistant.title', 'Chat Assistant')}</h3>
+                <p className="text-base text-[#2D2D2D] leading-relaxed opacity-80">
+                  {t('features.chatAssistant.description', 'Ask questions anytime during cooking. Get instant answers about techniques, substitutions, and more.')}
+                </p>
+              </div>
+
+              <div className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 border-2 border-transparent hover:border-[#FF9B7B] group">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#FFB59B] to-[#FFD5BB] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <Clock className="w-8 h-8 text-[#FF9B7B]" />
+                </div>
+                <h3 className="text-2xl font-bold text-[#035035] mb-4">{t('features.smartTimers.title', 'Smart Timers')}</h3>
+                <p className="text-base text-[#2D2D2D] leading-relaxed opacity-80">
+                  {t('features.smartTimers.description', 'Built-in timers for each cooking step ensure perfect timing and results every time.')}
+                </p>
+              </div>
+
+              <div className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 border-2 border-transparent hover:border-[#035035] group">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#046847] to-[#057858] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <Users className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-[#035035] mb-4">{t('features.collections.title', 'Personal Collections')}</h3>
+                <p className="text-base text-[#2D2D2D] leading-relaxed opacity-80">
+                  {t('features.collections.description', 'Organize your favorite recipes into collections. Build your personal cookbook over time.')}
+                </p>
+              </div>
+
+              <div className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 border-2 border-transparent hover:border-[#A8C9B8] group">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#B8D9C8] to-[#C8E9D8] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <Lightbulb className="w-8 h-8 text-[#A8C9B8]" />
+                </div>
+                <h3 className="text-2xl font-bold text-[#035035] mb-4">{t('features.smartSuggestions.title', 'Smart Suggestions')}</h3>
+                <p className="text-base text-[#2D2D2D] leading-relaxed opacity-80">
+                  {t('features.smartSuggestions.description', 'Get ingredient substitution ideas, cooking tips, and technique recommendations in real-time.')}
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="container mx-auto px-4 sm:px-6 py-16 lg:py-20">
-          <div className="bg-gradient-to-br from-[#035035] to-[#046847] rounded-3xl p-10 sm:p-12 lg:p-16 text-center text-white shadow-2xl relative overflow-hidden">
-            <div className="absolute top-10 right-10 w-40 h-40 rounded-full bg-white opacity-5"></div>
-            <div className="absolute bottom-10 left-10 w-32 h-32 rounded-full bg-white opacity-5"></div>
-            <div className="absolute top-1/2 left-1/4 w-3 h-3 rounded-full bg-[#FF9B7B]"></div>
-            <div className="absolute top-1/3 right-1/4 w-4 h-4 rounded-full bg-[#FF9B7B]"></div>
+        <section className="container mx-auto px-4 sm:px-6 py-20 lg:py-24">
+          <div className="bg-gradient-to-br from-[#035035] via-[#046847] to-[#035035] rounded-3xl p-12 sm:p-16 lg:p-20 text-center text-white shadow-2xl relative overflow-hidden">
+            <div className="absolute top-10 right-10 w-40 h-40 rounded-full bg-white opacity-[0.02] animate-pulse-slow"></div>
+            <div className="absolute bottom-10 left-10 w-32 h-32 rounded-full bg-white opacity-[0.02] animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+            <div className="absolute top-1/2 left-1/4 w-3 h-3 rounded-full bg-[#FF9B7B] opacity-30 animate-float"></div>
+            <div className="absolute top-1/3 right-1/4 w-4 h-4 rounded-full bg-[#FF9B7B] opacity-30 animate-float" style={{ animationDelay: '2s' }}></div>
+            <div className="absolute bottom-1/4 left-1/3 w-2 h-2 rounded-full bg-[#A8C9B8] opacity-30 animate-float" style={{ animationDelay: '4s' }}></div>
 
             <div className="relative z-10 max-w-3xl mx-auto">
-              <ChefHat className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-6 animate-bounce" />
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
+              <ChefHat className="w-16 h-16 mx-auto mb-8 animate-bounce" />
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6">
                 {t('cta.title', 'Ready to Transform Your Cooking?')}
               </h2>
-              <p className="text-base sm:text-lg mb-8 opacity-90">
-                {t('cta.subtitle', 'Join thousands of home chefs discovering the joy of personalized, guided cooking')}
+              <p className="text-lg sm:text-xl mb-10 opacity-90">
+                {t('cta.subtitle', 'Start your culinary journey with AI-powered guidance and personalized recipes')}
               </p>
-              <button className="bg-[#FF9B7B] text-white px-8 sm:px-10 py-3 sm:py-4 rounded-full font-semibold text-base sm:text-lg hover:scale-105 transition-all shadow-lg hover:shadow-2xl inline-flex items-center gap-2">
-                {t('cta.button', 'Download Piatto Free')}
-                <Sparkles className="w-5 h-5" />
-              </button>
+              <Link to="/download">
+                <button className="group bg-gradient-to-r from-[#FF9B7B] to-[#FF8B6B] text-white px-12 py-5 rounded-full font-bold text-xl hover:scale-105 transition-all shadow-lg hover:shadow-2xl inline-flex items-center gap-3">
+                  {t('cta.button', 'Download Piatto Free')}
+                  <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </Link>
             </div>
           </div>
         </section>
@@ -349,13 +558,22 @@ export default function LandingPage() {
               transform: translateY(0px) translateX(0px);
             }
             25% {
-              transform: translateY(-15px) translateX(10px);
+              transform: translateY(-20px) translateX(10px);
             }
             50% {
-              transform: translateY(-8px) translateX(-8px);
+              transform: translateY(-10px) translateX(-10px);
             }
             75% {
-              transform: translateY(-12px) translateX(5px);
+              transform: translateY(-15px) translateX(5px);
+            }
+          }
+
+          @keyframes pulse-slow {
+            0%, 100% {
+              opacity: 0.15;
+            }
+            50% {
+              opacity: 0.25;
             }
           }
 
@@ -370,8 +588,53 @@ export default function LandingPage() {
             }
           }
 
+          @keyframes fade-in-up {
+            from {
+              opacity: 0;
+              transform: translateY(30px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
+          @keyframes fade-in {
+            from {
+              opacity: 0;
+            }
+            to {
+              opacity: 1;
+            }
+          }
+
+          @keyframes spin-slow {
+            from {
+              transform: rotate(0deg);
+            }
+            to {
+              transform: rotate(360deg);
+            }
+          }
+
           .animate-float {
-            animation: float 6s ease-in-out infinite;
+            animation: float 8s ease-in-out infinite;
+          }
+
+          .animate-pulse-slow {
+            animation: pulse-slow 4s ease-in-out infinite;
+          }
+
+          .animate-fade-in-up {
+            animation: fade-in-up 0.8s ease-out;
+          }
+
+          .animate-fade-in {
+            animation: fade-in 1s ease-out;
+          }
+
+          .animate-spin-slow {
+            animation: spin-slow 3s linear infinite;
           }
         `}</style>
       </div>
