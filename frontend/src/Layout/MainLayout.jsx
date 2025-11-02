@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
-import { Home, Sparkles, User } from 'lucide-react';
+import { Home, Sparkles, User, BookOpen } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import useMediaQuery from '../hooks/useMediaQuery';
@@ -44,6 +44,7 @@ export default function MainLayout({ children }) {
   const mobileNavItems = [
     { label: t('navigation.dashboard', 'Dashboard'), to: '/app', icon: Home, end: true },
     { label: t('navigation.generate', 'Generate'), to: '/app/generate', icon: Sparkles },
+    { label: t('navigation.recipes', 'Recipes'), to: '/app/recipes/all', icon: BookOpen },
     { label: t('navigation.profile', 'Profile'), to: '/app/settings', icon: User }
   ];
 
