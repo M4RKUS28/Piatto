@@ -17,7 +17,7 @@ class Recipe(Base):
     important_notes = Column(Text, nullable=False, server_default="No special notes provided.")
     cooking_overview = Column(Text, nullable=False, server_default="Follow the instructions sequentially to complete the recipe.")
     image_url = Column(String(255), nullable=True)
-    is_permanent = Column(Boolean, default=False)
+    is_permanent = Column(Boolean, default=False, nullable=False)
     total_time_minutes = Column(Integer, nullable=True)
     difficulty = Column(String(20), nullable=True)  # easy, medium, hard
     food_category = Column(String(20), nullable=True)  # vegan, vegetarian, meat
