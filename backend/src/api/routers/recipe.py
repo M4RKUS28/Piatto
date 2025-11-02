@@ -208,21 +208,6 @@ def _serialize_recipe(recipe) -> RecipeSchema:
             )
             for step in recipe.instruction_steps
         ]
-    # Fallback to old JSON-based instructions for backwards compatibility
-    elif recipe.instructions:
-        try:
-            raw_instructions = json.loads(recipe.instructions)
-            for entry in raw_instructions:
-                if isinstance(entry, dict):
-                    # Try to adapt old format to new format
-                    instructions_data.append(InstructionSchema(
-                        heading=entry.get("heading", entry.get("Instruction", "")),
-                        description=entry.get("description", entry.get("Instruction", "")),
-                        animation=entry.get("animation", "let_cook_and_stir.json"),
-                        timer=entry.get("timer"),
-                    ))
-        except (json.JSONDecodeError, TypeError):
-            pass
 
     return RecipeSchema(
         id=recipe.id,

@@ -30,10 +30,13 @@ def get_image_gen_query(recipe: dict) -> types.Content:
 
 def get_chat_agent_query(prompt: str, recipe, cooking_session, prompt_history) -> types.Content:
     """ builds the query for the chat agent """
+    instructions = "\n".join(
+        f"{idx + 1}. {step}" for idx, step in enumerate(recipe.instruction_steps)
+    )
     query = f"""
     Recipe Name: {recipe.title}
     Description: {recipe.description}
-    Instructions: {recipe.instructions}
+    Instructions: {instructions}
     Ingredients: {recipe.ingredients}
     State: {cooking_session.state}
     User Question: {prompt}

@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from .models.db_user import User
-from .models.db_recipe import Recipe, RecipeIngredient
+from .models.db_recipe import Recipe, RecipeIngredient, InstructionStep
 from ..core.security import get_password_hash
 from ..core.enums import UserRole, ThemePreference
 
@@ -99,7 +99,7 @@ async def _create_mock_users(session: AsyncSession) -> list[User]:
 
 
 async def _create_mock_recipes(session: AsyncSession, users: list[User]) -> None:
-    """Create mock recipes with ingredients."""
+    """Create mock recipes with ingredients and instruction steps."""
     recipes_data = [
         {
             "user_id": users[0].id,
@@ -244,6 +244,7 @@ async def _create_mock_recipes(session: AsyncSession, users: list[User]) -> None
     
     for recipe_data in recipes_data:
         ingredients_data = recipe_data.pop("ingredients")
+        instructions_list = json.loads(recipe_data.pop("instructions"))
         
         recipe = Recipe(**recipe_data)
         session.add(recipe)
@@ -256,6 +257,18 @@ async def _create_mock_recipes(session: AsyncSession, users: list[User]) -> None
                 **ingredient_data
             )
             session.add(ingredient)
+        
+        # Add instruction steps
+        for idx, instruction_text in enumerate(instructions_list):
+            step = InstructionStep(
+                recipe_id=recipe.id,
+                step_number=idx,
+                heading=f"Step {idx+1}",
+                description=instruction_text,
+                animation="default_animation.json",
+                timer=None
+            )
+            session.add(step)
         
         logger.info(f"  → Created recipe: {recipe.title} (by {recipe_data['user_id']})")
     
