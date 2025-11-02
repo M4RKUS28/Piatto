@@ -14,7 +14,8 @@ import DeleteCollectionModal from '../../components/DeleteCollectionModal';
 import DeleteRecipeModal from '../../components/DeleteRecipeModal';
 import CollectionImageCollage from '../../components/CollectionImageCollage';
 import { getImageUrl } from '../../utils/imageUtils';
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next';
+import RecipeGeneration from './RecipeGeneration';
 
 // Helper function to get food category display (icon and label)
 const getFoodCategoryDisplay = (category, t) => {
@@ -101,6 +102,7 @@ export default function RecipeLibrary() {
   const [selectedCollection, setSelectedCollection] = useState(null);
   const [showDeleteRecipeModal, setShowDeleteRecipeModal] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [showRecipeGenerationModal, setShowRecipeGenerationModal] = useState(false);
   const queryString = searchParams.toString();
 
   const fetchRecipes = useCallback(async () => {
@@ -250,10 +252,10 @@ export default function RecipeLibrary() {
         {!loading && !error && (
           <>
             {/* Latest Recipes Section - Horizontal scroll with 6 recipes */}
-            {latestRecipes.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-[#035035]">{t("library.latestRecipes", "Latest Recipes")}</h2>
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <h2 className="text-2xl sm:text-3xl font-bold text-[#035035]">{t("library.latestRecipes", "Latest Recipes")}</h2>
+                {latestRecipes.length > 0 && (
                   <Link
                     to={queryString ? `/app/recipes/all?${queryString}` : '/app/recipes/all'}
                     className="bg-[#FF9B7B] text-white px-5 py-3 rounded-full font-semibold hover:scale-105 transition-all flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto"
@@ -261,7 +263,31 @@ export default function RecipeLibrary() {
                     <FolderOpen className="w-5 h-5" />
                     <span>{t("library.viewAllRecipes", "View all recipes")}</span>
                   </Link>
+                )}
+              </div>
+
+              {latestRecipes.length === 0 ? (
+                <div className="bg-white rounded-2xl border-2 border-dashed border-[#F5F5F5] p-8 sm:p-12 text-center">
+                  <div className="max-w-md mx-auto">
+                    <div className="bg-[#FFF8F0] rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                      <span className="text-4xl">🍽️</span>
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-bold text-[#2D2D2D] mb-3">
+                      {t("library.noRecipesYet", "You haven't created any recipes yet")}
+                    </h3>
+                    <p className="text-sm sm:text-base text-[#2D2D2D] opacity-60 mb-6">
+                      {t("library.noRecipesDescription", "Start your culinary journey by generating your first AI-powered recipe. It only takes a minute!")}
+                    </p>
+                    <button
+                      onClick={() => setShowRecipeGenerationModal(true)}
+                      className="bg-[#035035] text-white px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all inline-flex items-center gap-2 min-h-[44px]"
+                    >
+                      <Plus className="w-5 h-5" />
+                      <span>{t("library.generateFirstRecipe", "Generate Your First Recipe")}</span>
+                    </button>
+                  </div>
                 </div>
+              ) : (
                 <div className="overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
                   <div className="flex gap-3 sm:gap-4 min-w-min">
                     {latestRecipes.map((recipe) => {
@@ -337,10 +363,29 @@ export default function RecipeLibrary() {
                         </div>
                       );
                     })}
+
+                    {/* Generate New Recipe Placeholder Card - Hidden on mobile */}
+                    <div className="hidden sm:block flex-shrink-0 w-[200px]">
+                      <button
+                        onClick={() => setShowRecipeGenerationModal(true)}
+                        className="w-full bg-white rounded-xl cursor-pointer transition-all duration-300 border-2 border-dashed border-gray-300 hover:border-[#035035] hover:bg-[#035035]/5 group"
+                      >
+                        {/* Image placeholder section */}
+                        <div className="bg-gray-50 h-44 flex items-center justify-center">
+                          <div className="bg-gray-200 group-hover:bg-[#035035]/20 rounded-full p-3 transition-colors">
+                            <Plus className="w-6 h-6 text-gray-500 group-hover:text-[#035035] transition-colors" />
+                          </div>
+                        </div>
+                        {/* Content section - matching recipe card structure */}
+                        <div className="p-3 flex items-center justify-center" style={{ minHeight: '90px' }}>
+                          <h3 className="text-sm font-bold text-[#2D2D2D] text-center leading-relaxed group-hover:text-[#035035] transition-colors">Generate New Recipe using AI</h3>
+                        </div>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Collections Section */}
             <div className="space-y-4">
@@ -508,6 +553,16 @@ export default function RecipeLibrary() {
         }}
         onDeleted={handleRecipeDeleted}
       />
+
+      {/* Recipe Generation Modal */}
+      {showRecipeGenerationModal && (
+        <RecipeGeneration
+          onClose={() => {
+            setShowRecipeGenerationModal(false);
+            fetchRecipes(); // Refresh recipes after modal closes
+          }}
+        />
+      )}
     </div>
   );
 }

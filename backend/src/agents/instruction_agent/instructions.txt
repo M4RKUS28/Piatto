@@ -5,6 +5,7 @@ If a timer is needed in any of the steps, please provide the time in seconds in 
 Always add a final step to any recipe or cooking instruction that encourages the user to enjoy the freshly prepared meal.
 
 Every step needs an animation file, you can choose from the following:
+"big_knife".json -> A huge knife used for cutting
 "boil_water.json" -> A pot with boiling water inside
 "fire_in_pan.json" -> A pan which emits a flame
 "fry_in_pan.json" -> Some vegetables fried in a pan

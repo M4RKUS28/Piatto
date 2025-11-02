@@ -81,34 +81,33 @@ export default function RecipeGeneration({ onClose, collectionContext: collectio
 	};
 
 	const handleFinishCurrentSession = useCallback(async () => {
-		if (!preparingSessionId) {
-			return;
+		if (preparingSessionId) {
+			setFinishingSession(true);
+			try {
+				await finishPreparingSession(preparingSessionId);
+			} catch (finishError) {
+				console.error('Failed to finish preparing session:', finishError);
+			} finally {
+				setFinishingSession(false);
+				clearStoredSession();
+				setPreparingSessionId(null);
+				setRecipeOptions([]);
+				setImageAnalysis(null);
+			}
 		}
 
-		setFinishingSession(true);
-		try {
-			await finishPreparingSession(preparingSessionId);
-		} catch (finishError) {
-			console.error('Failed to finish preparing session:', finishError);
-			throw finishError;
-		} finally {
-			setFinishingSession(false);
-			clearStoredSession();
-			setPreparingSessionId(null);
-			setRecipeOptions([]);
-			setImageAnalysis(null);
-			setError(null);
-			setPrompt('');
-			setIngredients('');
-			setImageKey('');
-			setInputMethod('text');
-			setCurrentStep(1);
+		// Always reset state and close modal
+		setError(null);
+		setPrompt('');
+		setIngredients('');
+		setImageKey('');
+		setInputMethod('text');
+		setCurrentStep(1);
 
-			if (onClose) {
-				onClose();
-			} else if (collectionContext?.collectionId) {
-				navigate(`/app/collection/${collectionContext.collectionId}`);
-			}
+		if (onClose) {
+			onClose();
+		} else if (collectionContext?.collectionId) {
+			navigate(`/app/collection/${collectionContext.collectionId}`);
 		}
 	}, [preparingSessionId, clearStoredSession, collectionContext, navigate, onClose]);
 
@@ -325,15 +324,15 @@ export default function RecipeGeneration({ onClose, collectionContext: collectio
 
 
 	return (
-		<div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4 py-6 sm:px-6 lg:px-8 overflow-y-auto">
+		<div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4 py-6 sm:px-6 lg:px-8 overflow-y-auto">
 			<div className="relative w-full max-w-5xl my-auto">
 				{onClose && (
 					<button
-						onClick={onClose}
-						className="absolute -top-2 -right-2 z-50 bg-white hover:bg-gray-100 text-gray-700 rounded-full p-2 shadow-lg transition-all"
+						onClick={handleFinishCurrentSession}
+						className="absolute -top-2 -right-2 z-50 bg-white/80 hover:bg-white text-gray-600 hover:text-gray-800 rounded-full p-2 shadow-md transition-all"
 						aria-label="Close"
 					>
-						<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
 						</svg>
 					</button>

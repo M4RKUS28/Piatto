@@ -54,7 +54,7 @@ function App() {
 
         {/* Protected app routes with MainLayout */}
         <Route path="/app" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-          <Route index element={<Dashboard />} />
+          <Route index element={<RecipeLibrary />} />
           {isMobile ? (
             <Route path="generate" element={<RecipeGenerationMobile />} />
           ) : (
@@ -62,6 +62,7 @@ function App() {
           )}
           <Route path="library" element={<RecipeLibrary />} />
           <Route path="recipes" element={<RecipeLibrary />} />
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="recipes/all" element={<AllRecipesView />} />
           <Route path="recipe/:recipeId" element={<RecipeView />} />
           <Route path="collection/:collectionId" element={<CollectionRecipesView />} />
