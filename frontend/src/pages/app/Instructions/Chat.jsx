@@ -13,6 +13,7 @@ const Chat = ({ cookingSessionId }) => {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
 
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = () => {
@@ -22,6 +23,18 @@ const Chat = ({ cookingSessionId }) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Focus input field when chat opens
+  useEffect(() => {
+    // Use setTimeout to ensure focus happens after all DOM updates
+    const timer = setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // Load chat history on mount
   useEffect(() => {
@@ -215,6 +228,7 @@ const Chat = ({ cookingSessionId }) => {
       {/* Input area */}
       <div className="flex gap-2 pt-3 border-t border-gray-200">
         <input
+          ref={inputRef}
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}

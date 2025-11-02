@@ -47,15 +47,19 @@ export default function ContactPage() {
   const teamContacts = [
     {
       name: 'Markus Huber',
-      email: 'markus@piatto.app',
+      email: 'piatto+markus@obermui.de',
     },
     {
       name: 'Paul Vorderbruegge',
-      email: 'paul@piatto.app',
+      email: 'paul.vorderbruegge@tum.de',
     },
     {
       name: 'Luca Bozzetti',
-      email: 'luca@piatto.app',
+      email: 'luca.bozzetti@tum.de',
+    },
+    {
+      name: 'Sebastian Rogg',
+      email: 'sebastian.rogg@tum.de',
     },
   ];
 
@@ -226,39 +230,6 @@ export default function ContactPage() {
                       </div>
                     </a>
                   ))}
-                </div>
-              </div>
-
-              {/* General Inquiries */}
-              <div className="bg-[#035035] text-white rounded-3xl shadow-lg p-8">
-                <h2 className="text-2xl font-bold mb-4">General Inquiries</h2>
-                <p className="mb-4 opacity-90">
-                  For general questions and support:
-                </p>
-                <a
-                  href="mailto:hello@piatto.app"
-                  className="inline-flex items-center gap-2 bg-white text-[#035035] px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all"
-                >
-                  <Mail className="w-5 h-5" />
-                  hello@piatto.app
-                </a>
-              </div>
-
-              {/* Support Info */}
-              <div className="bg-white rounded-3xl shadow-lg border border-[#F5F5F5] p-8">
-                <h2 className="text-xl font-bold text-[#035035] mb-4">Support Hours</h2>
-                <p className="text-[#2D2D2D] mb-4">
-                  We typically respond within 24-48 hours during business days.
-                </p>
-                <div className="space-y-2 text-sm text-[#2D2D2D]">
-                  <p className="flex items-center gap-2">
-                    <span className="text-[#FF9B7B]">•</span>
-                    Monday - Friday: 9:00 AM - 6:00 PM (EST)
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <span className="text-[#FF9B7B]">•</span>
-                    Weekend: Limited support
-                  </p>
                 </div>
               </div>
 

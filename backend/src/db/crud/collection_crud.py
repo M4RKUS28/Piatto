@@ -166,3 +166,28 @@ async def get_collections_for_recipe(db: AsyncSession, recipe_id: int, user_id: 
         .filter(CollectionRecipe.recipe_id == recipe_id, Collection.owner_id == user_id)
     )
     return result.scalars().all()
+
+
+async def create_default_collections(db: AsyncSession, user_id: str) -> List[Collection]:
+    """Create default collections (Breakfast, Lunch, Dinner) for a new user."""
+    default_collections = [
+        {"name": "Breakfast", "description": "Start your day with delicious breakfast recipes"},
+        {"name": "Lunch", "description": "Quick and satisfying lunch ideas"},
+        {"name": "Dinner", "description": "Hearty dinner recipes for any occasion"},
+    ]
+
+    created_collections = []
+    for collection_data in default_collections:
+        collection = Collection(
+            owner_id=user_id,
+            name=collection_data["name"],
+            description=collection_data["description"],
+        )
+        db.add(collection)
+        created_collections.append(collection)
+
+    await db.commit()
+    for collection in created_collections:
+        await db.refresh(collection)
+
+    return created_collections
