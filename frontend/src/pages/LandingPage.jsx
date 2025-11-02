@@ -1,33 +1,106 @@
 import { ChefHat, Sparkles, BookOpen, Clock } from 'lucide-react'
+import { PiLeaf, PiEgg, PiCow } from 'react-icons/pi'
 import LandingLayout from '../Layout/LandingLayout.jsx'
 import { useTranslation } from 'react-i18next'
 
 
+
+// Helper function to get food category display (icon and label)
+const getFoodCategoryDisplay = (category, t) => {
+  if (!category) return null;
+
+  if (category === 'vegan') {
+    return { icon: PiLeaf, label: t('foodCategory.vegan', { ns: 'common', defaultValue: 'Vegan' }) };
+  }
+  if (category === 'vegetarian') {
+    return { icon: PiEgg, label: t('foodCategory.vegetarian', { ns: 'common', defaultValue: 'Vegetarian' }) };
+  }
+
+  // Meat categories
+  const meatLabels = {
+    beef: t('foodCategory.beef', { ns: 'common', defaultValue: 'Beef' }),
+    pork: t('foodCategory.pork', { ns: 'common', defaultValue: 'Pork' }),
+    chicken: t('foodCategory.chicken', { ns: 'common', defaultValue: 'Chicken' }),
+    lamb: t('foodCategory.lamb', { ns: 'common', defaultValue: 'Lamb' }),
+    fish: t('foodCategory.fish', { ns: 'common', defaultValue: 'Fish' }),
+    seafood: t('foodCategory.seafood', { ns: 'common', defaultValue: 'Seafood' }),
+    'mixed-meat': t('foodCategory.mixedMeat', { ns: 'common', defaultValue: 'Mixed Meat' })
+  };
+
+  if (meatLabels[category]) {
+    return { icon: PiCow, label: meatLabels[category] };
+  }
+
+  return null;
+};
+
+// Helper function to format difficulty
+const formatDifficulty = (difficulty, t) => {
+  if (!difficulty) return t('difficulty.medium', { ns: 'common', defaultValue: 'Medium' });
+  const lowerDifficulty = difficulty.toLowerCase();
+
+  if (lowerDifficulty === 'easy') return t('difficulty.easy', { ns: 'common', defaultValue: 'Easy' });
+  if (lowerDifficulty === 'medium') return t('difficulty.medium', { ns: 'common', defaultValue: 'Medium' });
+  if (lowerDifficulty === 'hard') return t('difficulty.hard', { ns: 'common', defaultValue: 'Hard' });
+
+  return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+};
+
+// Helper function to get difficulty color classes
+const getDifficultyColorClasses = (difficulty) => {
+  const lowerDifficulty = difficulty?.toLowerCase();
+
+  switch (lowerDifficulty) {
+    case 'easy':
+      return 'text-green-600 bg-green-600/10';
+    case 'medium':
+      return 'text-orange-500 bg-orange-500/10';
+    case 'hard':
+      return 'text-orange-700 bg-orange-700/10';
+    default:
+      return 'text-orange-500 bg-orange-500/10'; // Default to medium
+  }
+};
+
+// Helper function to format time
+const formatTime = (minutes) => {
+  if (!minutes) return 'N/A';
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+};
 
 export default function LandingPage() {
   const { t } = useTranslation(['landing', 'common'])
 
   const recipes = [
     {
+      id: 1,
       name: t('exampleRecipes.mediterraneanBowl.name', 'Mediterranean Sunset Bowl'),
       description: t('exampleRecipes.mediterraneanBowl.description', 'Fresh quinoa with roasted vegetables, feta, and lemon herb dressing'),
-      time: '25 ' + t('time.min', { ns: 'common', defaultValue: 'min' }),
-      difficulty: t('difficulty.easy', { ns: 'common', defaultValue: 'Easy' }),
-      color: '#FF9B7B'
+      image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop',
+      total_time_minutes: 25,
+      difficulty: 'easy',
+      food_category: 'vegan'
     },
     {
+      id: 2,
       name: t('exampleRecipes.tuscanChicken.name', 'Creamy Tuscan Chicken'),
       description: t('exampleRecipes.tuscanChicken.description', 'Pan-seared chicken in sun-dried tomato cream sauce with spinach'),
-      time: '35 ' + t('time.min', { ns: 'common', defaultValue: 'min' }),
-      difficulty: t('difficulty.medium', { ns: 'common', defaultValue: 'Medium' }),
-      color: '#035035'
+      image: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400&h=300&fit=crop',
+      total_time_minutes: 35,
+      difficulty: 'medium',
+      food_category: 'chicken'
     },
     {
+      id: 3,
       name: t('exampleRecipes.smoothieBowl.name', 'Berry Bliss Smoothie Bowl'),
       description: t('exampleRecipes.smoothieBowl.description', 'Antioxidant-rich blend topped with granola, fresh berries & coconut'),
-      time: '10 ' + t('time.min', { ns: 'common', defaultValue: 'min' }),
-      difficulty: t('difficulty.easy', { ns: 'common', defaultValue: 'Easy' }),
-      color: '#A8C9B8'
+      image: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?w=400&h=300&fit=crop',
+      total_time_minutes: 10,
+      difficulty: 'easy',
+      food_category: 'vegetarian'
     }
   ]
 
@@ -105,38 +178,51 @@ export default function LandingPage() {
                     <p className="text-sm opacity-90">{t('mockup.whatToCook', 'What would you like to cook today?')}</p>
                   </div>
 
-                  <div className="p-4 space-y-4 -mt-4">
+                  <div className="p-4 space-y-3 -mt-4">
                     {recipes.map((recipe, index) => (
                       <div
-                        key={recipe.name}
-                        className="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform hover:scale-[1.02] transition-all border-2 border-transparent hover:border-[#FF9B7B]"
+                        key={recipe.id}
+                        className="bg-white rounded-xl border border-[#F5F5F5] overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer"
                         style={{ animation: `slideIn 0.5s ease-out ${index * 0.1}s backwards` }}
                       >
-                        <div
-                          className="h-32 relative"
-                          style={{
-                            background: `linear-gradient(135deg, ${recipe.color} 0%, ${recipe.color}dd 100%)`
-                          }}
-                        >
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <ChefHat className="w-12 h-12 text-white opacity-30" />
-                          </div>
-                          <div className="absolute top-2 right-2 bg-white px-2 py-1 rounded-full text-xs font-semibold text-[#035035] flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {recipe.time}
-                          </div>
+                        {/* Image */}
+                        <div className="bg-[#FFF8F0] h-32 flex items-center justify-center overflow-hidden relative">
+                          {recipe.image.startsWith('http') || recipe.image.startsWith('/') ? (
+                            <img
+                              src={recipe.image}
+                              alt={recipe.name}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <span className="text-4xl">{recipe.image}</span>
+                          )}
                         </div>
 
-                        <div className="p-4">
-                          <h3 className="font-bold text-[#035035] mb-2">{recipe.name}</h3>
-                          <p className="text-sm text-[#2D2D2D] mb-3 leading-relaxed">{recipe.description}</p>
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-medium text-[#A8C9B8] bg-[#FFF8F0] px-3 py-1 rounded-full">
-                              {recipe.difficulty}
+                        {/* Content */}
+                        <div className="p-3">
+                          <div className="flex items-center gap-1 mb-2 flex-wrap">
+                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${getDifficultyColorClasses(recipe.difficulty)}`}>
+                              {formatDifficulty(recipe.difficulty, t)}
                             </span>
-                            <button className="text-[#FF9B7B] font-semibold text-sm hover:text-[#035035] transition-colors">
-                              {t('mockup.startCooking', 'Start Cooking →')}
-                            </button>
+                          </div>
+                          <h3 className="text-sm font-bold text-[#2D2D2D] mb-2 line-clamp-2">{recipe.name}</h3>
+                          <div className="flex items-center gap-2 text-xs text-[#2D2D2D] opacity-60 flex-wrap">
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-3 h-3 flex-shrink-0" />
+                              <span className="whitespace-nowrap">{formatTime(recipe.total_time_minutes)}</span>
+                            </div>
+                            {(() => {
+                              const foodDisplay = getFoodCategoryDisplay(recipe.food_category, t);
+                              if (!foodDisplay) return null;
+                              const FoodIcon = foodDisplay.icon;
+                              return (
+                                <div className="flex items-center gap-1">
+                                  <FoodIcon className="w-3 h-3 flex-shrink-0" />
+                                  <span className="whitespace-nowrap">{foodDisplay.label}</span>
+                                </div>
+                              );
+                            })()}
                           </div>
                         </div>
                       </div>
