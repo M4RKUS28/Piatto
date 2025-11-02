@@ -54,7 +54,7 @@ const useWakeWordDetection = () => {
   // Check if transcript contains wake word
   const checkForWakeWord = useCallback((transcript) => {
     const normalizedTranscript = transcript.toLowerCase().trim();
-    const wakeWords = ['hey piatto', 'hey piato', 'hi piatto', 'hi piato', 'hey piattu', 'hi piattu', 'hey piattu', 'hey piatou', 'hey biatto']; // Include common mishearings
+    const wakeWords = ['hey piatto', 'hey piato', 'hi piatto', 'hi piato', 'hey piattu', 'hi piattu', 'hey piattu', 'hey piatou', 'hey biatto', 'hey piotr', 'hey piator', 'hey piattoo', 'hey pieto']; // Include common mishearings
 
     return wakeWords.some(word => normalizedTranscript.includes(word));
   }, []);
