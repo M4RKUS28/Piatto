@@ -62,6 +62,7 @@ async def get_recipe_options(preparing_session_id: int,
 
     result = []
     for recipe in recipes:
+        print(recipe.food_category)
         result.append(RecipePreview(
             id=recipe.id,
             title=recipe.title,
