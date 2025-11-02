@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-react';
+import { Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from 'react-i18next'
 import useMediaQuery from '../../hooks/useMediaQuery';
@@ -13,7 +13,6 @@ export default function RegisterPage() {
     password: '',
     confirmPassword: '',
   });
-  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -23,7 +22,6 @@ export default function RegisterPage() {
 
   const containerPadding = isMobile ? 'px-4 py-10' : 'px-6 py-12';
   const headingSize = isMobile ? 'text-2xl' : 'text-3xl';
-  const subheadingSize = isMobile ? 'text-sm' : 'text-base';
   const cardPadding = isMobile ? 'p-6' : 'p-8';
   const labelSize = isMobile ? 'text-xs' : 'text-sm';
   const iconClass = isMobile
@@ -37,7 +35,6 @@ export default function RegisterPage() {
   const buttonPadding = isMobile ? 'py-2.5' : 'py-3';
   const googleGap = isMobile ? 'gap-2' : 'gap-3';
   const googleIconSize = isMobile ? 'w-4 h-4' : 'w-5 h-5';
-  const checkboxTextSize = isMobile ? 'text-xs leading-relaxed' : 'text-sm';
 
   const handleChange = (e) => {
     setFormData({
@@ -61,10 +58,6 @@ export default function RegisterPage() {
 
     if (formData.password !== formData.confirmPassword) {
       return t('register.errors.passwordMismatch', 'Passwords do not match');
-    }
-
-    if (!acceptedPrivacy) {
-      return t('register.errors.acceptPrivacy', 'Please accept the Privacy Policy to continue');
     }
 
     return null;
@@ -94,10 +87,6 @@ export default function RegisterPage() {
   };
 
   const handleGoogleSignup = () => {
-    if (!acceptedPrivacy) {
-      setError(t('register.errors.acceptPrivacy', 'Please accept the Privacy Policy to continue'));
-      return;
-    }
     loginWithGoogle();
   };
 
@@ -111,8 +100,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-md relative z-10 mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className={`${headingSize} font-bold text-[#035035] mb-2`}>{t('register.title', 'Create Your Account')}</h1>
-          <p className={`text-[#2D2D2D] ${subheadingSize}`}>{t('register.subtitle', 'Start your culinary adventure today')}</p>
+          <h1 className={`${headingSize} font-bold text-[#035035]`}>{t('register.title', 'Create Your Account')}</h1>
         </div>
 
         {/* Registration Form Card */}
@@ -219,27 +207,14 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Privacy Policy Checkbox */}
-            <div className={`flex items-start gap-3 bg-[#FFF8F0] rounded-2xl border border-[#F5F5F5] ${isMobile ? 'p-3' : 'p-4'}`}>
-              <button
-                type="button"
-                onClick={() => setAcceptedPrivacy(!acceptedPrivacy)}
-                className={`flex-shrink-0 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
-                  acceptedPrivacy
-                    ? 'bg-[#035035] border-[#035035]'
-                    : 'bg-white border-[#A8C9B8]'
-                }`}
-                disabled={isLoading}
-              >
-                {acceptedPrivacy && <CheckCircle className="w-4 h-4 text-white" />}
-              </button>
-              <label className={`${checkboxTextSize} text-[#2D2D2D] cursor-pointer`} onClick={() => setAcceptedPrivacy(!acceptedPrivacy)}>
-                {t('register.privacyAccept', 'I accept the')}{' '}
-                <Link to="/privacy" className="text-[#FF9B7B] hover:text-[#035035] font-semibold">
+            {/* Privacy Policy Notice */}
+            <div className={`text-center ${isMobile ? 'text-xs' : 'text-sm'} text-[#2D2D2D] opacity-70 px-2`}>
+              <p>
+                {t('register.privacyNotice', 'By creating an account, you agree to our')}{' '}
+                <Link to="/privacy" className="text-[#035035] hover:text-[#FF9B7B] font-semibold transition-colors underline">
                   {t('register.privacyPolicy', 'Privacy Policy')}
-                </Link>{' '}
-                {t('register.privacyAgree', 'and agree to the processing of my personal data')}
-              </label>
+                </Link>
+              </p>
             </div>
 
             {/* Submit Button */}

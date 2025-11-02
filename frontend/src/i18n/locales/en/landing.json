@@ -6,12 +6,24 @@
     "aiRecipeGenerator": "AI Recipe Generator",
     "aiRecipeGeneratorDesc": "Custom recipes for your taste",
     "interactiveGuide": "Interactive Guide",
-    "interactiveGuideDesc": "Step-by-step instructions"
+    "interactiveGuideDesc": "Step-by-step instructions",
+    "cta": {
+      "note": "No installation, works in every kitchen",
+      "socialProof": "Trusted by modern food brands"
+    },
+    "metrics": {
+      "recipes": "18k+",
+      "recipesLabel": "Curated recipes powered by AI",
+      "community": "120+",
+      "communityLabel": "Culinary teams collaborating worldwide",
+      "timeSaved": "40%",
+      "timeSavedLabel": "Average prep time saved per week"
+    }
   },
   "mockup": {
     "discover": "Discover",
     "whatToCook": "What would you like to cook today?",
-    "startCooking": "Start Cooking →"
+    "startCooking": "Start Cooking"
   },
   "exampleRecipes": {
     "mediterraneanBowl": {
@@ -27,37 +39,87 @@
       "description": "Antioxidant-rich blend topped with granola, fresh berries & coconut"
     }
   },
+  "demo": {
+    "badge": "See Piatto in Action",
+    "title": "Experience the Future of Cooking",
+    "subtitle": "Watch how Piatto transforms your cooking experience with AI-powered guidance and personalized recipes",
+    "clickToWatch": "Click to watch demo",
+    "duration": "2 min overview"
+  },
+  "ai": {
+    "badge": "Powered by Google ADK",
+    "title": "Built with Google ADK + Gemini",
+    "subtitle": "Harnessing Google's Agent Developer Kit with Gemini models to launch resilient, production-ready culinary agents",
+    "multimodal": {
+      "title": "Agentic Blueprints",
+      "description": "ADK's starter kits map intents, tools, and context so your culinary agent understands every step from pantry scan to plating."
+    },
+    "realtime": {
+      "title": "Tool Orchestration",
+      "description": "Wire Gemini agents into timers, shopping APIs, or smart appliances with ADK's action routing for uninterrupted guidance."
+    },
+    "creative": {
+      "title": "Adaptive Runtime",
+      "description": "Run multi-turn conversations with grounding, memory, and safety controls tuned by Google ADK for restaurant-grade reliability."
+    },
+    "learnMore": "Explore Google's Agent Developer Kit"
+  },
   "howItWorks": {
+    "badge": "Simple Process",
     "title": "How It Works",
     "subtitle": "From idea to delicious meal in three simple steps",
     "step1": {
       "title": "Share Your Preferences",
-      "description": "Tell us what you're craving, dietary restrictions, available ingredients, or cooking time. Our AI understands your needs."
+      "description": "Tell us what you're craving, dietary restrictions, available ingredients, or cooking time. Our AI understands your needs.",
+      "feature": "Natural language input"
     },
     "step2": {
       "title": "Get Personalized Recipes",
-      "description": "Receive custom recipes tailored to your taste, skill level, and kitchen setup. Save favorites to your personal collection."
+      "description": "Receive custom recipes tailored to your taste, skill level, and kitchen setup. Save favorites to your personal collection.",
+      "feature": "AI-generated recipes"
     },
     "step3": {
       "title": "Cook with Confidence",
-      "description": "Follow interactive step-by-step guidance with tips, timers, and voice assistance. Create amazing dishes every time."
+      "description": "Follow interactive step-by-step guidance with tips, timers, and voice assistance. Create amazing dishes every time.",
+      "feature": "Step-by-step guidance"
+    },
+    "visualization": {
+      "title": "See the Flow in Action",
+      "description": "Watch how seamlessly Piatto guides you from recipe discovery to the final dish"
     }
   },
   "features": {
-    "title": "Cooking Made Simple & Fun",
+    "badge": "Features",
+    "title": "Everything You Need to Cook Like a Pro",
     "subtitle": "From inspiration to the final dish, we guide you every step of the way",
     "aiBrainstorming": {
       "title": "AI Recipe Brainstorming",
-      "description": "Tell us your preferences, dietary needs, or what's in your fridge. Our AI creates personalized recipes just for you, tailored to your taste and skill level."
+      "description": "Tell us your preferences, dietary needs, or what's in your fridge. Our AI creates personalized recipes just for you."
     },
     "cookingGuide": {
       "title": "Interactive Cooking Guide",
-      "description": "Follow along with step-by-step instructions, helpful tips, and voice assistance. Cook with confidence, no matter your experience level."
+      "description": "Follow step-by-step instructions with helpful tips, timers, and voice assistance. Cook with confidence."
+    },
+    "chatAssistant": {
+      "title": "Chat Assistant",
+      "description": "Ask questions anytime during cooking. Get instant answers about techniques, substitutions, and more."
+    },
+    "smartTimers": {
+      "title": "Smart Timers",
+      "description": "Built-in timers for each cooking step ensure perfect timing and results every time."
+    },
+    "collections": {
+      "title": "Personal Collections",
+      "description": "Organize your favorite recipes into collections. Build your personal cookbook over time."
+    },
+    "smartSuggestions": {
+      "title": "Smart Suggestions",
+      "description": "Get ingredient substitution ideas, cooking tips, and technique recommendations in real-time."
     }
   },
   "cta": {
     "title": "Ready to Transform Your Cooking?",
-    "subtitle": "Join thousands of home chefs discovering the joy of personalized, guided cooking",
+    "subtitle": "Start your culinary journey with AI-powered guidance and personalized recipes",
     "button": "Download Piatto Free"
   }
 }

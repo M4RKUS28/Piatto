@@ -2,62 +2,124 @@
   "hero": {
     "badge": "KI-gestützter Kochassistent",
     "title": "Dein persönlicher Koch, direkt in deiner Tasche",
-    "description": "Entdecke personalisierte Rezepte, erhalte Schritt-für-Schritt-Kochanleitungen und verwandle deine Küche mit KI-gestützter Kreativität in einen kulinarischen Spielplatz.",
+    "description": "Entdecke personalisierte Rezepte, erhalte Schritt-für-Schritt-Anleitungen und verwandle deine Küche mit KI-gestützter Kreativität in einen kulinarischen Spielplatz.",
     "aiRecipeGenerator": "KI-Rezeptgenerator",
     "aiRecipeGeneratorDesc": "Individuelle Rezepte nach deinem Geschmack",
     "interactiveGuide": "Interaktiver Leitfaden",
-    "interactiveGuideDesc": "Schritt-für-Schritt-Anleitungen"
+    "interactiveGuideDesc": "Schritt-für-Schritt-Anleitungen",
+    "cta": {
+      "note": "Keine Installation, funktioniert in jeder Küche",
+      "socialProof": "Vertrauenswürdig für moderne Food-Brands"
+    },
+    "metrics": {
+      "recipes": "18k+",
+      "recipesLabel": "Kuratiertes Rezepteangebot mit KI-Unterstützung",
+      "community": "120+",
+      "communityLabel": "Kulinarische Teams weltweit",
+      "timeSaved": "40%",
+      "timeSavedLabel": "Durchschnittlich gesparte Vorbereitungszeit pro Woche"
+    }
   },
   "mockup": {
     "discover": "Entdecken",
     "whatToCook": "Was möchtest du heute kochen?",
-    "startCooking": "Jetzt kochen →"
+    "startCooking": "Jetzt kochen"
   },
   "exampleRecipes": {
     "mediterraneanBowl": {
-      "name": "Mediterrane Sonnenuntergangs-Bowl",
+      "name": "Mediterrane Sunset-Bowl",
       "description": "Frischer Quinoa mit geröstetem Gemüse, Feta und Zitronen-Kräuter-Dressing"
     },
     "tuscanChicken": {
       "name": "Cremiges Toskanisches Hähnchen",
-      "description": "Gebratenes Hähnchen in getrockneter Tomaten-Sahnesauce mit Spinat"
+      "description": "Gebratenes Hähnchen in Tomaten-Sahne-Soße mit Spinat"
     },
     "smoothieBowl": {
-      "name": "Beeren-Glücks-Smoothie-Bowl",
-      "description": "Antioxidantienreiche Mischung mit Granola, frischen Beeren & Kokos"
+      "name": "Berry-Bliss-Smoothie-Bowl",
+      "description": "Antioxidantienreicher Mix mit Granola, frischen Beeren und Kokos"
     }
   },
+  "demo": {
+    "badge": "Sieh dir Piatto in Aktion an",
+    "title": "Erlebe die Zukunft des Kochens",
+    "subtitle": "Erfahre, wie Piatto dein Kocherlebnis mit KI-gestützter Anleitung und personalisierten Rezepten verändert",
+    "clickToWatch": "Klicke, um die Demo zu sehen",
+    "duration": "2-Minuten-Überblick"
+  },
+  "ai": {
+    "badge": "Angetrieben vom Google ADK",
+    "title": "Aufgebaut mit Google ADK + Gemini",
+    "subtitle": "Nutze Googles Agent Developer Kit mit Gemini-Modellen, um robuste, produktionsreife Koch-Agenten zu starten",
+    "multimodal": {
+      "title": "Agentische Blaupausen",
+      "description": "Die Starter-Kits des ADK ordnen Intents, Tools und Kontext, damit dein Koch-Agent jeden Schritt vom Vorratscheck bis zum Anrichten versteht."
+    },
+    "realtime": {
+      "title": "Tool-Orchestrierung",
+      "description": "Verbinde Gemini-Agenten mit Timern, Einkaufs-APIs oder smarten Geräten über das Action-Routing des ADK für nahtlose Anleitung."
+    },
+    "creative": {
+      "title": "Adaptives Runtime-Management",
+      "description": "Führe mehrstufige Gespräche mit Grounding, Memory und Sicherheitskontrollen, abgestimmt vom Google ADK für gastro-taugliche Zuverlässigkeit."
+    },
+    "learnMore": "Erfahre mehr über Googles Agent Developer Kit"
+  },
   "howItWorks": {
+    "badge": "Einfacher Ablauf",
     "title": "So funktioniert's",
     "subtitle": "Von der Idee zum köstlichen Gericht in drei einfachen Schritten",
     "step1": {
       "title": "Teile deine Vorlieben",
-      "description": "Sag uns, worauf du Appetit hast, deine Ernährungseinschränkungen, verfügbare Zutaten oder Kochzeit. Unsere KI versteht deine Bedürfnisse."
+      "description": "Sag uns, worauf du Lust hast, welche Ernährungsbedürfnisse bestehen, welche Zutaten verfügbar sind oder wie viel Zeit du hast. Unsere KI versteht deine Anforderungen.",
+      "feature": "Eingaben in natürlicher Sprache"
     },
     "step2": {
       "title": "Erhalte personalisierte Rezepte",
-      "description": "Erhalte maßgeschneiderte Rezepte, die auf deinen Geschmack, dein Können und deine Küchenausstattung abgestimmt sind. Speichere Favoriten in deiner persönlichen Sammlung."
+      "description": "Erhalte maßgeschneiderte Rezepte abgestimmt auf Geschmack, Können und Küchenausstattung. Speichere Favoriten in deiner Sammlung.",
+      "feature": "KI-generierte Rezepte"
     },
     "step3": {
       "title": "Koche mit Selbstvertrauen",
-      "description": "Folge interaktiven Schritt-für-Schritt-Anleitungen mit Tipps, Timern und Sprachassistenz. Kreiere jedes Mal erstaunliche Gerichte."
+      "description": "Folge interaktiven Schritt-für-Schritt-Anleitungen mit Tipps, Timern und Sprachunterstützung. So gelingt jedes Gericht.",
+      "feature": "Geführte Schritt-für-Schritt-Anleitung"
+    },
+    "visualization": {
+      "title": "Sieh dir den Ablauf an",
+      "description": "Erlebe, wie dich Piatto nahtlos vom Rezeptfund bis zum fertigen Gericht begleitet"
     }
   },
   "features": {
-    "title": "Kochen leicht gemacht & unterhaltsam",
+    "badge": "Funktionen",
+    "title": "Alles, was du zum Kochen wie ein Profi brauchst",
     "subtitle": "Von der Inspiration bis zum fertigen Gericht begleiten wir dich auf jedem Schritt",
     "aiBrainstorming": {
       "title": "KI-Rezept-Brainstorming",
-      "description": "Sag uns deine Vorlieben, Ernährungsbedürfnisse oder was in deinem Kühlschrank ist. Unsere KI erstellt personalisierte Rezepte nur für dich, angepasst an deinen Geschmack und dein Können."
+      "description": "Sag uns deine Vorlieben, Ernährungsbedürfnisse oder was im Kühlschrank ist. Unsere KI erstellt personalisierte Rezepte nur für dich."
     },
     "cookingGuide": {
       "title": "Interaktiver Kochleitfaden",
-      "description": "Folge den Schritt-für-Schritt-Anleitungen, hilfreichen Tipps und Sprachassistenz. Koche mit Selbstvertrauen, egal wie viel Erfahrung du hast."
+      "description": "Folge Schritt-für-Schritt-Anleitungen mit hilfreichen Tipps, Timern und Sprachunterstützung. Koche mit Selbstvertrauen."
+    },
+    "chatAssistant": {
+      "title": "Chat-Assistent",
+      "description": "Stelle während des Kochens jederzeit Fragen. Erhalte sofort Antworten zu Techniken, Alternativen und mehr."
+    },
+    "smartTimers": {
+      "title": "Intelligente Timer",
+      "description": "Integrierte Timer für jeden Kochschritt sorgen für perfektes Timing und gelungene Ergebnisse."
+    },
+    "collections": {
+      "title": "Persönliche Sammlungen",
+      "description": "Organisiere Lieblingsrezepte in Sammlungen und baue dir Schritt für Schritt dein eigenes Kochbuch."
+    },
+    "smartSuggestions": {
+      "title": "Schlaue Vorschläge",
+      "description": "Erhalte Ideen für Zutatenalternativen, Kochtipps und Technikempfehlungen in Echtzeit."
     }
   },
   "cta": {
-    "title": "Bereit, deine Kochkunst zu transformieren?",
-    "subtitle": "Schließe dich Tausenden von Hobbyköchen an, die die Freude am personalisierten, angeleiteten Kochen entdecken",
+    "title": "Bereit, dein Kochen zu transformieren?",
+    "subtitle": "Starte deine kulinarische Reise mit KI-gestützter Anleitung und personalisierten Rezepten",
     "button": "Piatto kostenlos herunterladen"
   }
 }

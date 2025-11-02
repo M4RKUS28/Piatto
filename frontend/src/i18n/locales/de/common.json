@@ -1,6 +1,7 @@
 {
   "appName": "Piatto",
   "navigation": {
+    "tagline": "KI-kulinarischer Copilot",
     "features": "Funktionen",
     "howItWorks": "So funktioniert's",
     "recipes": "Rezepte",
@@ -13,7 +14,7 @@
     "tagline": "Dein KI-gestützter Kochbegleiter für köstliche Alltagsgerichte",
     "product": "Produkt",
     "company": "Unternehmen",
-    "connect": "Verbinden",
+    "connect": "Vernetzen",
     "aboutUs": "Über uns",
     "contact": "Kontakt",
     "privacyPolicy": "Datenschutzrichtlinie",
@@ -21,6 +22,7 @@
   },
   "buttons": {
     "startCooking": "Jetzt kochen",
+    "watchDemo": "Demo ansehen",
     "exploreRecipes": "Rezepte entdecken",
     "generateRecipe": "Rezept generieren",
     "findNewRecipes": "Neue Rezepte finden",
@@ -36,40 +38,40 @@
     "finish": "Fertig"
   },
   "time": {
-    "na": "N/A",
+    "na": "k.A.",
     "min": "Min.",
     "minutes": "Minuten",
     "hours": "Stunden",
-    "h": "Std"
+    "h": "Std."
   },
   "difficulty": {
-    "na": "N/A",
+    "na": "k.A.",
     "easy": "Einfach",
     "medium": "Mittel",
     "hard": "Schwierig"
   },
   "foodCategory": {
-    "na": "N/A",
+    "na": "k.A.",
     "vegan": "Vegan",
     "veganSub": "Pflanzlich",
     "vegetarian": "Vegetarisch",
-    "vegetarianSub": "Enthält Milchprodukte/Eier",
+    "vegetarianSub": "Mit Milchprodukten/Eiern",
     "alcoholic": "Alkoholisch",
     "alcoholicSub": "Mit Alkohol",
     "nonAlcoholic": "Alkoholfrei",
     "nonAlcoholicSub": "Ohne Alkohol",
     "beef": "Rind",
-    "beefSub": "Auf Rindfleisch basierend",
+    "beefSub": "Auf Rindfleischbasis",
     "pork": "Schwein",
-    "porkSub": "Auf Schweinefleisch basierend",
+    "porkSub": "Auf Schweinefleischbasis",
     "chicken": "Huhn",
     "chickenSub": "Geflügel",
     "lamb": "Lamm",
-    "lambSub": "Auf Lammfleisch basierend",
+    "lambSub": "Auf Lammfleischbasis",
     "fish": "Fisch",
-    "fishSub": "Auf Fisch basierend",
+    "fishSub": "Auf Fischbasis",
     "seafood": "Meeresfrüchte",
-    "seafoodSub": "Auf Meeresfrüchten basierend",
+    "seafoodSub": "Auf Meeresfrüchtebasis",
     "mixedMeat": "Gemischtes Fleisch",
     "mixedMeatSub": "Mehrere Fleischsorten"
   },
@@ -83,25 +85,25 @@
       "unknownError": "Unbekannter Fehler"
     },
     "headerTitle": "Benutzerdefinierte Wake-Word-Erkennung",
-    "headerSubtitle": "Lauscht auf: „{{phrase}}“",
+    "headerSubtitle": "Lauscht auf: \"{{phrase}}\"",
     "statusListening": "Hört zu",
     "controls": {
-      "start": "\u25b6 Zuhören starten",
-      "stop": "\u23f9 Zuhören stoppen"
+      "start": "▶ Zuhören starten",
+      "stop": "⏹ Zuhören stoppen"
     },
     "feedback": {
-      "detected": "„{{phrase}}“ erkannt!",
+      "detected": "\"{{phrase}}\" erkannt!",
       "confidence": "Vertrauen: {{value}}%",
       "total": "Gesamt: {{count}}"
     },
     "setup": {
       "title": "Ersteinrichtung erforderlich:",
-      "step1": "Trainiere dein benutzerdefiniertes „{{phrase}}“-Modell (siehe CUSTOM_WAKE_WORD_TRAINING.md)",
-      "step2": "Lege <code>{{file}}</code> in <code>{{folder}}</code> ab",
-      "step3": "Klicke auf „Zuhören starten“, um die Erkennung zu beginnen"
+      "step1": "Trainiere dein benutzerdefiniertes \"{{phrase}}\"-Modell (siehe CUSTOM_WAKE_WORD_TRAINING.md).",
+      "step2": "Lege <code>{{file}}</code> in <code>{{folder}}</code> ab.",
+      "step3": "Klicke auf \"Zuhören starten\", um die Erkennung zu beginnen."
     },
     "debug": {
-      "description": "\ud83d\udca1 Verwendet ein benutzertrainiertes ONNX-Modell für die Erkennung von „{{phrase}}“.",
+      "description": "💡 Verwendet ein benutzertrainiertes ONNX-Modell zur Erkennung von \"{{phrase}}\".",
       "currentConfidence": "Aktuelles Vertrauen: {{value}}%",
       "logs": "Öffne die Browser-Konsole für detaillierte Erkennungsprotokolle."
     }

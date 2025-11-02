@@ -1,6 +1,7 @@
 {
   "appName": "Piatto",
   "navigation": {
+    "tagline": "AI Culinary Copilot",
     "features": "Features",
     "howItWorks": "How It Works",
     "recipes": "Recipes",
@@ -17,10 +18,11 @@
     "aboutUs": "About Us",
     "contact": "Contact",
     "privacyPolicy": "Privacy Policy",
-    "copyright": "© 2025 Piatto. Cooking made delightful, one recipe at a time."
+    "copyright": "\u00a9 2025 Piatto. Cooking made delightful, one recipe at a time."
   },
   "buttons": {
     "startCooking": "Start Cooking",
+    "watchDemo": "Watch Demo",
     "exploreRecipes": "Explore Recipes",
     "generateRecipe": "Generate Recipe",
     "findNewRecipes": "Find New Recipes",
