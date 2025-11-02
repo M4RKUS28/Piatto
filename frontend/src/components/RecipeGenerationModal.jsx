@@ -322,9 +322,15 @@ export default function RecipeGenerationModal({ isOpen, onClose }) {
         )}
 
         {/* Modal Content */}
-        <div className="relative bg-white rounded-3xl shadow-2xl w-[80%] h-[95%] overflow-hidden flex flex-col">
+        <div className="relative rounded-3xl shadow-2xl w-[80%] h-[95%] overflow-hidden flex flex-col bg-gradient-to-br from-[#F9F6F1] via-[#FDFCFA] to-[#F5F0E8]">
+          {/* Subtle pattern overlay */}
+          <div className="absolute inset-0 opacity-[0.015] pointer-events-none" style={{
+            backgroundImage: `radial-gradient(circle at 20px 20px, #8B7355 1px, transparent 1px)`,
+            backgroundSize: '40px 40px'
+          }}></div>
+
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-[#F5F5F5] flex-shrink-0">
+          <div className="relative flex items-center justify-between p-6 border-b border-[#E8DFD0] flex-shrink-0 bg-[#F5EFE6]/80 backdrop-blur-sm">
             <h2 className="text-2xl sm:text-3xl font-bold text-[#035035]">
               {t('modal.title', 'Generate New Recipe')}
             </h2>
@@ -338,7 +344,7 @@ export default function RecipeGenerationModal({ isOpen, onClose }) {
           </div>
 
           {/* Content - Scrollable */}
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="relative flex-1 overflow-y-auto p-6">
             <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
               {/* Step Indicators */}
               <div className="space-y-4">

@@ -64,11 +64,18 @@ export default function IngredientsStep({
 
 
 	return (
-		<div className="space-y-6">
-			<h2 className="text-2xl sm:text-3xl font-bold text-[#035035] text-center">
+		<div className="space-y-6 relative">
+			{/* Subtle background decoration */}
+			<div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+				<div className="absolute top-10 left-10 w-96 h-96 bg-gradient-to-br from-[#A8C9B8]/8 to-transparent rounded-full blur-3xl"></div>
+				<div className="absolute bottom-20 right-10 w-[32rem] h-[32rem] bg-gradient-to-br from-[#FF9B7B]/8 to-transparent rounded-full blur-3xl"></div>
+				<div className="absolute top-1/2 right-1/4 w-[40rem] h-[40rem] bg-gradient-to-br from-[#FFD88C]/6 to-transparent rounded-full blur-3xl"></div>
+			</div>
+
+			<h2 className="text-2xl sm:text-3xl font-bold text-[#035035] text-center tracking-tight">
 				{t('ingredients.title', 'What ingredients do you have?')}
 			</h2>
-			<p className="text-sm sm:text-base text-center text-[#2D2D2D] opacity-70">
+			<p className="text-sm sm:text-base text-center text-[#2D2D2D] opacity-70 font-medium">
 				{t('ingredients.subtitle', 'Tell us what\'s in your kitchen. You can also analyze a photo to extract ingredients.')}
 			</p>
 
@@ -98,7 +105,7 @@ export default function IngredientsStep({
 
 				<div className="relative">
 					<div className="absolute -top-1 -left-1 w-full h-full bg-gradient-to-br from-[#A8C9B8]/20 to-[#FF9B7B]/20 rounded-xl blur-xl -z-10"></div>
-					<label htmlFor="ingredients-input" className="block text-xs sm:text-sm font-medium text-[#2D2D2D] mb-2 flex items-center gap-2">
+					<label htmlFor="ingredients-input" className="block text-xs sm:text-sm font-semibold text-[#2D2D2D] mb-3 flex items-center gap-2">
 						<Carrot className="w-4 h-4 text-[#A8C9B8]" />
 						{t('ingredients.label', 'Enter your ingredients')}
 					</label>
@@ -109,8 +116,9 @@ export default function IngredientsStep({
 							onChange={handleTextChange}
 							placeholder={t('ingredients.placeholder', 'Enter your ingredients, separated by commas...')}
 							disabled={loading || analyzing}
-							rows={6}
-							className={`w-full px-3 sm:px-4 py-3 pr-12 rounded-xl border-2 transition-all resize-vertical font-['Inter'] text-sm sm:text-base min-h-[120px] bg-white focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${validationError ? 'border-[#FF9B7B] focus:border-[#FF9B7B]' : 'border-[#F5F5F5] focus:border-[#035035]'}`}
+							rows={7}
+							className={`w-full px-5 py-4 pr-12 rounded-xl border-2 transition-all resize-vertical text-base min-h-[160px] bg-white leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-[#2D2D2D]/40 ${validationError ? 'border-[#FF9B7B] focus:border-[#FF9B7B]' : 'border-[#F5F5F5] focus:border-[#035035]'}`}
+							style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
 							aria-invalid={validationError ? 'true' : 'false'}
 							aria-describedby={validationError ? 'ingredients-error' : undefined}
 							aria-label={t('ingredients.aria.ingredientsInput', 'List of ingredients you have available')}
