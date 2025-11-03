@@ -4,11 +4,12 @@ import { Home, Sparkles, User, BookOpen } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import useMediaQuery from '../hooks/useMediaQuery';
-import AppHeader from '../components/AppHeader';
+import Header from '../components/Header.jsx';
+import Footer from '../components/Footer';
 import RecipeGenerationModal from '../components/RecipeGenerationModal';
 
-export default function MainLayout({ children }) {
-  const { t } = useTranslation('mainLayout');
+export default function MainLayout({ children, mode = 'landing' }) {
+  const { t } = useTranslation(['mainLayout', 'common']);
   const { user } = useAuth();
   const location = useLocation();
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -29,23 +30,25 @@ export default function MainLayout({ children }) {
     return () => window.removeEventListener('openGenerateModal', handleOpenModal);
   }, [isMobile]);
 
-  // Fallback user data if user is not loaded yet
-  const displayUser = user ? {
-    username: user.username || 'User',
-    email: user.email || 'user@example.com',
-    profile_image_url: user.profile_image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username || 'User'}`,
-    id: user.id
-  } : {
-    username: 'User',
-    email: 'user@example.com',
-    profile_image_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=User'
-  };
+  // Scroll behavior for landing layout
+  useEffect(() => {
+    if (mode === 'landing') {
+      if (location.hash) {
+        const target = document.querySelector(location.hash)
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    }
+  }, [location.pathname, location.hash, mode])
 
   const mobileNavItems = [
-    { label: t('navigation.dashboard', 'Dashboard'), to: '/app', icon: Home, end: true },
-    { label: t('navigation.generate', 'Generate'), to: '/app/generate', icon: Sparkles },
-    { label: t('navigation.recipes', 'Recipes'), to: '/app/recipes/all', icon: BookOpen },
-    { label: t('navigation.profile', 'Profile'), to: '/app/settings', icon: User }
+    { label: t('navigation.dashboard', { ns: 'mainLayout', defaultValue: 'Dashboard' }), to: '/app', icon: Home, end: true },
+    { label: t('navigation.generate', { ns: 'mainLayout', defaultValue: 'Generate' }), to: '/app/generate', icon: Sparkles },
+    { label: t('navigation.recipes', { ns: 'mainLayout', defaultValue: 'Recipes' }), to: '/app/recipes/all', icon: BookOpen },
+    { label: t('navigation.profile', { ns: 'mainLayout', defaultValue: 'Profile' }), to: '/app/settings', icon: User }
   ];
 
   const content = children ?? <Outlet />;
@@ -60,16 +63,22 @@ export default function MainLayout({ children }) {
     setShowGenerateModal(true);
   };
 
-  if (isMobile) {
+  // Mobile App Layout
+  if (mode === 'app' && isMobile) {
     return (
-      <div className="min-h-screen bg-white flex flex-col">
-        <header className="sticky top-0 z-50 bg-[#FFF8F0] border-b border-[#F5F5F5]">
+      <div className="min-h-screen bg-white flex flex-col relative">
+        {/* Animated background elements */}
+        <div className="hidden lg:block fixed top-20 right-20 w-96 h-96 rounded-full bg-[#A8C9B8] opacity-20 blur-3xl animate-pulse-slow z-0 pointer-events-none"></div>
+        <div className="hidden lg:block fixed bottom-40 left-10 w-96 h-96 rounded-full bg-[#FF9B7B] opacity-20 blur-3xl animate-pulse-slow z-0 pointer-events-none" style={{ animationDelay: '2s' }}></div>
+        <div className="hidden lg:block fixed top-1/2 left-1/2 w-64 h-64 rounded-full bg-[#035035] opacity-15 blur-3xl animate-pulse-slow z-0 pointer-events-none" style={{ animationDelay: '4s' }}></div>
+
+        <header className="bg-[#FFF8F0] border-b border-[#F5F5F5] relative z-10">
           <div className="flex items-center justify-between px-4 py-3">
             <Link
               to="/app"
               className="flex items-center gap-2"
             >
-              <div className="w-9 h-9 bg-white rounded-xl shadow-sm flex items-center justify-center">
+              <div className="w-9 h-9 flex items-center justify-center">
                 <img src="/logo_no_P.svg" alt="Piatto" className="w-7 h-7" />
               </div>
               <span
@@ -82,14 +91,14 @@ export default function MainLayout({ children }) {
           </div>
         </header>
 
-        <main className="flex-1 pb-20">
+        <main className="flex-1 pb-20 relative z-10">
           {content}
         </main>
 
         {!isRecipeViewPage && (
           <footer className="py-4 px-4 text-center">
             <p className="text-xs text-[#2D2D2D] opacity-40">
-              {t('footer.copyright', '© 2025 Piatto. Cooking made delightful, one recipe at a time.')}
+              {t('footer.copyright', { ns: 'mainLayout', defaultValue: '© 2025 Piatto. Cooking made delightful, one recipe at a time.' })}
             </p>
           </footer>
         )}
@@ -119,32 +128,69 @@ export default function MainLayout({ children }) {
             })}
           </div>
         </nav>
+
+        <style>{`
+          @keyframes pulse-slow {
+            0%, 100% {
+              opacity: 0.15;
+            }
+            50% {
+              opacity: 0.25;
+            }
+          }
+
+          .animate-pulse-slow {
+            animation: pulse-slow 4s ease-in-out infinite;
+          }
+        `}</style>
       </div>
     );
   }
 
+  // Desktop Layout (both landing and app)
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      {/* Desktop Header */}
-      <AppHeader onGenerateClick={handleGenerateClick} />
+    <div className="min-h-screen bg-white flex flex-col relative">
+      {/* Animated background elements */}
+      <div className="hidden lg:block fixed top-20 right-20 w-96 h-96 rounded-full bg-[#A8C9B8] opacity-20 blur-3xl animate-pulse-slow z-0 pointer-events-none"></div>
+      <div className="hidden lg:block fixed bottom-40 left-10 w-96 h-96 rounded-full bg-[#FF9B7B] opacity-20 blur-3xl animate-pulse-slow z-0 pointer-events-none" style={{ animationDelay: '2s' }}></div>
+      <div className="hidden lg:block fixed top-1/2 left-1/2 w-64 h-64 rounded-full bg-[#035035] opacity-15 blur-3xl animate-pulse-slow z-0 pointer-events-none" style={{ animationDelay: '4s' }}></div>
 
-      {/* Main Content */}
-      <main className="flex-1">{content}</main>
+      <Header mode={mode} onGenerateClick={handleGenerateClick} />
 
-      {/* Footer (hidden on recipe view page) */}
-      {!isRecipeViewPage && (
+      <main className="flex-1 relative z-10">{content}</main>
+
+      {/* Footer (hidden on recipe view page for app mode) */}
+      {mode === 'landing' && <Footer />}
+      {mode === 'app' && !isRecipeViewPage && (
         <footer className="py-3 px-6 text-center">
           <p className="text-xs text-[#2D2D2D] opacity-40">
-            {t('footer.copyright', '© 2025 Piatto. Cooking made delightful, one recipe at a time.')}
+            {t('footer.copyright', { ns: 'mainLayout', defaultValue: '© 2025 Piatto. Cooking made delightful, one recipe at a time.' })}
           </p>
         </footer>
       )}
 
-      {/* Recipe Generation Modal - Desktop only */}
-      <RecipeGenerationModal
-        isOpen={showGenerateModal}
-        onClose={() => setShowGenerateModal(false)}
-      />
+      {/* Recipe Generation Modal - Desktop only for app mode */}
+      {mode === 'app' && (
+        <RecipeGenerationModal
+          isOpen={showGenerateModal}
+          onClose={() => setShowGenerateModal(false)}
+        />
+      )}
+
+      <style>{`
+        @keyframes pulse-slow {
+          0%, 100% {
+            opacity: 0.15;
+          }
+          50% {
+            opacity: 0.25;
+          }
+        }
+
+        .animate-pulse-slow {
+          animation: pulse-slow 4s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 }

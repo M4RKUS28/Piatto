@@ -242,8 +242,8 @@ export default function RecipeLibrary() {
       <div className="max-w-7xl mx-auto space-y-6 sm:space-y-7">
         {/* Welcome Header */}
         <div className="text-center space-y-1">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#035035]">
-            {t("library.welcome", "Welcome back, {{username}}!", { username: user?.username || "Chef" })}
+          <h1 className="text-3xl sm:text-4xl lg:text-4xl font-bold text-[#035035]">
+            Welcome Back, {user?.name || 'Chef'}👋
           </h1>
           <p className="text-lg sm:text-xl text-[#2D2D2D] opacity-70">
             {t("library.welcomeSubtitle", "Let's cook something delicious today")}

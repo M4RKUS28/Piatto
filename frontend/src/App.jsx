@@ -1,10 +1,9 @@
 import { Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
-import LandingLayout from './Layout/LandingLayout.jsx'
+import MainLayout from './Layout/MainLayout.jsx'
 import AuthLayout from './Layout/AuthLayout.jsx'
 import LandingPage from './pages/LandingPage.jsx'
-import MainLayout from './Layout/MainLayout.jsx'
 import RecipeLibrary from './pages/app/RecipeLibrary.jsx'
 import AllRecipesView from './pages/app/AllRecipesView.jsx'
 import RecipeView from "./pages/app/RecipeView.jsx"
@@ -45,8 +44,8 @@ function App() {
           <Route path="register-failed" element={<RegisterFailedPage />} />
         </Route>
 
-        {/* Public info pages with full LandingLayout */}
-        <Route element={<LandingLayout />}>
+        {/* Public info pages with MainLayout in landing mode */}
+        <Route element={<MainLayout mode="landing" />}>
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
@@ -54,8 +53,8 @@ function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Route>
 
-        {/* Protected app routes with MainLayout */}
-        <Route path="/app" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+        {/* Protected app routes with MainLayout in app mode */}
+        <Route path="/app" element={<ProtectedRoute><MainLayout mode="app" /></ProtectedRoute>}>
           <Route index element={<RecipeLibrary />} />
           {isMobile ? (
             <Route path="generate" element={<RecipeGenerationMobile />} />
@@ -65,10 +64,12 @@ function App() {
           <Route path="library" element={<RecipeLibrary />} />
           <Route path="recipes" element={<RecipeLibrary />} />
           <Route path="recipes/all" element={<AllRecipesView />} />
-          <Route path="recipe/:recipeId" element={<RecipeView />} />
           <Route path="collection/:collectionId" element={<CollectionRecipesView />} />
           <Route path="settings" element={<ProfileSettings />} />
         </Route>
+
+        {/* RecipeView without any layout (no header) */}
+        <Route path="/app/recipe/:recipeId" element={<ProtectedRoute><RecipeView /></ProtectedRoute>} />
       </Routes>
     </AuthProvider>
   )
