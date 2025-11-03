@@ -6,6 +6,8 @@ import ErrorMessage from './ErrorMessage';
 import DeleteCollectionModal from './DeleteCollectionModal';
 import { useTranslation } from 'react-i18next'
 
+
+
 /**
  * EditCollectionsModal component allows users to:
  * - View all collections
