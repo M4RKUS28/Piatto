@@ -9,6 +9,13 @@ AnimationFileName = Literal[
     "microwave.json",
     "oven_convect.json",
     "steaming_with_lid.json",
+    "big_knife.json",
+    "blender.json",
+    "chef.json",
+    "finished_recipe.json",
+    "seasoning.json",
+    "stir_drink.json",
+    "washing.json"
 ]
 
 class InstructionStep(BaseModel):

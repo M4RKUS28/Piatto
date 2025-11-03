@@ -14,9 +14,9 @@ Every step needs an animation file, you can choose from the following:
 "microwave.json" -> A microwave that turns on
 "oven_convect.json" -> The convection sign on an oven (use for oven usage)
 "steaming_with_lid.json" -> Similar to let_cook_and_stir but with a lid and without the turning spoon
-"big_knife.json" -> A big knife cutting
-"seasoning.json" -> A hand sprinkling some magic (seasoning)
-"finished_recipe.json" -> The animation for the last step
+"big_knife.json" -> A big knife cutting (Use for cutting)
+"seasoning.json" -> A hand sprinkling some magic (Use for seasoning)
+"finished_recipe.json" -> Use this animation for the last step
 "blender.json" -> A blender that blends
 "stir_drink.json" -> A drink being stirred
 "chef.json" -> A happy chef (can be used if absolutely nothing else fits)
