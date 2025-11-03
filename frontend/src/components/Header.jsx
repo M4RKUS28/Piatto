@@ -20,7 +20,7 @@ export default function Header({ mode = 'landing', onGenerateClick, showAuthButt
 
   return (
     <nav className="bg-[#F5EFE6] border-b border-[#D4C5B0]">
-      <div className={`w-full ${isMobile ? 'py-4 px-4' : 'py-4 px-6'}`}>
+      <div className={`w-full ${isMobile ? 'py-3 px-4' : 'py-3 px-6'}`}>
         <div className={`flex items-center ${isMobile ? 'gap-3' : ''} justify-between ${isMobile ? 'flex-wrap' : ''} min-h-[48px]`}>
           <Link to="/" className="flex items-center gap-3 flex-shrink-0">
             <div className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'} flex items-center justify-center`}>
