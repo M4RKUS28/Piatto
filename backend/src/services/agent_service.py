@@ -97,16 +97,26 @@ class AgentService:
         preparing_session_id: Optional[int] = None,
         background_tasks = None
     ):
+        logger.info("Starting recipe generation for user_id=%s with prompt=%s", user_id, prompt)
+        logger.info("Written ingredients: %s", written_ingredients)
         query = get_recipe_gen_query(prompt, written_ingredients)
+        logger.info("Generated query for recipe agent: %s", query)
+        
         recipes =  await self.recipe_agent.run(
             user_id=user_id,
             state={},
             content=query,
         )
+        logger.info("Recipe agent returned %d recipes", len(recipes.get('recipes', [])))
+
+        
+
         # Save the recipes in db before generating images
         recipe_ids = []
         async with get_async_db_context() as db:
-            for recipe in recipes['recipes']:
+            for idx, recipe in enumerate(recipes['recipes']):
+                logger.info("Saving recipe %d/%d: title=%s", idx + 1, len(recipes['recipes']), recipe['title'])
+                logger.info("Recipe ingredients: %s", recipe['ingredients'])
                 recipe_db = await recipe_crud.create_recipe(
                     db=db,
                     user_id=user_id,
@@ -121,6 +131,9 @@ class AgentService:
                     cooking_overview=recipe.get('cooking_overview'),
                 )
                 recipe_ids.append(recipe_db.id)
+                logger.info("Recipe saved with id=%s", recipe_db.id)
+            
+            logger.info("All recipes saved. Recipe IDs: %s", recipe_ids)
 
             # Create or update preparing session with the generated recipes and metadata
             try:
