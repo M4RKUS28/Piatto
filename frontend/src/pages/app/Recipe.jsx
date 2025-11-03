@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   PiClock,
-  PiCookingPot, PiMinus, PiPlus, PiCow, PiLeaf, PiEgg, PiArrowLeft
+  PiCookingPot, PiMinus, PiPlus, PiCow, PiLeaf, PiEgg
 } from 'react-icons/pi';
 import { Wine, CupSoda } from 'lucide-react';
 import { getRecipeById } from '../../api/recipeApi';
@@ -330,15 +330,6 @@ const Recipe = ({ recipeId }) => {
   return (
     <div className="h-full overflow-y-auto no-scrollbar bg-white">
       <div className="p-4 sm:p-6 md:p-8">
-        {/* Back to Dashboard Button */}
-        <button
-          onClick={() => navigate('/app')}
-          className="flex items-center gap-2 text-[#035035] hover:text-[#046847] transition-colors mb-4 group cursor-pointer"
-        >
-          <PiArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-          <span className="font-medium">{t('backToDashboard', { defaultValue: 'Back to Dashboard' })}</span>
-        </button>
-
         {/* Header */}
         <div className="mb-4">
           <h1 className="font-poppins font-bold text-xl sm:text-2xl text-[#035035] break-words">

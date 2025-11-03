@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../contexts/AuthContext'
 import useMediaQuery from '../hooks/useMediaQuery'
-import { Settings as SettingsIcon, LogOut, Plus } from 'lucide-react'
+import { Sparkles, Settings as SettingsIcon, LogOut } from 'lucide-react'
 
 export default function Header({ mode = 'landing', onGenerateClick, showAuthButtons = true }) {
   const { t } = useTranslation('common')
@@ -18,10 +18,18 @@ export default function Header({ mode = 'landing', onGenerateClick, showAuthButt
     navigate('/')
   }
 
+  const handleGenerateClick = () => {
+    // Navigate to /app first, then open modal
+    navigate('/app')
+    setTimeout(() => {
+      if (onGenerateClick) onGenerateClick()
+    }, 100)
+  }
+
   return (
     <nav className="bg-[#F5EFE6] border-b border-[#D4C5B0]">
-      <div className={`w-full ${isMobile ? 'py-4 px-4' : 'py-4 px-6'}`}>
-        <div className={`flex items-center ${isMobile ? 'gap-3' : ''} justify-between ${isMobile ? 'flex-wrap' : ''} min-h-[48px]`}>
+      <div className={`w-full ${isMobile ? 'py-2 px-4' : 'py-2 px-6'}`}>
+        <div className={`flex items-center ${isMobile ? 'gap-3' : ''} justify-between ${isMobile ? 'flex-wrap' : ''}`}>
           <Link to="/" className="flex items-center gap-3 flex-shrink-0">
             <div className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'} flex items-center justify-center`}>
               <img src="/logo_no_P.svg" alt="Piatto" className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} />
@@ -37,29 +45,21 @@ export default function Header({ mode = 'landing', onGenerateClick, showAuthButt
           {/* Landing mode navigation */}
           {mode === 'landing' && (
             <>
-              <div className="hidden md:flex items-center absolute left-1/2 transform -translate-x-1/2 translate-y-[2px]">
-                <span className="text-gray-400 text-md font-light italic">
-                  Cooking made Simple
-                </span>
+              <div className="hidden md:flex items-center gap-8 absolute left-1/2 transform -translate-x-1/2">
+                <Link to="/#how-it-works" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-semibold">{t('navigation.howItWorks')}</Link>
+                <Link to="/#features" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-semibold">{t('navigation.features')}</Link>
+                <Link to="/about" className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-semibold">{t('navigation.about')}</Link>
               </div>
 
               {showAuthButtons && (
                 <>
                   {isAuthenticated ? (
-                    <div className="flex items-center gap-3">
-                      <Link
-                        to="/about"
-                        className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-semibold"
-                      >
-                        {t('navigation.about')}
-                      </Link>
-                      <Link
-                        to="/app"
-                        className="bg-[#035035] text-white px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all shadow-md hover:shadow-lg"
-                      >
-                        {t('navigation.dashboard')}
-                      </Link>
-                    </div>
+                    <Link
+                      to="/app"
+                      className="bg-[#035035] text-white px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all shadow-md hover:shadow-lg"
+                    >
+                      {t('navigation.dashboard')}
+                    </Link>
                   ) : (
                     <div className={`flex items-center ${isMobile ? 'gap-2' : 'gap-3'}`}>
                       <Link
@@ -84,23 +84,32 @@ export default function Header({ mode = 'landing', onGenerateClick, showAuthButt
           {/* App mode navigation */}
           {mode === 'app' && (
             <>
-              <div className="hidden md:flex items-center absolute left-1/2 transform -translate-x-1/2 translate-y-[2px]">
-                <span className="text-gray-400 text-md font-light italic">
-                  Cooking made Simple
-                </span>
+              <div className="hidden md:flex items-center gap-8 absolute left-1/2 transform -translate-x-1/2">
+                <Link
+                  to="/app"
+                  className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-semibold"
+                >
+                  {t('navigation.dashboard', { defaultValue: 'Dashboard' })}
+                </Link>
+                <button
+                  onClick={handleGenerateClick}
+                  className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-semibold flex items-center gap-2"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  {t('navigation.generateNewRecipe', { defaultValue: 'Generate New Recipe' })}
+                </button>
+                <Link
+                  to="/app/settings"
+                  className="text-[#2D2D2D] hover:text-[#035035] transition-colors font-semibold"
+                >
+                  {t('navigation.settings', { defaultValue: 'Settings' })}
+                </Link>
               </div>
 
               <div className="flex items-center gap-3 relative">
                 <button
-                  onClick={onGenerateClick}
-                  className="h-12 px-5 bg-[#035035] text-white rounded-full font-semibold hover:scale-105 transition-all shadow-md hover:shadow-lg flex items-center gap-2"
-                >
-                  <Plus className="w-5 h-5" />
-                  <span>{t('navigation.newRecipe', 'New Recipe')}</span>
-                </button>
-                <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#A8C9B8] bg-white hover:ring-[#035035] transition-all"
+                  className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#A8C9B8] bg-white hover:ring-[#035035] transition-all"
                   aria-label={t('aria.openProfile', 'Open profile')}
                 >
                   <img
@@ -120,7 +129,7 @@ export default function Header({ mode = 'landing', onGenerateClick, showAuthButt
                     <div className="absolute top-14 right-0 z-50 bg-white rounded-2xl shadow-lg border border-[#F5F5F5] p-3 min-w-[14rem]">
                       {/* User Info */}
                       <div className="flex items-center gap-3 pb-3 border-b border-[#F5F5F5]">
-                        <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#A8C9B8] bg-white">
+                        <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#A8C9B8] bg-white">
                           <img
                             src={user?.profile_image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'User'}`}
                             alt={user?.username || 'User'}
@@ -163,7 +172,6 @@ export default function Header({ mode = 'landing', onGenerateClick, showAuthButt
           )}
         </div>
       </div>
-
     </nav>
   )
 }
