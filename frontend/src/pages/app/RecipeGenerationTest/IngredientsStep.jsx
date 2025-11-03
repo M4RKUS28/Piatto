@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useRef } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
-import { Drumstick, Carrot, Milk, Beef, Pizza, Egg } from 'lucide-react';
+import { Carrot } from 'lucide-react';
 import axios from 'axios';
 
 export default function IngredientsStep({
@@ -46,22 +46,6 @@ export default function IngredientsStep({
 		}
 	};
 
-	const exampleIngredients = [
-		{ text: 'Chicken, Rice, Vegetables', icon: Drumstick, color: 'bg-gradient-to-br from-[#FFB88C] to-[#FFA86C]' },
-		{ text: 'Pasta, Tomatoes, Garlic', icon: Pizza, color: 'bg-gradient-to-br from-[#FF9B7B] to-[#FF8B6B]' },
-		{ text: 'Eggs, Flour, Milk', icon: Egg, color: 'bg-gradient-to-br from-[#F4E4C1] to-[#E9D4A1]' },
-		{ text: 'Beef, Potatoes, Onions', icon: Beef, color: 'bg-gradient-to-br from-[#D4846A] to-[#C4745A]' },
-		{ text: 'Tofu, Vegetables, Soy Sauce', icon: Carrot, color: 'bg-gradient-to-br from-[#A8C9B8] to-[#8BB9A8]' },
-		{ text: 'Cheese, Bread, Butter', icon: Milk, color: 'bg-gradient-to-br from-[#FFD88C] to-[#FFC86C]' },
-	];
-
-	const handleExampleClick = (example) => {
-		setIngredientsText(example);
-		if (validationError) {
-			setValidationError('');
-		}
-	};
-
 
 	return (
 		<div className="space-y-6 relative">
@@ -80,29 +64,95 @@ export default function IngredientsStep({
 			</p>
 
 			<form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6" aria-label={t('ingredients.aria.form', 'Ingredients input form')}>
-				{/* Example Ingredients */}
-				<div className="flex flex-wrap gap-2 justify-center">
-					{exampleIngredients.map((example, index) => {
-						const Icon = example.icon;
-						return (
-							<button
-								key={index}
-								type="button"
-								onClick={() => handleExampleClick(example.text)}
-								disabled={loading || analyzing}
-								className={`${example.color} text-white px-4 py-2 rounded-full font-medium text-sm
-									hover:scale-105 active:scale-95 transition-all duration-200 shadow-md
-									disabled:opacity-50 disabled:cursor-not-allowed
-									flex items-center gap-2
-								`}
-							>
-								<Icon className="w-4 h-4" />
-								<span>{example.text}</span>
-							</button>
-						);
-					})}
+				{/* AI Image Analysis Box */}
+				<div className="relative">
+					<input
+						id="image-upload"
+						type="file"
+						accept="image/*"
+						style={{ display: 'none' }}
+						onChange={async (event) => {
+							const file = event.target.files?.[0];
+							if (!file) return;
+							if (!user?.id) {
+								setValidationError(t('ingredients.validation.notLoggedIn', 'You must be logged in to analyze an image'));
+								return;
+							}
+							setValidationError('');
+							setAnalyzing(true);
+							try {
+								const formData = new FormData();
+								formData.append('file', file);
+								// You may need to adjust the API base URL
+								const response = await axios.post('/api/preparing/image-analysis', formData, {
+									headers: {
+										'Content-Type': 'multipart/form-data',
+									},
+								});
+								const result = response.data;
+								if (
+									(typeof result === 'string' && (result.trim().toLowerCase() === 'none' || result.trim().toUpperCase() === 'NONE')) ||
+									(Array.isArray(result) && result.length === 0)
+								) {
+									setShowPopup(true);
+									if (popupTimeoutRef.current) clearTimeout(popupTimeoutRef.current);
+									popupTimeoutRef.current = setTimeout(() => setShowPopup(false), 3000);
+								} else if (typeof result === 'string' && result.length > 0) {
+									setIngredientsText((prev) => prev ? prev + ', ' + result : result);
+								} else if (Array.isArray(result)) {
+									setIngredientsText((prev) => prev ? prev + ', ' + result.join(', ') : result.join(', '));
+								} else {
+									setValidationError(t('ingredients.validation.noIngredients', 'Image analysis did not return ingredients'));
+								}
+							} catch {
+								setValidationError(t('ingredients.validation.imageAnalysisFailed', 'Image analysis failed. Please try again.'));
+							} finally {
+								setAnalyzing(false);
+							}
+						}}
+						disabled={loading || analyzing}
+					/>
+					<button
+						type="button"
+						onClick={() => document.getElementById('image-upload')?.click()}
+						disabled={loading || analyzing}
+						className="w-full bg-white border-3 border-dashed border-[#A8C9B8] rounded-xl px-6 py-3 hover:border-[#035035] hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2 min-h-[100px]"
+						aria-label={t('ingredients.aria.analyzeImage', 'Analyze image to extract ingredients')}
+					>
+						<div className="flex items-center justify-center gap-4 h-full">
+							{analyzing ? (
+								<svg className="w-10 h-10 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<circle cx="12" cy="12" r="10" stroke="#A8C9B8" strokeWidth="4" fill="none" />
+								</svg>
+							) : (
+								<div className="w-12 h-12 flex items-center justify-center bg-[#035035] rounded-full flex-shrink-0">
+									<img
+										src="/wired-outline-61-camera-in-reveal.gif"
+										alt="Camera animation"
+										className="w-8 h-8"
+									/>
+								</div>
+							)}
+							<div className="text-left flex-1 py-6">
+								<p className="text-base font-bold text-[#035035] mb-0.5">
+									{analyzing ? t('ingredients.analyzing', 'Analyzing image...') : t('ingredients.analyzeImage', 'Analyze Image')}
+								</p>
+								<p className="text-xs text-[#2D2D2D]/70 font-medium">
+									{t('ingredients.aiAnalysisDescription', 'Analyze your pantry or fridge with AI')}
+								</p>
+							</div>
+						</div>
+					</button>
 				</div>
 
+				{/* Divider */}
+				<div className="flex items-center justify-center my-6">
+					<div className="flex-1 border-t-2 border-dashed border-[#FF9B7B]"></div>
+					<span className="px-4 text-sm text-[#2D2D2D]/50 font-medium">OR</span>
+					<div className="flex-1 border-t-2 border-dashed border-[#FF9B7B]"></div>
+				</div>
+
+				{/* Ingredients Input */}
 				<div className="relative">
 					<div className="absolute -top-1 -left-1 w-full h-full bg-gradient-to-br from-[#A8C9B8]/20 to-[#FF9B7B]/20 rounded-xl blur-xl -z-10"></div>
 					<label htmlFor="ingredients-input" className="block text-xs sm:text-sm font-semibold text-[#2D2D2D] mb-3 flex items-center gap-2">
@@ -116,8 +166,8 @@ export default function IngredientsStep({
 							onChange={handleTextChange}
 							placeholder={t('ingredients.placeholder', 'Enter your ingredients, separated by commas...')}
 							disabled={loading || analyzing}
-							rows={7}
-							className={`w-full px-5 py-4 pr-12 rounded-xl border-2 transition-all resize-vertical text-base min-h-[160px] bg-white leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-[#2D2D2D]/40 ${validationError ? 'border-[#FF9B7B] focus:border-[#FF9B7B]' : 'border-[#F5F5F5] focus:border-[#035035]'}`}
+							rows={4}
+							className={`w-full px-5 py-4 pr-12 rounded-xl border-2 transition-all resize-vertical text-base min-h-[100px] bg-white leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-[#2D2D2D]/40 ${validationError ? 'border-[#FF9B7B] focus:border-[#FF9B7B]' : 'border-[#F5F5F5] focus:border-[#035035]'}`}
 							style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
 							aria-invalid={validationError ? 'true' : 'false'}
 							aria-describedby={validationError ? 'ingredients-error' : undefined}
@@ -143,70 +193,6 @@ export default function IngredientsStep({
 								</div>
 							</div>
 						)}
-						<input
-							id="image-upload"
-							type="file"
-							accept="image/*"
-							style={{ display: 'none' }}
-							onChange={async (event) => {
-								const file = event.target.files?.[0];
-								if (!file) return;
-								if (!user?.id) {
-									setValidationError(t('ingredients.validation.notLoggedIn', 'You must be logged in to analyze an image'));
-									return;
-								}
-								setValidationError('');
-								setAnalyzing(true);
-								try {
-									const formData = new FormData();
-									formData.append('file', file);
-									// You may need to adjust the API base URL
-									const response = await axios.post('/api/preparing/image-analysis', formData, {
-										headers: {
-											'Content-Type': 'multipart/form-data',
-										},
-									});
-									const result = response.data;
-									if (
-										(typeof result === 'string' && (result.trim().toLowerCase() === 'none' || result.trim().toUpperCase() === 'NONE')) ||
-										(Array.isArray(result) && result.length === 0)
-									) {
-										setShowPopup(true);
-										if (popupTimeoutRef.current) clearTimeout(popupTimeoutRef.current);
-										popupTimeoutRef.current = setTimeout(() => setShowPopup(false), 3000);
-									} else if (typeof result === 'string' && result.length > 0) {
-										setIngredientsText((prev) => prev ? prev + ', ' + result : result);
-									} else if (Array.isArray(result)) {
-										setIngredientsText((prev) => prev ? prev + ', ' + result.join(', ') : result.join(', '));
-									} else {
-										setValidationError(t('ingredients.validation.noIngredients', 'Image analysis did not return ingredients'));
-									}
-								} catch {
-									setValidationError(t('ingredients.validation.imageAnalysisFailed', 'Image analysis failed. Please try again.'));
-								} finally {
-									setAnalyzing(false);
-								}
-							}}
-							disabled={loading || analyzing}
-						/>
-						<button
-							type="button"
-							onClick={() => document.getElementById('image-upload')?.click()}
-							disabled={loading || analyzing}
-							className="absolute bottom-3 left-3 bg-[#035035] rounded-full px-3 py-2 shadow-md hover:bg-[#046a47] focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-							aria-label={t('ingredients.aria.analyzeImage', 'Analyze image to extract ingredients')}
-						>
-							{analyzing ? (
-								<svg className="w-6 h-6 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<circle cx="12" cy="12" r="10" stroke="#A8C9B8" strokeWidth="4" fill="none" />
-								</svg>
-							) : (
-								<>
-									<img src="/wired-outline-61-camera-in-reveal.gif" alt="Upload ingredients image" className="w-6 h-6" />
-									<span className="text-white font-semibold text-xs sm:text-sm">{t('ingredients.analyzeImage', 'Analyze Image')}</span>
-								</>
-							)}
-						</button>
 						{showPopup && (
 							<div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 bg-[#FF9B7B] text-white px-4 py-2 rounded shadow-lg z-10 animate-fade-in">
 								{t('ingredients.noIngredientsDetected', 'No ingredients detected in image.')}
