@@ -19,3 +19,5 @@ Every step needs an animation file, you can choose from the following:
 "finished_recipe.json" -> The animation for the last step
 "blender.json" -> A blender that blends
 "stir_drink.json" -> A drink being stirred
+"chef.json" -> A happy chef (can be used if absolutely nothing else fits)
+"washing.json" -> Two hands washing something
