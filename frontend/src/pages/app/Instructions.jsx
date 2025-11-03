@@ -14,6 +14,7 @@ import WakeWordDetection from '../../components/WakeWordDetection';
 import AnimatedTimer from './Instructions/AnimatedTimer';
 import AnimatingTimerPortal from './Instructions/AnimatingTimerPortal';
 import ChatContainer from './Instructions/ChatContainer';
+import TimerProgressBar from './Instructions/TimerProgressBar';
 import { useTranslation } from 'react-i18next'
 import useMediaQuery from '../../hooks/useMediaQuery';
 
@@ -97,7 +98,7 @@ const AIQuestionButton = ({ onClick, isFocused, isEnabled }) => {
 };
 
 // --- Build Instruction Content ---
-const buildInstructionContent = (instruction, stepIndex, timerData, handlers, isFocused, canOpenChat) => {
+const buildInstructionContent = (instruction, stepIndex, timerData, handlers, isFocused, canOpenChat, timerState) => {
   const { heading, description, timer } = instruction;
 
   return (
@@ -105,6 +106,17 @@ const buildInstructionContent = (instruction, stepIndex, timerData, handlers, is
       <AIQuestionButton onClick={handlers.onOpenChat} isFocused={isFocused} isEnabled={canOpenChat} />
       <h3 className="text-lg sm:text-xl md:text-xl font-semibold text-[#2D2D2D] mb-2">{heading}</h3>
       <p className="text-sm sm:text-base text-[#2D2D2D] mb-4">{description}</p>
+
+      {/* Show progress bar when timer is floating */}
+      {timer && timerData?.isFloating && timerState && (
+        <TimerProgressBar
+          currentSeconds={timerState.currentSeconds}
+          totalSeconds={timerState.totalSeconds}
+          isRunning={timerState.isRunning}
+        />
+      )}
+
+      {/* Show full timer when not floating */}
       {timer && timerData && !timerData.isFloating && (
         <div style={{
           opacity: timerData.isHidden ? 0 : 1,
@@ -120,6 +132,7 @@ const buildInstructionContent = (instruction, stepIndex, timerData, handlers, is
             onReturnToStep={handlers.onReturnToStep}
             onExpand={handlers.onExpand}
             timerRef={timerData.timerRef}
+            onTimerUpdate={handlers.onTimerUpdate}
           />
         </div>
       )}
@@ -190,6 +203,8 @@ const CookingInstructions = ({
   const [animatingTimers, setAnimatingTimers] = React.useState([]); // Timers currently animating
   const [hiddenTimers, setHiddenTimers] = React.useState([]); // Timers hidden during animation
   const timerRefs = React.useRef({});
+  // Track timer states for progress bars
+  const [timerStates, setTimerStates] = React.useState({}); // Map of stepIndex -> timer state
 
   // Chat state management
   const [openChatStep, setOpenChatStep] = React.useState(null);
@@ -366,6 +381,14 @@ const CookingInstructions = ({
     setExpandedTimerStep(stepIndex);
   }, []);
 
+  // Handle timer state updates
+  const handleTimerUpdate = React.useCallback((stepIndex, timerState) => {
+    setTimerStates((prev) => ({
+      ...prev,
+      [stepIndex]: timerState
+    }));
+  }, []);
+
   const scrollStepIntoView = React.useCallback((index) => {
     const stepElement = stepRefs.current[index];
     if (!stepElement) return;
@@ -462,6 +485,7 @@ const CookingInstructions = ({
     setExpandedTimerStep(null);
     setAnimatingTimers([]);
     setHiddenTimers([]);
+    setTimerStates({});
     timerRefs.current = {};
     previousSyncedStep.current = null;
 
@@ -516,6 +540,7 @@ const CookingInstructions = ({
         setExpandedTimerStep(null);
         setAnimatingTimers([]);
         setHiddenTimers([]);
+        setTimerStates({});
         timerRefs.current = {};
         previousSyncedStep.current = null;
       } catch (err) {
@@ -875,8 +900,11 @@ const CookingInstructions = ({
               onStartFloating: handleStartFloating,
               onReturnToStep: handleReturnToStep,
               onExpand: () => handleExpandTimer(index),
-              onOpenChat: () => handleOpenChat(index)
+              onOpenChat: () => handleOpenChat(index),
+              onTimerUpdate: handleTimerUpdate
             };
+
+            const timerState = timerStates[index];
 
             return (
               <StepDiv
@@ -884,7 +912,7 @@ const CookingInstructions = ({
                 ref={(el) => (stepRefs.current[index] = el)}
                 circleRef={(el) => (circleRefs.current[index] = el)}
                 instruction={instruction}
-                content={buildInstructionContent(instruction, index, timerData, handlers, focusedStep === index + 1, sessionActive)}
+                content={buildInstructionContent(instruction, index, timerData, handlers, focusedStep === index + 1, sessionActive, timerState)}
                 index={index}
                 circleRadius={circleRadius}
                 isFocused={focusedStep === index + 1}
@@ -918,6 +946,7 @@ const CookingInstructions = ({
                 onStartFloating={handleStartFloating}
                 onReturnToStep={handleReturnToStep}
                 onExpand={() => handleExpandTimer(stepIndex)}
+                onTimerUpdate={handleTimerUpdate}
                 timerRef={(el) => {
                   if (el) timerRefs.current[`floating-${stepIndex}`] = el;
                 }}

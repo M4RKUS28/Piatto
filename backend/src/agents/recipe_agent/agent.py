@@ -18,7 +18,7 @@ class RecipeAgent(StructuredAgent):
     def __init__(self, app_name: str, session_service):
         self.full_instructions = load_instruction_from_file("recipe_agent/instructions.txt")
         # Create the planner agent
-        self.model = "gemini-2.5-flash-lite"
+        self.model = "gemini-2.5-flash"
         recipe_agent = LlmAgent(
             name="recipe_agent",
             model=self.model,

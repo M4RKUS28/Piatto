@@ -1,7 +1,7 @@
 import { ChefHat, Sparkles, BookOpen, Clock, Zap, Brain, Users, MessageSquare, Play, CheckCircle2, ArrowRight, Cpu, Lightbulb, TrendingUp, Wine, CupSoda } from 'lucide-react'
 import { PiLeaf, PiEgg, PiCow } from 'react-icons/pi'
 import { Link } from 'react-router-dom'
-import LandingLayout from '../Layout/LandingLayout.jsx'
+import MainLayout from '../Layout/MainLayout.jsx'
 import { useTranslation } from 'react-i18next'
 
 // Helper function to get food category display (icon and label)
@@ -114,12 +114,8 @@ export default function LandingPage() {
   ]
 
   return (
-    <LandingLayout>
-      <div className="relative min-h-screen bg-white overflow-hidden">
-        {/* Animated background elements */}
-        <div className="hidden lg:block fixed top-20 right-20 w-96 h-96 rounded-full bg-[#A8C9B8] opacity-[0.02] blur-3xl animate-pulse-slow"></div>
-        <div className="hidden lg:block fixed bottom-40 left-10 w-96 h-96 rounded-full bg-[#FF9B7B] opacity-[0.02] blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
-        <div className="hidden lg:block fixed top-1/2 left-1/2 w-64 h-64 rounded-full bg-[#035035] opacity-[0.015] blur-3xl animate-pulse-slow" style={{ animationDelay: '4s' }}></div>
+    <MainLayout mode="landing">
+      <div className="relative min-h-screen">
 
         {/* Hero Section */}
         <section className="container mx-auto px-4 sm:px-6 py-16 lg:py-28 relative">
@@ -647,6 +643,6 @@ export default function LandingPage() {
           }
         `}</style>
       </div>
-    </LandingLayout>
+    </MainLayout>
   )
 }

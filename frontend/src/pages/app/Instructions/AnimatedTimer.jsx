@@ -14,7 +14,8 @@ const AnimatedTimer = ({
   onStartFloating,
   onReturnToStep,
   onExpand,
-  timerRef
+  timerRef,
+  onTimerUpdate // Callback to report timer state to parent
 }) => {
   const { t } = useTranslation('instructions');
   const time = new Date();
@@ -33,6 +34,21 @@ const AnimatedTimer = ({
     autoStart: isFloating && isExpanded, // Auto-start when floating and expanded
     onExpire: () => console.warn('Timer expired'),
   });
+
+  // Report timer state to parent component
+  React.useEffect(() => {
+    if (onTimerUpdate) {
+      const totalCurrentSeconds = hours * 3600 + minutes * 60 + seconds;
+      onTimerUpdate(stepIndex, {
+        currentSeconds: totalCurrentSeconds,
+        totalSeconds: timerSeconds,
+        isRunning,
+        hours,
+        minutes,
+        seconds
+      });
+    }
+  }, [seconds, minutes, hours, isRunning, onTimerUpdate, stepIndex, timerSeconds]);
 
   const handleReset = () => {
     const newTime = new Date();
