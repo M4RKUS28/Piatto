@@ -40,10 +40,10 @@ async def lifespan(_app: FastAPI):
         logger.info("✅ Database tables created/verified")
         
         # Seed mock data for local development
-        if settings.DATABASE_URL and settings.DATABASE_URL.startswith("sqlite"):
-            logger.info("🌱 Local development detected. Seeding mock data...")
-            async with get_async_db_context() as session:
-                await seed_mock_data(session)
+        #if settings.DATABASE_URL and settings.DATABASE_URL.startswith("sqlite"):
+        #    logger.info("🌱 Local development detected. Seeding mock data...")
+        #    async with get_async_db_context() as session:
+        #        await seed_mock_data(session)
         
         # Initialize bucket engine
         bucket_engine = await get_bucket_engine()

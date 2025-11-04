@@ -126,11 +126,11 @@ export default function RecipeLibrary() {
       const collectionsData = await getUserCollections();
       setCollections(collectionsData);
 
-      // Always fetch latest 6 recipes
+      // Always fetch latest 5 recipes
       const allRecipes = await getUserRecipes();
-      const latest6 = allRecipes
+      const latest5 = allRecipes
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-        .slice(0, 6)
+        .slice(0, 5)
         .map(recipe => ({
           id: recipe.id,
           name: recipe.title,
@@ -140,7 +140,7 @@ export default function RecipeLibrary() {
           difficulty: recipe.difficulty,
           food_category: recipe.food_category
         }));
-      setLatestRecipes(latest6);
+      setLatestRecipes(latest5);
 
       // Check if there are highlighted new recipes from URL parameter
       const lastRecipeParam = searchParams.get('last_recipe');
