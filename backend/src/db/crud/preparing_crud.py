@@ -1,6 +1,6 @@
 import json
 from typing import List, Optional
-from sqlalchemy import delete, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -78,11 +78,13 @@ async def delete_preparing_session(db: AsyncSession,
     if not preparing_session:
         return False
     
-    await db.execute(
-        delete(Recipe)
+    recipes = await db.execute(
+        select(Recipe)
         .where(Recipe.user_id == preparing_session.user_id)
         .where(Recipe.is_permanent == False)
     )
+    for recipe in recipes.scalars():
+        await db.delete(recipe)
 
     await db.delete(preparing_session)
     await db.commit()
