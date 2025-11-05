@@ -23,6 +23,7 @@ from google.adk.sessions import InMemorySessionService
 from ..agents.utils import create_text_query, create_docs_query
 from ..db.database import get_async_db_context, get_db
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
 
 logger = getLogger(__name__)
@@ -150,9 +151,13 @@ class AgentService:
 
         # Generate images in a separate thread (completely isolated from main event loop)
         background_tasks.add_task(self._generate_and_save_images_async, user_id, recipes, recipe_ids)
+
+        # Generate instructions for each recipe in parallel in the background
+        for recipe_id in recipe_ids:
+            background_tasks.add_task(self.generate_instruction, user_id, preparing_session_id, recipe_id)
         return session.id
 
-    async def generate_instruction(self, user_id: str, preparing_session_id: int, recipe_id: int) -> int:
+    async def generate_instruction(self, user_id: str, preparing_session_id: int, recipe_id: int):
         """
         Generate instructions for a recipe using the instruction agent.
 
@@ -167,7 +172,7 @@ class AgentService:
         async with get_async_db_context() as db:
             recipe = await recipe_crud.get_recipe_by_id(db, recipe_id)
             if not recipe:
-                raise HTTPException(status_code=404, detail="Recipe not found")
+                return
 
         query = get_instruction_query(recipe)
         instructions_response = await self.instruction_agent.run(
@@ -197,14 +202,18 @@ class AgentService:
 
         # Save instruction steps to database
         async with get_async_db_context() as db:
-            await instruction_crud.create_instruction_steps(
-                db=db,
-                recipe_id=recipe_id,
-                steps=steps_list
-            )
+            try:
+                await instruction_crud.create_instruction_steps(
+                    db=db,
+                    recipe_id=recipe_id,
+                    steps=steps_list
+                )
+            except IntegrityError as e:
+                # Recipe was deleted by another process while we were generating instructions
+                logger.warning(f"Failed to save instruction steps for recipe {recipe_id}: recipe no longer exists. Error: {e}")
+                return
 
-        return recipe_id
-
+        return
 
     async def change_recipe(self, change_prompt: str, recipe_id: int,db, user_id: str) -> Recipe:
         # Prompt/Kontext an Agent übergeben
