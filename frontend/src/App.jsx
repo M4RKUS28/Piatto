@@ -4,7 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import MainLayout from './Layout/MainLayout.jsx'
 import AuthLayout from './Layout/AuthLayout.jsx'
 import LandingPage from './pages/LandingPage.jsx'
-import RecipeLibrary from './pages/app/RecipeLibrary.jsx'
+import RecipeLibrary from './pages/app/RecipeLibrary/RecipeLibrary.jsx'
 import AllRecipesView from './pages/app/AllRecipesView.jsx'
 import RecipeView from "./pages/app/RecipeView.jsx"
 import CollectionRecipesView from './pages/app/CollectionRecipesView.jsx'
