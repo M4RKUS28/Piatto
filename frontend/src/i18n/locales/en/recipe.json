@@ -84,7 +84,7 @@
     "welcome": "Welcome back, {{username}}!",
     "welcomeSubtitle": "Let's cook something delicious today",
     "emptyState": {
-      "title": "Your Culinary Journey Starts Here!",
+      "title": "Welcome, Chef\uD83D\uDC4B",
       "description": "It looks like you haven't created any recipes yet. Let our AI help you discover amazing dishes tailored to your taste!",
       "createFirst": "Create Your First Recipe",
       "feature1Title": "AI-Powered",

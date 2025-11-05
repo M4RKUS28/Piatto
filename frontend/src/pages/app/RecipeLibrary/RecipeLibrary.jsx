@@ -157,16 +157,6 @@ export default function RecipeLibrary() {
   return (
     <div className="p-4 sm:p-6 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6 sm:space-y-7">
-        {/* Welcome Header */}
-        <div className="text-center space-y-1">
-          <h1 className="text-3xl sm:text-4xl lg:text-4xl font-bold text-[#035035]">
-            Welcome, Chef👋
-          </h1>
-          <p className="text-lg sm:text-xl text-[#2D2D2D] opacity-70">
-            {t("library.welcomeSubtitle", "Let's cook something delicious today")}
-          </p>
-        </div>
-
         {/* Loading State */}
         {loading && (
           <div className="py-20">
@@ -184,6 +174,16 @@ export default function RecipeLibrary() {
           <>
             {hasRecipes ? (
               <>
+                {/* Welcome Header */}
+                <div className="text-center space-y-1">
+                  <h1 className="text-3xl sm:text-4xl lg:text-4xl font-bold text-[#035035]">
+                    Welcome, Chef👋
+                  </h1>
+                  <p className="text-lg sm:text-xl text-[#2D2D2D] opacity-70">
+                    {t("library.welcomeSubtitle", "Let's cook something delicious today")}
+                  </p>
+                </div>
+
                 {/* Latest Recipes Section */}
                 <LatestRecipesSection
                   latestRecipes={latestRecipes}

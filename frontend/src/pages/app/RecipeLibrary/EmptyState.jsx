@@ -20,13 +20,9 @@ export default function EmptyState() {
   return (
     <div className="space-y-6">
       {/* Empty State for No Recipes */}
-      <div className="relative bg-gradient-to-br from-[#FFF8F0] via-white to-[#FFF8F0] rounded-3xl border-2 border-dashed border-[#A8C9B8] p-8 sm:p-12 lg:p-16 text-center overflow-hidden">
-        {/* Decorative Elements */}
-        <div className="absolute top-0 left-0 w-32 h-32 bg-[#FF9B7B] opacity-5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-40 h-40 bg-[#035035] opacity-5 rounded-full blur-3xl"></div>
-
+      <div className="text-center py-8 sm:py-12">
         {/* Content */}
-        <div className="relative z-10 max-w-2xl mx-auto space-y-6">
+        <div className="max-w-2xl mx-auto space-y-6">
           <div className="flex items-center justify-center">
             {animationData ? (
               <div className="w-full max-w-xl">
