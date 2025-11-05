@@ -13,8 +13,17 @@ async def create_or_update_preparing_session(
     user_id: str,
     recipe_ids: List[int],
     preparing_session_id: Optional[int] = None,
+    suggested_collection: Optional[str] = None,
 ) -> PreparingSession:
-    """Create a new preparing session or update an existing one with recipe suggestions."""
+    """Create a new preparing session or update an existing one with recipe suggestions.
+
+    Args:
+        db: Async database session.
+        user_id: Identifier of the session owner.
+        recipe_ids: Recipes to associate with the session.
+        preparing_session_id: Existing session identifier to update.
+        suggested_collection: Optional collection name recommended by the agent.
+    """
     if not isinstance(recipe_ids, list):
         recipe_ids = [recipe_ids]
     recipe_ids = [int(recipe_id) for recipe_id in recipe_ids if recipe_id is not None]
@@ -34,6 +43,9 @@ async def create_or_update_preparing_session(
                 merged_context_ids = _merge_unique_ids(existing_recipe_ids, recipe_ids)
                 session.context_suggestions = json.dumps(merged_context_ids)
 
+            if suggested_collection is not None:
+                session.suggested_collection = suggested_collection
+
             # Update recipe relationships
             if recipe_ids:
                 # Fetch the recipes and set their preparing_session_id
@@ -51,6 +63,7 @@ async def create_or_update_preparing_session(
     new_session = PreparingSession(
         user_id=user_id,
         context_suggestions=serialized_ids,
+        suggested_collection=suggested_collection,
     )
     db.add(new_session)
     await db.commit()
