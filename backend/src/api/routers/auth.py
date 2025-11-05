@@ -57,6 +57,7 @@ async def logout_user(response: Response):
     """
     return await auth_service.logout_user(response)
 
+
 @api_router.post("/refresh",
                  response_model=auth_schema.APIResponseStatus)
 async def refresh_token(response: Response,
