@@ -9,11 +9,11 @@ import {
 } from '../api/preparingApi';
 import { saveRecipe } from '../api/recipeApi';
 import ErrorMessage from './ErrorMessage';
-import PromptStep from '../pages/app/RecipeGenerationTest/PromptStep';
-import IngredientsStep from '../pages/app/RecipeGenerationTest/IngredientsStep';
-import RecipeOptionsStep from '../pages/app/RecipeGenerationTest/RecipeOptionsStep';
-import { ensureFadeInStyles } from '../pages/app/RecipeGenerationTest/fadeInStyles';
-import { SESSION_STORAGE_KEY } from '../pages/app/RecipeGenerationTest/constants';
+import PromptStep from '../pages/app/RecipeGenerationDesktop/PromptStep';
+import IngredientsStep from '../pages/app/RecipeGenerationDesktop/IngredientsStep';
+import RecipeOptionsStep from '../pages/app/RecipeGenerationDesktop/RecipeOptionsStep';
+import { ensureFadeInStyles } from '../pages/app/RecipeGenerationDesktop/fadeInStyles';
+import { SESSION_STORAGE_KEY } from '../pages/app/RecipeGenerationDesktop/constants';
 
 export default function RecipeGenerationModal({ isOpen, onClose }) {
   const { t } = useTranslation('recipeGeneration');
