@@ -35,6 +35,8 @@ export default function RecipeOptionsStep({
 	const [activeDetailsId, setActiveDetailsId] = useState(null);
 	const [detailsLoadingId, setDetailsLoadingId] = useState(null);
 	const [detailsError, setDetailsError] = useState(null);
+	const [enlargedImageUrl, setEnlargedImageUrl] = useState(null);
+	const [hoveredImageId, setHoveredImageId] = useState(null);
 	const pollingIntervalRef = useRef(null);
 
 	const toggleRecipeSelection = (recipeId) => {
@@ -132,6 +134,15 @@ export default function RecipeOptionsStep({
 			return nextCache;
 		});
 		await fetchRecipeDetails(activeDetailsId);
+	};
+
+	const handleImageClick = (event, imageUrl) => {
+		event.stopPropagation();
+		setEnlargedImageUrl(imageUrl);
+	};
+
+	const handleCloseEnlargedImage = () => {
+		setEnlargedImageUrl(null);
 	};
 
 	// Initialize recipes when recipeOptions changes
@@ -247,6 +258,65 @@ export default function RecipeOptionsStep({
 						background-position: 200% 0;
 					}
 				}
+
+				.image-zoom-container {
+					position: relative;
+				}
+
+				.image-zoom-container .zoom-overlay {
+					position: absolute;
+					inset: 0;
+					background-color: rgba(255, 255, 255, 0);
+					transition: background-color 0.5s ease;
+					pointer-events: none;
+				}
+
+				.image-zoom-container:hover .zoom-overlay {
+					background-color: rgba(255, 255, 255, 0.8);
+				}
+
+				.image-zoom-container .zoom-handle {
+					position: absolute;
+					pointer-events: none;
+					opacity: 0;
+					transition: all 0.5s ease;
+				}
+
+				.image-zoom-container:hover .zoom-handle {
+					opacity: 1;
+				}
+
+				.zoom-handle-tl {
+					top: 50%;
+					left: 50%;
+					width: 0;
+					height: 0;
+					border-left: 3px solid black;
+					border-top: 3px solid black;
+				}
+
+				.image-zoom-container:hover .zoom-handle-tl {
+					top: 25%;
+					left: 25%;
+					width: 12px;
+					height: 12px;
+				}
+
+				.zoom-handle-br {
+					bottom: 50%;
+					right: 50%;
+					width: 0;
+					height: 0;
+					border-right: 3px solid black;
+					border-bottom: 3px solid black;
+				}
+
+				.image-zoom-container:hover .zoom-handle-br {
+					bottom: 25%;
+					right: 25%;
+					width: 12px;
+					height: 12px;
+				}
 			`}</style>
 
 			<div>
@@ -267,8 +337,9 @@ export default function RecipeOptionsStep({
 							key={recipe.id}
 							role="listitem"
 							onClick={() => toggleRecipeSelection(recipe.id)}
-							className={`relative bg-white border-2 rounded-2xl p-3 transition-all duration-200 hover:shadow-md cursor-pointer group
-								${isSelected ? 'border-[#035035]' : 'border-[#F5F5F5] hover:border-[#4CAF50]'}
+							className={`relative bg-white border-2 rounded-2xl p-3 transition-all duration-200 cursor-pointer group
+								${isSelected ? 'border-[#035035]' : 'border-[#F5F5F5]'}
+								${!isSelected && hoveredImageId !== recipe.id ? 'hover:border-[#4CAF50] hover:shadow-md' : ''}
 							`}
 							style={{
 								animation: `fadeIn 0.5s ease-out ${index * 0.1}s both`,
@@ -279,7 +350,7 @@ export default function RecipeOptionsStep({
 								<div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all duration-200
 									${isSelected
 										? 'bg-[#035035] border-[#035035]'
-										: 'bg-white border-gray-400 group-hover:border-[#4CAF50]'}
+										: `bg-white border-gray-400 ${hoveredImageId !== recipe.id ? 'group-hover:border-[#4CAF50]' : ''}`}
 								`}>
 									{isSelected && (
 										<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -320,12 +391,22 @@ export default function RecipeOptionsStep({
 										</div>
 									)}
 									{imageStatus === 'loaded' && recipe.image_url && (
-										<img
-											src={getImageUrl(recipe.image_url)}
-											alt={recipe.title}
-											className="w-full h-full object-cover rounded-xl"
-											loading="lazy"
-										/>
+										<div
+											className="image-zoom-container w-full h-full cursor-pointer rounded-xl overflow-hidden"
+											onClick={(e) => handleImageClick(e, getImageUrl(recipe.image_url))}
+											onMouseEnter={() => setHoveredImageId(recipe.id)}
+											onMouseLeave={() => setHoveredImageId(null)}
+										>
+											<img
+												src={getImageUrl(recipe.image_url)}
+												alt={recipe.title}
+												className="w-full h-full object-cover rounded-xl"
+												loading="lazy"
+											/>
+											<div className="zoom-overlay"></div>
+											<div className="zoom-handle zoom-handle-tl"></div>
+											<div className="zoom-handle zoom-handle-br"></div>
+										</div>
 									)}
 								</div>
 
@@ -431,6 +512,34 @@ export default function RecipeOptionsStep({
 				error={detailsError}
 				onRetry={handleRetryDetails}
 			/>
+
+			{enlargedImageUrl && (
+				<div
+					className="fixed inset-0 z-50 flex items-center justify-center bg-black/95"
+					onClick={handleCloseEnlargedImage}
+				>
+					<button
+						type="button"
+						onClick={handleCloseEnlargedImage}
+						className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-gray-800 transition-all hover:bg-white hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white"
+						aria-label="Close image"
+					>
+						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+						</svg>
+					</button>
+					<div
+						className="relative max-h-[90vh] max-w-[90vh] w-full aspect-square"
+						onClick={(e) => e.stopPropagation()}
+					>
+						<img
+							src={enlargedImageUrl}
+							alt="Enlarged recipe"
+							className="h-full w-full rounded-lg object-cover shadow-2xl"
+						/>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }
