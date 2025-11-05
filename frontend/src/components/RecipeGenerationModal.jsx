@@ -91,6 +91,29 @@ export default function RecipeGenerationModal({ isOpen, onClose }) {
     }
   }, [preparingSessionId, clearStoredSession, onClose]);
 
+  const handleBackToIngredients = useCallback(async () => {
+    if (!preparingSessionId) {
+      setCurrentStep(2);
+      return;
+    }
+
+    setFinishingSession(true);
+    try {
+      await finishPreparingSession(preparingSessionId);
+    } catch (finishError) {
+      console.error('Failed to finish preparing session:', finishError);
+    } finally {
+      setFinishingSession(false);
+      clearStoredSession();
+      setPreparingSessionId(null);
+      setRecipeOptions([]);
+      setImageAnalysis(null);
+      setError(null);
+      // Keep prompt, ingredients, imageKey, and inputMethod
+      setCurrentStep(2);
+    }
+  }, [preparingSessionId, clearStoredSession]);
+
   const handleFetchImageAnalysis = useCallback(async (sessionId) => {
     try {
       const analysis = await getImageAnalysisBySessionId(sessionId);
@@ -343,40 +366,43 @@ export default function RecipeGenerationModal({ isOpen, onClose }) {
             </button>
           </div>
 
-          {/* Content - Scrollable */}
-          <div className="relative flex-1 overflow-y-auto p-6">
-            <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
+          {/* Content */}
+          <div className="relative flex-1 flex flex-col p-6 overflow-hidden">
+            <div className="max-w-4xl mx-auto w-full flex flex-col h-full">
               {/* Step Indicators */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-center gap-3 sm:gap-4">
-                  {[1, 2, 3].map((step) => (
-                    <div key={step} className="flex items-center">
-                      <div
-                        className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm sm:text-base font-semibold transition-all ${currentStep === step
-                          ? 'bg-[#035035] text-white'
-                          : currentStep > step
-                            ? 'bg-[#A8C9B8] text-white'
-                            : 'bg-[#F5F5F5] text-[#2D2D2D] opacity-50'}`}
-                        aria-current={currentStep === step ? 'step' : undefined}
-                      >
-                        {step}
-                      </div>
-                      {step < 3 && (
+              {currentStep !== 3 && (
+                <div className="space-y-4 mb-6 flex-shrink-0">
+                  <div className="flex items-center justify-center gap-3 sm:gap-4">
+                    {[1, 2, 3].map((step) => (
+                      <div key={step} className="flex items-center">
                         <div
-                          className={`w-12 sm:w-16 h-1 mx-2 transition-all ${currentStep > step ? 'bg-[#A8C9B8]' : 'bg-[#F5F5F5]'}`}
-                        />
-                      )}
-                    </div>
-                  ))}
+                          className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm sm:text-base font-semibold transition-all ${currentStep === step
+                            ? 'bg-[#035035] text-white'
+                            : currentStep > step
+                              ? 'bg-[#A8C9B8] text-white'
+                              : 'bg-[#F5F5F5] text-[#2D2D2D] opacity-50'}`}
+                          aria-current={currentStep === step ? 'step' : undefined}
+                        >
+                          {step}
+                        </div>
+                        {step < 3 && (
+                          <div
+                            className={`w-12 sm:w-16 h-1 mx-2 transition-all ${currentStep > step ? 'bg-[#A8C9B8]' : 'bg-[#F5F5F5]'}`}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="text-center text-xs sm:text-sm text-[#2D2D2D] opacity-60">
+                    {currentStep === 1 && t('steps.step1', 'Step 1: What do you want to cook?')}
+                    {currentStep === 2 && t('steps.step2', 'Step 2: What ingredients do you have?')}
+                    {currentStep === 3 && t('steps.step3', 'Step 3: Choose your recipe')}
+                  </div>
                 </div>
-                <div className="text-center text-xs sm:text-sm text-[#2D2D2D] opacity-60">
-                  {currentStep === 1 && t('steps.step1', 'Step 1: What do you want to cook?')}
-                  {currentStep === 2 && t('steps.step2', 'Step 2: What ingredients do you have?')}
-                  {currentStep === 3 && t('steps.step3', 'Step 3: Choose your recipe')}
-                </div>
-              </div>
+              )}
 
               {/* Steps Content */}
+              <div className="flex-1 flex flex-col min-h-0">
               {currentStep === 1 && (
                 <PromptStep
                   onSubmit={(promptText) => {
@@ -420,6 +446,7 @@ export default function RecipeGenerationModal({ isOpen, onClose }) {
                   onFinishSession={handleFinishCurrentSession}
                   sessionCompleting={finishingSession}
                   preparingSessionId={preparingSessionId}
+                  onBack={handleBackToIngredients}
                 />
               )}
 
@@ -428,6 +455,7 @@ export default function RecipeGenerationModal({ isOpen, onClose }) {
                   <ErrorMessage message={error} onRetry={handleRetry} />
                 </div>
               )}
+              </div>
             </div>
           </div>
         </div>

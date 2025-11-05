@@ -8,9 +8,9 @@ import RecipeLibrary from './pages/app/RecipeLibrary/RecipeLibrary.jsx'
 import AllRecipesView from './pages/app/AllRecipesView.jsx'
 import RecipeView from "./pages/app/RecipeView.jsx"
 import CollectionRecipesView from './pages/app/CollectionRecipesView.jsx'
-import RecipeGeneration from './pages/app/RecipeGenerationDesktop/index.jsx'
+
 import RecipeGenerationMobile from './pages/app/RecipeGenerationMobile/index.jsx'
-import RecipeGenerationTest from './pages/app/RecipeGenerationDesktop/index.jsx'
+import RecipeGenerationDesktop from './pages/app/RecipeGenerationDesktop/index.jsx'
 
 import ProfileSettings from './pages/app/ProfileSettings.jsx'
 import LoginPage from './pages/auth/LoginPage.jsx'
@@ -59,7 +59,7 @@ function App() {
           {isMobile ? (
             <Route path="generate" element={<RecipeGenerationMobile />} />
           ) : (
-            <Route path="generate" element={<RecipeGenerationTest />} />
+            <Route path="generate" element={<RecipeGenerationDesktop />} />
           )}
           <Route path="library" element={<RecipeLibrary />} />
           <Route path="recipes" element={<RecipeLibrary />} />

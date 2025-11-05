@@ -53,7 +53,7 @@ export default function PromptStep({ onSubmit, initialValue = '', loading = fals
 	};
 
 	return (
-		<div className="space-y-6 relative">
+		<div className="flex flex-col h-full relative">
 			{/* Subtle background decoration */}
 			<div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
 				<div className="absolute top-10 right-10 w-96 h-96 bg-gradient-to-br from-[#FF9B7B]/8 to-transparent rounded-full blur-3xl"></div>
@@ -61,74 +61,78 @@ export default function PromptStep({ onSubmit, initialValue = '', loading = fals
 				<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-gradient-to-br from-[#FFB88C]/6 to-transparent rounded-full blur-3xl"></div>
 			</div>
 
-			<h2 className="text-2xl sm:text-3xl font-bold text-[#035035] text-center tracking-tight">
-				{t('prompt.title', 'What do you want to cook today?')}
-			</h2>
-			<p className="text-sm sm:text-base text-center text-[#2D2D2D] opacity-70 font-medium">
-				{t('prompt.subtitle', 'Describe what you\'re in the mood for, and we\'ll help you create the perfect recipe')}
-			</p>
-
-			<form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6" aria-label="Recipe prompt form">
-				{/* Example Prompts */}
-				<div className="flex flex-wrap gap-2 justify-center">
-					{examplePrompts.map((example, index) => {
-						const Icon = example.icon;
-						return (
-							<button
-								key={index}
-								type="button"
-								onClick={() => handleExampleClick(example.text)}
-								disabled={loading}
-								className={`${example.color} text-white px-4 py-2 rounded-full font-medium text-sm
-									hover:scale-105 active:scale-95 transition-all duration-200 shadow-md
-									disabled:opacity-50 disabled:cursor-not-allowed
-									flex items-center gap-2
-								`}
-							>
-								<Icon className="w-4 h-4" />
-								<span>{example.text}</span>
-							</button>
-						);
-					})}
-				</div>
-
-				<div className="relative">
-					<div className="absolute -top-1 -left-1 w-full h-full bg-gradient-to-br from-[#FF9B7B]/20 to-[#A8C9B8]/20 rounded-xl blur-xl -z-10"></div>
-					<label htmlFor="prompt-input" className="block text-sm font-semibold text-[#2D2D2D] mb-3 flex items-center gap-2">
-						<Sparkles className="w-4 h-4 text-[#FF9B7B]" />
-						{t('prompt.label', 'What do you want to cook?')}
-					</label>
-					<textarea
-						id="prompt-input"
-						value={promptText}
-						onChange={handleInputChange}
-						placeholder={t('prompt.placeholder', 'e.g., Something healthy for dinner, Quick pasta dish, Comfort food...')}
-						disabled={loading}
-						rows={7}
-						className={`w-full px-5 py-4 rounded-xl border-2 transition-all resize-none text-base bg-white leading-relaxed min-h-[160px]
-							${validationError ? 'border-[#D96332] focus:border-[#D96332]' : 'border-[#F5F5F5] focus:border-[#035035]'}
-							focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2
-							disabled:opacity-50 disabled:cursor-not-allowed
-							placeholder:text-[#2D2D2D]/40
-						`}
-						style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
-						aria-invalid={validationError ? 'true' : 'false'}
-						aria-describedby={validationError ? 'prompt-error' : undefined}
-						aria-label="Enter what you want to cook"
-					/>
-					{validationError && (
-						<p
-							id="prompt-error"
-							className="mt-2 text-sm text-[#D96332]"
-							role="alert"
-							aria-live="polite"
-						>
-							{validationError}
+			<form onSubmit={handleSubmit} className="flex flex-col h-full" aria-label="Recipe prompt form">
+				<div className="flex-1 overflow-y-auto pr-2">
+					<div className="space-y-6 max-w-2xl mx-auto">
+						<h2 className="text-2xl sm:text-3xl font-bold text-[#035035] text-center tracking-tight">
+							{t('prompt.title', 'What do you want to cook today?')}
+						</h2>
+						<p className="text-sm sm:text-base text-center text-[#2D2D2D] opacity-70 font-medium">
+							{t('prompt.subtitle', 'Describe what you\'re in the mood for, and we\'ll help you create the perfect recipe')}
 						</p>
-					)}
+
+						{/* Example Prompts */}
+						<div className="flex flex-wrap gap-2 justify-center">
+							{examplePrompts.map((example, index) => {
+								const Icon = example.icon;
+								return (
+									<button
+										key={index}
+										type="button"
+										onClick={() => handleExampleClick(example.text)}
+										disabled={loading}
+										className={`${example.color} text-white px-4 py-2 rounded-full font-medium text-sm
+											hover:scale-105 active:scale-95 transition-all duration-200 shadow-md
+											disabled:opacity-50 disabled:cursor-not-allowed
+											flex items-center gap-2
+										`}
+									>
+										<Icon className="w-4 h-4" />
+										<span>{example.text}</span>
+									</button>
+								);
+							})}
+						</div>
+
+						<div className="relative">
+							<div className="absolute -top-1 -left-1 w-full h-full bg-gradient-to-br from-[#FF9B7B]/20 to-[#A8C9B8]/20 rounded-xl blur-xl -z-10"></div>
+							<label htmlFor="prompt-input" className="block text-sm font-semibold text-[#2D2D2D] mb-3 flex items-center gap-2">
+								<Sparkles className="w-4 h-4 text-[#FF9B7B]" />
+								{t('prompt.label', 'What do you want to cook?')}
+							</label>
+							<textarea
+								id="prompt-input"
+								value={promptText}
+								onChange={handleInputChange}
+								placeholder={t('prompt.placeholder', 'e.g., Something healthy for dinner, Quick pasta dish, Comfort food...')}
+								disabled={loading}
+								rows={7}
+								className={`w-full px-5 py-4 rounded-xl border-2 transition-all resize-none text-base bg-white leading-relaxed min-h-[160px]
+									${validationError ? 'border-[#D96332] focus:border-[#D96332]' : 'border-[#F5F5F5] focus:border-[#035035]'}
+									focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2
+									disabled:opacity-50 disabled:cursor-not-allowed
+									placeholder:text-[#2D2D2D]/40
+								`}
+								style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+								aria-invalid={validationError ? 'true' : 'false'}
+								aria-describedby={validationError ? 'prompt-error' : undefined}
+								aria-label="Enter what you want to cook"
+							/>
+							{validationError && (
+								<p
+									id="prompt-error"
+									className="mt-2 text-sm text-[#D96332]"
+									role="alert"
+									aria-live="polite"
+								>
+									{validationError}
+								</p>
+							)}
+						</div>
+					</div>
 				</div>
 
-				<div className="flex flex-col sm:flex-row justify-center">
+				<div className="flex-shrink-0 flex flex-col sm:flex-row justify-center pt-3 border-t border-gray-200 mt-3">
 					<button
 						type="submit"
 						disabled={loading}
