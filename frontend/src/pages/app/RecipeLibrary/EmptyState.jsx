@@ -4,6 +4,7 @@ import Lottie from 'lottie-react';
 import { ChefHat, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import useMediaQuery from '../../../hooks/useMediaQuery';
+import FoodRain from './FoodRain';
 
 export default function EmptyState() {
   const { t } = useTranslation(["recipe", "common"]);
@@ -18,7 +19,10 @@ export default function EmptyState() {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Food Rain Animation */}
+      <FoodRain />
+
       {/* Empty State for No Recipes */}
       <div className="text-center py-8 sm:py-12">
         {/* Content */}
