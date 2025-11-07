@@ -72,7 +72,8 @@ class VoiceAssistantSession:
         # Get instructions
         instructions = await instruction_crud.get_instructions_by_recipe_id(
             self.db,
-            cooking_session.recipe_id
+            cooking_session.recipe_id,
+            self.user_id
         )
 
         # Format context
