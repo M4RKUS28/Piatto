@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import { AlertCircle } from 'lucide-react';
 import SaveRecipesCollectionModal from '../../../components/SaveRecipesCollectionModal';
 import RecipeDetailsModal from '../../../components/RecipeDetailsModal';
-import { generateInstructions } from '../../../api/instructionApi';
 import { getRecipeImage } from '../../../api/filesApi';
 import { getRecipeById } from '../../../api/recipeApi';
 import {
@@ -25,6 +24,7 @@ export default function RecipeOptionsStep({
 	sessionCompleting = false,
 	preparingSessionId,
 	onBack,
+	suggestedCollection,
 }) {
 	const { t } = useTranslation('recipeGeneration');
 	const navigate = useNavigate();
@@ -59,6 +59,7 @@ export default function RecipeOptionsStep({
 			return;
 		}
 
+		console.log('!!! DEBUG RecipeOptionsStep: Opening modal with suggestedCollection:', suggestedCollection);
 		// Show collection selection modal instead of directly saving
 		setShowCollectionModal(true);
 	};
@@ -68,15 +69,8 @@ export default function RecipeOptionsStep({
 		setProcessingSelection(true);
 
 		try {
-			// Trigger instruction generation in the background (fire-and-forget)
-			// The Instructions.jsx polling will handle fetching them when ready
-			recipeIds.forEach(recipeId => {
-				generateInstructions(preparingSessionId, recipeId).catch(err => {
-					console.error(`Failed to trigger instruction generation for recipe ${recipeId}:`, err);
-				});
-			});
-
 			// Save only the selected recipes (marks them as permanent)
+			// Instructions are now generated automatically with the recipe
 			await Promise.all(
 				recipeIds.map(recipeId => onSaveRecipe(recipeId))
 			);
@@ -498,7 +492,7 @@ export default function RecipeOptionsStep({
 					</button>
 					<button
 						type="button"
-						onClick={onRegenerate}
+						onClick={() => onRegenerate(preparingSessionId)}
 						disabled={loading || sessionCompleting}
 						className="w-full sm:w-auto bg-white text-[#035035] border-2 border-[#035035] px-6 py-3 rounded-full font-semibold text-base text-center
 							hover:bg-[#035035] hover:text-white transition-all duration-200
@@ -535,6 +529,7 @@ export default function RecipeOptionsStep({
 				isOpen={showCollectionModal}
 				onClose={() => setShowCollectionModal(false)}
 				onSave={handleSaveToCollections}
+				suggestedCollection={suggestedCollection}
 			/>
 
 			<RecipeDetailsModal

@@ -1,7 +1,11 @@
 Please create EXACTLY THREE recipes everytime. Not more, not less, EXACTLY THREE.
+If there are previous recipes provided new recipes must not be the same.
 Each recipe must include:
 - important_notes: A concise paragraph with critical preparation hints, required tools, or possible pitfalls.
 - cooking_overview: A brief 3-4 step rundown of the overall cooking flow.
 Pick one of the following food categories:
 - vegan, vegetarian, beef, pork, chicken, lamb, fish, seafood, mixed-meat, alcoholic, non-alcoholic
-- If multiple apply pick the stricter option 
+- If multiple apply pick the stricter option
+Regarding the collection name:
+- Please use the exact name of the collection as specified in the users prompt.
+- If the recipe fits more than one collection, pick the one that fits the best.

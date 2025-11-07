@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import SaveRecipesCollectionModal from '../../../components/SaveRecipesCollectionModal';
 import RecipeDetailsModal from '../../../components/RecipeDetailsModal';
-import { generateInstructions } from '../../../api/instructionApi';
 import { getRecipeImage } from '../../../api/filesApi';
 import { getRecipeById } from '../../../api/recipeApi';
 import {
@@ -63,15 +62,8 @@ export default function RecipeOptionsStep({
 		setProcessingSelection(true);
 
 		try {
-			// Trigger instruction generation in the background (fire-and-forget)
-			// The Instructions.jsx polling will handle fetching them when ready
-			recipeIds.forEach(recipeId => {
-				generateInstructions(preparingSessionId, recipeId).catch(err => {
-					console.error(`Failed to trigger instruction generation for recipe ${recipeId}:`, err);
-				});
-			});
-
 			// Save only the selected recipes (marks them as permanent)
+			// Instructions are now generated automatically with the recipe
 			await Promise.all(
 				recipeIds.map(recipeId => onSaveRecipe(recipeId))
 			);
@@ -385,7 +377,7 @@ export default function RecipeOptionsStep({
 			<div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 mt-3">
 				<button
 					type="button"
-					onClick={onRegenerate}
+					onClick={() => onRegenerate(preparingSessionId)}
 					disabled={loading || sessionCompleting}
 					className="w-full sm:w-auto bg-white text-[#035035] border-2 border-[#035035] px-6 py-3 rounded-full font-semibold text-base text-center
 						hover:bg-[#035035] hover:text-white transition-all duration-200

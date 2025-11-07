@@ -14,8 +14,9 @@ import { useTranslation } from 'react-i18next';
  * @param {boolean} props.isOpen - Whether modal is open
  * @param {Function} props.onClose - Callback when modal closes
  * @param {Function} props.onSave - Callback when recipes are saved: onSave(recipeIds, recipeCollectionMap)
+ * @param {string|null} props.suggestedCollection - Optional collection name to pre-select for first recipe
  */
-export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, onSave }) {
+export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, onSave, suggestedCollection }) {
   const { t } = useTranslation('recipeGeneration');
   const [collections, setCollections] = useState([]);
   const [currentStep, setCurrentStep] = useState(0); // Current recipe index
@@ -68,6 +69,48 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
       setError(null);
     }
   }, [fetchCollections, isOpen, recipes]);
+
+  // Pre-select suggested collection for first recipe when collections are loaded
+  useEffect(() => {
+    console.log('!!! DEBUG Modal: Pre-select effect running', {
+      isOpen,
+      collectionsCount: collections.length,
+      suggestedCollection,
+      recipesCount: recipes.length
+    });
+
+    if (isOpen && collections.length > 0 && suggestedCollection && recipes.length > 0) {
+      console.log('!!! DEBUG Modal: Looking for collection matching:', suggestedCollection);
+      console.log('!!! DEBUG Modal: Available collections:', collections.map(c => c.name));
+
+      // Find matching collection (case-insensitive exact match)
+      const matchingCollection = collections.find(
+        collection => collection.name.toLowerCase() === suggestedCollection.toLowerCase()
+      );
+
+      console.log('!!! DEBUG Modal: Matching collection found:', matchingCollection);
+
+      if (matchingCollection) {
+        const firstRecipeId = recipes[0].id;
+        console.log('!!! DEBUG Modal: First recipe ID:', firstRecipeId);
+
+        setRecipeSelections(prevSelections => {
+          const currentSelection = prevSelections.get(firstRecipeId);
+          console.log('!!! DEBUG Modal: Current selection for first recipe:', currentSelection);
+
+          // Only set if the first recipe doesn't already have selections
+          if (!currentSelection || currentSelection.size === 0) {
+            const newSelections = new Map(prevSelections);
+            newSelections.set(firstRecipeId, new Set([matchingCollection.id]));
+            console.log('!!! DEBUG Modal: Setting pre-selection for collection ID:', matchingCollection.id);
+            return newSelections;
+          }
+          console.log('!!! DEBUG Modal: Recipe already has selections, skipping pre-select');
+          return prevSelections;
+        });
+      }
+    }
+  }, [isOpen, collections, suggestedCollection, recipes]);
 
   const handleToggleCollection = (collectionId) => {
     const currentRecipe = recipes[currentStep];

@@ -20,35 +20,6 @@ router = APIRouter(
 )
 
 
-class GenerateInstructionRequest(BaseModel):
-    """Schema for generating instructions for a recipe."""
-    preparing_session_id: int
-    recipe_id: int
-
-
-@router.post("/generate", response_model=int)
-async def generate_instructions(
-    request: GenerateInstructionRequest,
-    user_id: str = Depends(get_read_write_user_id)
-):
-    """
-    Generate instructions for a recipe using AI.
-
-    Args:
-        request: The request containing preparing_session_id and recipe_id
-        user_id: The authenticated user ID
-
-    Returns:
-        int: The recipe ID
-    """
-    recipe_id = await agent_service.generate_instruction(
-        user_id=user_id,
-        preparing_session_id=request.preparing_session_id,
-        recipe_id=request.recipe_id
-    )
-    return recipe_id
-
-
 @router.get("/{recipe_id}", response_model=List[InstructionSchema])
 async def get_instructions(
     recipe_id: int,

@@ -83,6 +83,7 @@ class PreparingSession(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(String(50), ForeignKey("users.id"), nullable=False)
     context_suggestions = Column(Text, nullable=True)  # Store suggestions as JSON string
+    suggested_collection = Column(String(255), nullable=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
     current_recipes = relationship("Recipe", back_populates="preparing_session", order_by="Recipe.created_at")
