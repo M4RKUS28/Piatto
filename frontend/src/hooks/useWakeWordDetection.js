@@ -3,14 +3,19 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 /**
  * Custom hook for detecting wake word "Hey Piatto" using Web Speech API
  * Auto-restarts listening every 55 seconds to prevent browser timeout
+ * Handles audio streaming to backend via WebSocket for voice assistant
  */
-const useWakeWordDetection = () => {
+const useWakeWordDetection = (cookingSessionId = null) => {
   const [isListening, setIsListening] = useState(false);
   const [isActive, setIsActive] = useState(false); // User has started the system
   const [detectionCount, setDetectionCount] = useState(0);
   const [lastDetectedTime, setLastDetectedTime] = useState(null);
   const [error, setError] = useState(null);
   const [browserSupported, setBrowserSupported] = useState(true);
+
+  // New states for voice assistant
+  const [assistantState, setAssistantState] = useState('idle'); // 'idle', 'detected', 'listening', 'processing', 'playing'
+  const [isRecording, setIsRecording] = useState(false);
 
   const recognitionRef = useRef(null);
   const restartTimerRef = useRef(null);
@@ -21,6 +26,15 @@ const useWakeWordDetection = () => {
   const restartInterval = 30000; // Restart every 30 seconds to avoid browser timeout
   const debounceInterval = 3000; // Debounce detection for 3 seconds
 
+  // New refs for voice assistant
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const websocketRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const audioElementRef = useRef(null);
+  const recordingTimeoutRef = useRef(null);
+  const maxRecordingTime = 30000; // Maximum 30 seconds recording
+
   // Debug log helper
   const debugLog = useCallback((message, data = null) => {
     const timestamp = new Date().toLocaleTimeString();
@@ -30,6 +44,202 @@ const useWakeWordDetection = () => {
       console.log(`[WakeWord ${timestamp}] ${message}`);
     }
   }, []);
+
+  // Setup WebSocket connection
+  const setupWebSocket = useCallback(() => {
+    if (!cookingSessionId) {
+      debugLog('ERROR: No cooking session ID provided for WebSocket');
+      setError('No active cooking session');
+      return null;
+    }
+
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.hostname}:${window.location.port || (protocol === 'wss:' ? '443' : '80')}/ws/voice_assistant?session_id=${cookingSessionId}`;
+
+    debugLog('Connecting to WebSocket:', wsUrl);
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      debugLog('✓ WebSocket connected');
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        debugLog('WebSocket message received:', data);
+
+        if (data.type === 'stop_recording') {
+          debugLog('Server VAD detected silence - stopping recording');
+          stopRecording();
+        } else if (data.type === 'processing') {
+          debugLog('Server is processing audio');
+          setAssistantState('processing');
+        } else if (data.type === 'error') {
+          debugLog('Server error:', data.message);
+          setError(data.message);
+          setAssistantState('idle');
+          stopRecording();
+        }
+      } catch (err) {
+        // If not JSON, might be binary audio data
+        if (event.data instanceof Blob) {
+          debugLog('Received audio response blob');
+          playAudioResponse(event.data);
+        } else {
+          debugLog('Unknown WebSocket message format');
+        }
+      }
+    };
+
+    ws.onerror = (error) => {
+      debugLog('WebSocket error:', error);
+      setError('WebSocket connection error');
+      setAssistantState('idle');
+    };
+
+    ws.onclose = () => {
+      debugLog('WebSocket closed');
+      if (assistantState !== 'idle') {
+        setAssistantState('idle');
+      }
+    };
+
+    return ws;
+  }, [cookingSessionId, assistantState, debugLog]);
+
+  // Play audio response
+  const playAudioResponse = useCallback(async (audioBlob) => {
+    try {
+      debugLog('Playing audio response');
+      setAssistantState('playing');
+
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      if (!audioElementRef.current) {
+        audioElementRef.current = new Audio();
+      }
+
+      audioElementRef.current.src = audioUrl;
+
+      audioElementRef.current.onended = () => {
+        debugLog('Audio playback finished');
+        setAssistantState('idle');
+        URL.revokeObjectURL(audioUrl);
+
+        // Close WebSocket after playback
+        if (websocketRef.current) {
+          websocketRef.current.close();
+          websocketRef.current = null;
+        }
+      };
+
+      audioElementRef.current.onerror = (err) => {
+        debugLog('Audio playback error:', err);
+        setError('Failed to play audio response');
+        setAssistantState('idle');
+        URL.revokeObjectURL(audioUrl);
+      };
+
+      await audioElementRef.current.play();
+    } catch (err) {
+      debugLog('Error playing audio:', err.message);
+      setError('Failed to play audio response');
+      setAssistantState('idle');
+    }
+  }, [debugLog]);
+
+  // Start recording audio
+  const startRecording = useCallback(async () => {
+    try {
+      debugLog('Starting audio recording...');
+      setAssistantState('detected');
+
+      // Request microphone access
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      // Initialize MediaRecorder
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus'
+      });
+
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      // Setup WebSocket
+      const ws = setupWebSocket();
+      if (!ws) {
+        stream.getTracks().forEach(track => track.stop());
+        return;
+      }
+      websocketRef.current = ws;
+
+      // Wait for WebSocket to open
+      ws.addEventListener('open', () => {
+        debugLog('WebSocket ready, starting MediaRecorder');
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            debugLog(`Audio chunk received: ${event.data.size} bytes`);
+            audioChunksRef.current.push(event.data);
+
+            // Send chunk via WebSocket
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(event.data);
+            }
+          }
+        };
+
+        mediaRecorder.onstop = () => {
+          debugLog('MediaRecorder stopped');
+          stream.getTracks().forEach(track => track.stop());
+          setIsRecording(false);
+        };
+
+        mediaRecorder.onerror = (error) => {
+          debugLog('MediaRecorder error:', error);
+          setError('Recording error occurred');
+          setAssistantState('idle');
+        };
+
+        // Start recording
+        mediaRecorder.start(100); // Collect 100ms chunks
+        setIsRecording(true);
+        setAssistantState('listening');
+        debugLog('✓ Recording started');
+
+        // Set maximum recording timeout
+        recordingTimeoutRef.current = setTimeout(() => {
+          debugLog('Max recording time reached');
+          stopRecording();
+        }, maxRecordingTime);
+      });
+
+    } catch (err) {
+      debugLog('Error starting recording:', err.message);
+      setError('Failed to access microphone');
+      setAssistantState('idle');
+    }
+  }, [setupWebSocket, debugLog]);
+
+  // Stop recording audio
+  const stopRecording = useCallback(() => {
+    debugLog('Stopping recording...');
+
+    if (recordingTimeoutRef.current) {
+      clearTimeout(recordingTimeoutRef.current);
+      recordingTimeoutRef.current = null;
+    }
+
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+    }
+
+    // Signal to server that recording is complete
+    if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
+      websocketRef.current.send(JSON.stringify({ type: 'recording_complete' }));
+      setAssistantState('processing');
+    }
+  }, [debugLog]);
 
   // Initialize Speech Recognition
   const initializeSpeechRecognition = useCallback(() => {
@@ -96,7 +306,15 @@ const useWakeWordDetection = () => {
             setDetectionCount(prev => prev + 1);
             setLastDetectedTime(new Date());
 
-            // TODO: Add callback here to trigger audio streaming to backend
+            // Trigger audio recording and streaming
+            if (cookingSessionId && assistantState === 'idle') {
+              debugLog('Starting voice assistant conversation...');
+              startRecording();
+            } else if (!cookingSessionId) {
+              debugLog('WARNING: No cooking session ID, skipping voice assistant');
+            } else if (assistantState !== 'idle') {
+              debugLog(`Assistant busy (state: ${assistantState}), ignoring wake word`);
+            }
           } else {
             const remainingTime = Math.ceil((debounceInterval - timeSinceLastDetection) / 1000);
             debugLog(`⏳ Wake word heard but debounced (wait ${remainingTime}s)`);
@@ -244,6 +462,26 @@ const useWakeWordDetection = () => {
     }
   }, [isActive, startListening, stopListening, debugLog]);
 
+  // Cleanup WebSocket and audio on unmount or when stopping
+  useEffect(() => {
+    return () => {
+      if (websocketRef.current) {
+        websocketRef.current.close();
+        websocketRef.current = null;
+      }
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+      if (audioElementRef.current) {
+        audioElementRef.current.pause();
+        audioElementRef.current = null;
+      }
+      if (recordingTimeoutRef.current) {
+        clearTimeout(recordingTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return {
     isListening,
     isActive,
@@ -254,6 +492,9 @@ const useWakeWordDetection = () => {
     toggleListening,
     startListening,
     stopListening,
+    // New voice assistant states
+    assistantState, // 'idle', 'detected', 'listening', 'processing', 'playing'
+    isRecording,
   };
 };
 

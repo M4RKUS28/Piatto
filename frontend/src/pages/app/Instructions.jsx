@@ -17,6 +17,7 @@ import ChatContainer from './Instructions/ChatContainer';
 import TimerProgressBar from './Instructions/TimerProgressBar';
 import { useTranslation } from 'react-i18next'
 import useMediaQuery from '../../hooks/useMediaQuery';
+import useWakeWordDetection from '../../hooks/useWakeWordDetection';
 
  // --- Configuration ---
 const CURVE_AMOUNT = 180;
@@ -189,7 +190,6 @@ const StepDiv = React.forwardRef(({ instruction, content, index, circleRef, circ
 const CookingInstructions = ({
   instructions: instructionsProp,
   recipeId: recipeIdProp,
-  voiceAssistant = null,
   onRegisterSessionControls,
   onRegisterStepsArea,
   onRegisterAiButton,
@@ -232,6 +232,9 @@ const CookingInstructions = ({
   const [resumeVoicePrompted, setResumeVoicePrompted] = React.useState(false);
   const [isNewSessionStart, setIsNewSessionStart] = React.useState(false);
   const sessionSnapshotRef = React.useRef({ sessionActive: false, isLastStep: false, cookingSessionId: null });
+
+  // Initialize voice assistant with cooking session ID
+  const voiceAssistant = useWakeWordDetection(cookingSessionId);
   const voiceAssistantActive = voiceAssistant?.isActive ?? false;
 
   const resetSessionVisuals = React.useCallback(() => {
@@ -1220,7 +1223,65 @@ const CookingInstructions = ({
 
       {/* Fixed Navigation Controls - Bottom Right - Only show when session is active */}
       {sessionActive && (
-        <div ref={sessionControlsRef} className="fixed bottom-6 right-6 z-40 flex items-center gap-3">
+        <>
+          {/* Voice Assistant Activity Feedback */}
+          {voiceAssistant?.assistantState && voiceAssistant.assistantState !== 'idle' && (
+            <div className="fixed bottom-24 right-6 z-40 bg-white border-2 border-[#A8C9B8] rounded-2xl shadow-2xl px-4 py-3 animate-slideIn">
+              <div className="flex items-center gap-3">
+                {voiceAssistant.assistantState === 'detected' && (
+                  <>
+                    <span className="text-2xl">🎯</span>
+                    <div>
+                      <p className="text-sm font-semibold text-[#035035]">
+                        Hey Piatto detected!
+                      </p>
+                      <p className="text-xs text-gray-600">Starting recording...</p>
+                    </div>
+                  </>
+                )}
+                {voiceAssistant.assistantState === 'listening' && (
+                  <>
+                    <div className="relative">
+                      <span className="text-2xl">🎤</span>
+                      <div className="absolute inset-0 rounded-full bg-red-500 animate-pulse opacity-50" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-red-600">
+                        Listening...
+                      </p>
+                      <p className="text-xs text-gray-600">Speak your question</p>
+                    </div>
+                  </>
+                )}
+                {voiceAssistant.assistantState === 'processing' && (
+                  <>
+                    <div className="animate-spin">
+                      <span className="text-2xl">⚙️</span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-[#035035]">
+                        Processing...
+                      </p>
+                      <p className="text-xs text-gray-600">Preparing your answer</p>
+                    </div>
+                  </>
+                )}
+                {voiceAssistant.assistantState === 'playing' && (
+                  <>
+                    <span className="text-2xl animate-pulse">🔊</span>
+                    <div>
+                      <p className="text-sm font-semibold text-[#035035]">
+                        Playing response
+                      </p>
+                      <p className="text-xs text-gray-600">Audio output active</p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div ref={sessionControlsRef} className="fixed bottom-6 right-6 z-40 flex items-center gap-3">
           {/* Previous Step Button */}
           <button
             type="button"
@@ -1289,6 +1350,7 @@ const CookingInstructions = ({
             </div>
           </button>
         </div>
+        </>
       )}
     </div>
   );

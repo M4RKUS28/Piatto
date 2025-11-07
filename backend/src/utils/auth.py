@@ -3,8 +3,9 @@ Utility functions for authentication and authorization.
 """
 
 from typing import Any, Dict, Optional, Set
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, WebSocket
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db.models import db_user as user_model
 from ..core import security, enums
@@ -148,3 +149,30 @@ async def get_read_write_user_id(
     _ensure_access_level(payload, WRITE_ACCESS_LEVELS)
 
     return payload.get("user_id")
+
+
+async def get_user_id_from_token_ws(
+    websocket: WebSocket,
+    db: AsyncSession
+) -> Optional[str]:
+    """
+    Extract and verify user ID from WebSocket connection cookies.
+    Returns user_id if valid, None otherwise.
+    """
+    try:
+        # Try to get access token from cookies
+        cookies = websocket.cookies
+        access_token = cookies.get("access_token")
+
+        if not access_token:
+            return None
+
+        # Verify token
+        payload = security.verify_token(access_token)
+        _ensure_access_level(payload, WRITE_ACCESS_LEVELS)
+
+        return payload.get("user_id")
+
+    except (HTTPException, Exception) as e:
+        print(f"WebSocket authentication error: {e}")
+        return None

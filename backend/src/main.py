@@ -10,7 +10,7 @@ from .core.lifespan import lifespan
 
 from .api.routers import auth as auth_router
 from .api.routers import users
-from .api.routers import files, cooking, preparing, recipe, collection, instruction
+from .api.routers import files, cooking, preparing, recipe, collection, instruction, voice_assistant
 
 
 
@@ -61,6 +61,7 @@ app.include_router(preparing.router)
 app.include_router(recipe.router)
 app.include_router(collection.router)
 app.include_router(instruction.router)
+app.include_router(voice_assistant.router)
 
 
 

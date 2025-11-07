@@ -6,7 +6,6 @@ import CookingInstructions from "./Instructions";
 import { useTranslation } from 'react-i18next'
 import useMediaQuery from '../../hooks/useMediaQuery';
 import InstructionOnboardingTour from '../../components/InstructionOnboardingTour';
-import useWakeWordDetection from '../../hooks/useWakeWordDetection';
 
 const ONBOARDING_STORAGE_KEY = 'piatto_instructions_onboarding_v1';
 
@@ -22,8 +21,6 @@ const RecipeView = () => {
   const recipePanelRef = useRef(null);
   const isMobile = useMediaQuery('(max-width: 768px)');
   const parsedRecipeId = parseInt(recipeId, 10);
-  const voiceAssistant = useWakeWordDetection();
-  const { stopListening } = voiceAssistant;
   const [recipePanelNode, setRecipePanelNode] = useState(null);
   const [sessionControlsNode, setSessionControlsNode] = useState(null);
   const [stepsContainerNode, setStepsContainerNode] = useState(null);
@@ -76,10 +73,6 @@ const RecipeView = () => {
       document.body.style.overflow = previousOverflow;
     };
   }, [isOnboardingActive]);
-
-  useEffect(() => () => {
-    stopListening?.();
-  }, [stopListening]);
 
   const onboardingSteps = useMemo(() => ([
     {
@@ -189,7 +182,6 @@ const RecipeView = () => {
 
   const instructionsProps = {
     recipeId: parsedRecipeId,
-    voiceAssistant,
     onRegisterSessionControls: setSessionControlsNode,
     onRegisterStepsArea: setStepsContainerNode,
     onRegisterAiButton: setAiButtonNode,
