@@ -17,12 +17,13 @@ from ..agents.image_agent.agent import ImageAgent
 from ..agents.image_analyzer_agent import ImageAnalyzerAgent
 from ..agents.recipe_agent import RecipeAgent
 from ..db.bucket_session import get_bucket_session, get_async_bucket_session
-from ..db.crud import recipe_crud, preparing_crud, cooking_crud, instruction_crud
+from ..db.crud import recipe_crud, preparing_crud, cooking_crud, instruction_crud, collection_crud
 from ..db.crud.bucket_base_repo import get_file, upload_file, save_image_bytes
 from google.adk.sessions import InMemorySessionService
 from ..agents.utils import create_text_query, create_docs_query
 from ..db.database import get_async_db_context, get_db
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
 
 logger = getLogger(__name__)
@@ -97,11 +98,26 @@ class AgentService:
         preparing_session_id: Optional[int] = None,
         background_tasks = None
     ):
+        if preparing_session_id is not None:
+            async with get_async_db_context() as db:
+                recipes = recipe_crud.get_recipes_by_preparing_session_id(db, preparing_session_id)
         logger.info("Starting recipe generation for user_id=%s with prompt=%s", user_id, prompt)
         logger.info("Written ingredients: %s", written_ingredients)
-        query = get_recipe_gen_query(prompt, written_ingredients)
+        # fetch the users collections
+        collections_string = []  # the collections in string format for better analysis from the LLM
+        async with get_async_db_context() as db:
+            collections = await collection_crud.get_collections_by_user_id(db, user_id)
+            for collection in collections:
+                collections_string.append({
+                    "name": collection.name,
+                    "description": collection.description,
+                })
+
+        # get the query for the recipe agent
+        query = get_recipe_gen_query(prompt, written_ingredients, collections_string)
         logger.info("Generated query for recipe agent: %s", query)
-        
+
+        # call recipe agent
         recipes =  await self.recipe_agent.run(
             user_id=user_id,
             state={},
@@ -109,12 +125,13 @@ class AgentService:
         )
         logger.info("Recipe agent returned %d recipes", len(recipes.get('recipes', [])))
 
-        
-
         # Save the recipes in db before generating images
         recipe_ids = []
+        suggested_collection = None
         async with get_async_db_context() as db:
             for idx, recipe in enumerate(recipes['recipes']):
+                # we just use the same suggested collection for all three recipes for now:
+                suggested_collection = recipe['suggested_collection'] if idx == 0 else suggested_collection
                 logger.info("Saving recipe %d/%d: title=%s", idx + 1, len(recipes['recipes']), recipe['title'])
                 logger.info("Recipe ingredients: %s", recipe['ingredients'])
                 recipe_db = await recipe_crud.create_recipe(
@@ -142,6 +159,7 @@ class AgentService:
                     user_id=user_id,
                     recipe_ids=recipe_ids,
                     preparing_session_id=preparing_session_id,
+                    suggested_collection=suggested_collection
                 )
             except PermissionError as error:
                 logger.warning("Preparing session %s cannot be updated by user %s", preparing_session_id, user_id)
@@ -150,9 +168,13 @@ class AgentService:
 
         # Generate images in a separate thread (completely isolated from main event loop)
         background_tasks.add_task(self._generate_and_save_images_async, user_id, recipes, recipe_ids)
+
+        # Generate instructions for each recipe in parallel in the background
+        for recipe_id in recipe_ids:
+            background_tasks.add_task(self.generate_instruction, user_id, preparing_session_id, recipe_id)
         return session.id
 
-    async def generate_instruction(self, user_id: str, preparing_session_id: int, recipe_id: int) -> int:
+    async def generate_instruction(self, user_id: str, preparing_session_id: int, recipe_id: int):
         """
         Generate instructions for a recipe using the instruction agent.
 
@@ -167,7 +189,7 @@ class AgentService:
         async with get_async_db_context() as db:
             recipe = await recipe_crud.get_recipe_by_id(db, recipe_id)
             if not recipe:
-                raise HTTPException(status_code=404, detail="Recipe not found")
+                return
 
         query = get_instruction_query(recipe)
         instructions_response = await self.instruction_agent.run(
@@ -197,14 +219,18 @@ class AgentService:
 
         # Save instruction steps to database
         async with get_async_db_context() as db:
-            await instruction_crud.create_instruction_steps(
-                db=db,
-                recipe_id=recipe_id,
-                steps=steps_list
-            )
+            try:
+                await instruction_crud.create_instruction_steps(
+                    db=db,
+                    recipe_id=recipe_id,
+                    steps=steps_list
+                )
+            except IntegrityError as e:
+                # Recipe was deleted by another process while we were generating instructions
+                logger.warning(f"Failed to save instruction steps for recipe {recipe_id}: recipe no longer exists. Error: {e}")
+                return
 
-        return recipe_id
-
+        return
 
     async def change_recipe(self, change_prompt: str, recipe_id: int,db, user_id: str) -> Recipe:
         # Prompt/Kontext an Agent übergeben

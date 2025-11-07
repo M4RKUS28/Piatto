@@ -337,6 +337,17 @@ const CookingInstructions = ({
   // Track timer states for progress bars
   const [timerStates, setTimerStates] = React.useState({}); // Map of stepIndex -> timer state
 
+  // Scroll-to-focus state management
+  const scrollDeltaAccumulator = React.useRef(0);
+  const scrollTimeout = React.useRef(null);
+  const isAutoScrolling = React.useRef(false);
+  const lastScrollTime = React.useRef(Date.now());
+
+  // Scroll threshold: ~300px of scroll = 1 step change
+  // This means 1-3 mouse wheel notches (~100px each) = 1 step
+  // 4-6 wheel notches = 1-2 steps, etc.
+  const SCROLL_THRESHOLD_PER_STEP = 300;
+
   // Chat state management
   const [openChatStep, setOpenChatStep] = React.useState(null);
   const [chatStepPosition, setChatStepPosition] = React.useState(null);
@@ -520,9 +531,13 @@ const CookingInstructions = ({
     }));
   }, []);
 
-  const scrollStepIntoView = React.useCallback((index) => {
+  const scrollStepIntoView = React.useCallback((index, isAuto = false) => {
     const stepElement = stepRefs.current[index];
     if (!stepElement) return;
+
+    if (isAuto) {
+      isAutoScrolling.current = true;
+    }
 
     let scrollableParent = stepElement.parentElement;
     while (scrollableParent) {
@@ -554,14 +569,18 @@ const CookingInstructions = ({
         behavior: 'smooth'
       });
     }
+
+    if (isAuto) {
+      setTimeout(() => {
+        isAutoScrolling.current = false;
+      }, 600);
+    }
   }, []);
 
-  const navigateToStep = React.useCallback(async (step, { scroll = true, sessionIdOverride } = {}) => {
+  const navigateToStep = React.useCallback(async (step, { scroll = true, sessionIdOverride, isManual = true } = {}) => {
     if (!instructions || step < 1 || step > instructions.length) {
       return;
     }
-
-    console.log('🔄 Switching state:', { from: focusedStep, to: step });
 
     setSessionError(null);
     setNavigationError(null);
@@ -571,7 +590,8 @@ const CookingInstructions = ({
     const arrayIndex = step - 1; // Convert 1-based to 0-based for array access
 
     if (scroll) {
-      scrollStepIntoView(arrayIndex);
+      // If manual navigation (click or button), set auto-scroll flag to prevent interference
+      scrollStepIntoView(arrayIndex, isManual);
     }
 
     const sessionIdToUse = sessionIdOverride ?? cookingSessionId;
@@ -581,7 +601,6 @@ const CookingInstructions = ({
       try {
         await updateCookingState(sessionIdToUse, step);
         previousSyncedStep.current = step;
-        console.log('✅ State updated successfully. Current state:', step);
       } catch (err) {
         console.error('Failed to update cooking state:', err);
   setNavigationError(t('syncError', 'Failed to update the cooking state. Please try again.'));
@@ -590,6 +609,58 @@ const CookingInstructions = ({
       }
     }
   }, [instructions, cookingSessionId, scrollStepIntoView, t, focusedStep]);
+
+  // Handle wheel/scroll events for navigation
+  const handleWheelNavigation = React.useCallback((event) => {
+    if (!sessionActive || !focusedStep || !instructions || isAutoScrolling.current) {
+      return;
+    }
+
+    // Prevent default scrolling behavior
+    event.preventDefault();
+
+    const now = Date.now();
+    const timeSinceLastScroll = now - lastScrollTime.current;
+
+    // Reset accumulator if it's been more than 500ms since last scroll
+    if (timeSinceLastScroll > 500) {
+      scrollDeltaAccumulator.current = 0;
+    }
+
+    lastScrollTime.current = now;
+
+    // Accumulate scroll delta (works for mouse wheel, trackpad, etc.)
+    scrollDeltaAccumulator.current += event.deltaY;
+
+    // Clear existing timeout
+    if (scrollTimeout.current) {
+      clearTimeout(scrollTimeout.current);
+    }
+
+    // Calculate how many steps to move based on accumulated scroll
+    const stepsToMove = Math.floor(Math.abs(scrollDeltaAccumulator.current) / SCROLL_THRESHOLD_PER_STEP);
+
+    if (stepsToMove > 0) {
+      const direction = scrollDeltaAccumulator.current > 0 ? 1 : -1; // 1 = down, -1 = up
+      const targetStep = focusedStep + (direction * stepsToMove);
+
+      // Clamp to valid step range
+      const clampedStep = Math.max(1, Math.min(instructions.length, targetStep));
+
+      if (clampedStep !== focusedStep) {
+        // Reset accumulator
+        scrollDeltaAccumulator.current = 0;
+
+        // Navigate to new step
+        navigateToStep(clampedStep, { scroll: true, isManual: false });
+      }
+    }
+
+    // Reset accumulator after a short delay if no more scrolling
+    scrollTimeout.current = setTimeout(() => {
+      scrollDeltaAccumulator.current = 0;
+    }, 500);
+  }, [sessionActive, focusedStep, instructions, navigateToStep, SCROLL_THRESHOLD_PER_STEP]);
 
   const handleStepClick = React.useCallback((index) => {
     if (!sessionActive) {
@@ -605,8 +676,6 @@ const CookingInstructions = ({
       return;
     }
 
-    console.log('🚀 Starting cooking session. Initial state will be: 1');
-
     setSessionError(null);
     setNavigationError(null);
     setSessionFinished(false);
@@ -619,7 +688,6 @@ const CookingInstructions = ({
     try {
       const sessionId = await startCookingSession(parseInt(recipeId, 10));
       setCookingSessionId(sessionId);
-      console.log('✅ Cooking session started with ID:', sessionId);
       await navigateToStep(1, { sessionIdOverride: sessionId });
 
       const preference = withVoice ? 'with' : 'without';
@@ -799,7 +867,6 @@ const CookingInstructions = ({
   stopVoiceAssistant();
   previousSyncedStep.current = clampedStep;
 
-        console.log('🔄 Restored cooking session. Session ID:', session.id, 'Initial state:', clampedStep);
         setFocusedStep(clampedStep);
         requestAnimationFrame(() => {
           scrollStepIntoView(clampedStep - 1); // Convert 1-based to 0-based for array access
@@ -907,6 +974,26 @@ const CookingInstructions = ({
       }
     };
   }, [recipeId, instructionsProp, t]);
+
+  // Set up wheel event listener for scroll-based navigation
+  React.useEffect(() => {
+    if (!sessionActive || !containerRef.current) {
+      return;
+    }
+
+    // Add wheel listener to window to capture all scroll events
+    // Note: NOT using passive: true because we call preventDefault()
+    window.addEventListener('wheel', handleWheelNavigation, { passive: false });
+
+    return () => {
+      window.removeEventListener('wheel', handleWheelNavigation);
+
+      // Clean up timeouts
+      if (scrollTimeout.current) {
+        clearTimeout(scrollTimeout.current);
+      }
+    };
+  }, [sessionActive, handleWheelNavigation]);
 
   // Calculate circle positions for the SVG paths
   React.useEffect(() => {
