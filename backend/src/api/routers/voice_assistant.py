@@ -1,9 +1,10 @@
 """
-WebSocket endpoint for voice assistant with Gemini 2.0 Flash
-Handles real-time audio streaming with server-side VAD
+WebSocket endpoint for voice assistant with Gemini 2.5 Flash Live API
+Handles real-time bidirectional audio streaming with native audio I/O
 """
 import asyncio
 import json
+import io
 from typing import Optional
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,10 +13,12 @@ from ...db.database import get_db
 from ...db.crud import cooking_crud, recipe_crud, instruction_crud
 from ...utils.auth import get_user_id_from_token_ws
 from ...config.settings import GEMINI_API_KEY
-import google.generativeai as genai
 
-# Configure Gemini
-genai.configure(api_key=GEMINI_API_KEY)
+from google import genai
+from google.genai import types
+
+# Configure Gemini client
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 router = APIRouter(
     prefix="/ws",
@@ -24,7 +27,7 @@ router = APIRouter(
 
 
 class VoiceAssistantSession:
-    """Manages a voice assistant WebSocket session"""
+    """Manages a voice assistant Live API session"""
 
     def __init__(
         self,
@@ -37,9 +40,8 @@ class VoiceAssistantSession:
         self.session_id = session_id
         self.user_id = user_id
         self.db = db
-        self.audio_buffer = []
-        self.is_recording = False
-        self.gemini_client = None
+        self.live_session = None
+        self.is_active = False
 
     async def get_cooking_context(self) -> str:
         """
@@ -74,116 +76,158 @@ class VoiceAssistantSession:
         )
 
         # Format context
-        context = f"""You are Piatto, a helpful cooking assistant. The user is currently cooking the following recipe:
+        context = f"""You are Piatto, a helpful and friendly cooking assistant with a warm personality.
 
-**Recipe: {recipe.title}**
+**Current Recipe: {recipe.title}**
 
 **Ingredients:**
-{json.dumps(recipe.ingredients, indent=2) if recipe.ingredients else 'No ingredients listed'}
-
-**Current Step:** {cooking_session.state}
-
-**All Instructions:**
 """
+        if recipe.ingredients:
+            ingredients_list = json.loads(recipe.ingredients) if isinstance(recipe.ingredients, str) else recipe.ingredients
+            for ing in ingredients_list:
+                if isinstance(ing, dict):
+                    context += f"- {ing.get('name', ing.get('ingredient', 'Unknown'))}"
+                    if 'amount' in ing or 'quantity' in ing:
+                        amount = ing.get('amount', ing.get('quantity', ''))
+                        context += f" ({amount})"
+                    context += "\n"
+                else:
+                    context += f"- {ing}\n"
+        else:
+            context += "No ingredients listed\n"
+
+        context += f"\n**Current Step:** {cooking_session.state} of {len(instructions)}\n\n**All Cooking Steps:**\n"
 
         for idx, instruction in enumerate(instructions, 1):
-            context += f"\n{idx}. {instruction.description}"
+            marker = "→ " if idx == cooking_session.state else "  "
+            context += f"{marker}Step {idx}: {instruction.description}"
             if instruction.duration_minutes:
-                context += f" (Duration: {instruction.duration_minutes} minutes)"
+                context += f" (⏱ {instruction.duration_minutes} min)"
+            context += "\n"
 
         context += """
-
-Please provide helpful, concise answers about the recipe, ingredients, or cooking steps.
-Keep responses brief and practical for someone actively cooking.
-If the user asks about a specific step, refer to the step numbers above.
+**Your Role:**
+- Provide helpful, concise answers about the recipe, ingredients, or cooking steps
+- Keep responses brief and practical for someone actively cooking
+- Be friendly and encouraging
+- If asked about a specific step, refer to the step numbers above
+- Answer in the same language the user speaks to you (German or English)
+- Use a warm, conversational tone as if you're a helpful friend in the kitchen
 """
 
         return context
 
-    async def process_audio_stream(self):
-        """
-        Process incoming audio stream and generate response using Gemini 2.0 Flash
-        """
+    async def start_live_session(self):
+        """Initialize Gemini Live API session with cooking context"""
         try:
             # Get cooking context
             context = await self.get_cooking_context()
 
-            # Initialize Gemini 2.0 Flash model
-            model = genai.GenerativeModel('gemini-2.0-flash-exp')
-
-            # Send processing status
-            await self.websocket.send_json({
-                "type": "processing",
-                "message": "Processing your question..."
-            })
-
-            # Combine audio chunks
-            if not self.audio_buffer:
-                await self.websocket.send_json({
-                    "type": "error",
-                    "message": "No audio data received"
-                })
-                return
-
-            # Create audio blob
-            audio_data = b''.join(self.audio_buffer)
-
-            # Generate response with Gemini (audio input + text context)
-            # Note: Gemini 2.0 Flash supports audio input
-            response = await asyncio.to_thread(
-                model.generate_content,
-                [
-                    {
-                        "mime_type": "audio/webm",
-                        "data": audio_data
-                    },
-                    context
-                ],
-                generation_config={
-                    "response_modalities": ["audio"],
-                    "temperature": 0.7,
-                }
+            # Configure Live API session
+            config = types.LiveConnectConfig(
+                response_modalities=["AUDIO"],  # Native audio output
+                system_instruction=context,
             )
 
-            # Extract audio response
-            if response and response.parts:
-                for part in response.parts:
-                    if hasattr(part, 'audio') and part.audio:
-                        # Send audio response back to client
-                        await self.websocket.send_bytes(part.audio.data)
-                    elif hasattr(part, 'text'):
-                        # Fallback: send text if audio not available
-                        await self.websocket.send_json({
-                            "type": "text_response",
-                            "text": part.text
-                        })
-            else:
-                await self.websocket.send_json({
-                    "type": "error",
-                    "message": "No response generated"
-                })
+            # Connect to Live API
+            print(f"[Voice Assistant] Connecting to Gemini Live API for session {self.session_id}")
+            self.live_session = client.aio.live.connect(
+                model="gemini-2.5-flash-native-audio-preview-09-2025",
+                config=config
+            )
+
+            # Enter async context
+            await self.live_session.__aenter__()
+            self.is_active = True
+
+            print(f"[Voice Assistant] ✓ Live API session established for cooking session {self.session_id}")
+
+            # Start receiving responses
+            asyncio.create_task(self._receive_responses())
 
         except Exception as e:
-            print(f"Error processing audio: {e}")
+            print(f"[Voice Assistant] Error starting Live API session: {e}")
             await self.websocket.send_json({
                 "type": "error",
-                "message": f"Error processing audio: {str(e)}"
+                "message": f"Failed to start voice assistant: {str(e)}"
             })
-        finally:
-            # Clear buffer
-            self.audio_buffer = []
-            self.is_recording = False
+            raise
 
-    async def detect_silence(self, audio_chunk: bytes) -> bool:
+    async def _receive_responses(self):
         """
-        Simple server-side VAD (Voice Activity Detection)
-        Returns True if silence is detected
+        Receive and forward audio responses from Gemini Live API
+        Runs in background task
+        """
+        try:
+            async for response in self.live_session.receive():
+                # Check for server content (audio response)
+                if response.server_content:
+                    # Model has started responding
+                    if not response.server_content.turn_complete:
+                        # Send processing status
+                        try:
+                            await self.websocket.send_json({
+                                "type": "processing",
+                                "message": "Generating response..."
+                            })
+                        except:
+                            pass  # Ignore if websocket closed
 
-        TODO: Implement more sophisticated VAD if needed
-        For now, we rely on client sending 'recording_complete' message
+                    # Extract audio parts
+                    for part in response.server_content.model_turn.parts:
+                        if part.inline_data and part.inline_data.mime_type.startswith("audio/"):
+                            # Send audio data to frontend
+                            try:
+                                await self.websocket.send_bytes(part.inline_data.data)
+                            except:
+                                break  # Stop if websocket closed
+
+                    # Turn complete - audio finished
+                    if response.server_content.turn_complete:
+                        print(f"[Voice Assistant] Response complete for session {self.session_id}")
+
+                # Check for tool calls (not used currently, but available)
+                elif response.tool_call:
+                    print(f"[Voice Assistant] Tool call received: {response.tool_call}")
+
+        except Exception as e:
+            print(f"[Voice Assistant] Error receiving responses: {e}")
+            if self.is_active:
+                try:
+                    await self.websocket.send_json({
+                        "type": "error",
+                        "message": "Connection error"
+                    })
+                except:
+                    pass
+
+    async def send_audio_chunk(self, audio_data: bytes):
         """
-        # Placeholder - actual VAD would analyze audio amplitude/energy
-        return False
+        Send audio chunk to Gemini Live API
+        Audio should be PCM 16-bit, 16kHz, mono
+        """
+        if not self.is_active or not self.live_session:
+            return
+
+        try:
+            # Send audio as realtime input
+            await self.live_session.send(
+                input={"data": audio_data, "mime_type": "audio/pcm"}
+            )
+        except Exception as e:
+            print(f"[Voice Assistant] Error sending audio: {e}")
+            raise
+
+    async def close(self):
+        """Close the Live API session"""
+        self.is_active = False
+        if self.live_session:
+            try:
+                await self.live_session.__aexit__(None, None, None)
+                print(f"[Voice Assistant] Session closed for cooking session {self.session_id}")
+            except:
+                pass
+            self.live_session = None
 
 
 @router.websocket("/voice_assistant")
@@ -193,19 +237,23 @@ async def voice_assistant_websocket(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    WebSocket endpoint for voice assistant
+    WebSocket endpoint for Gemini Live API voice assistant
 
     Protocol:
     - Client connects with cooking session_id
-    - Client sends binary audio chunks (webm/opus format)
-    - Client sends {"type": "recording_complete"} when done
-    - Server processes audio with Gemini 2.0 Flash
-    - Server streams binary audio response back
+    - Server initializes Live API session with cooking context
+    - Client sends binary audio chunks (PCM 16-bit, 16kHz, mono)
+    - Server streams audio chunks to Gemini Live API
+    - Gemini automatically detects when user stops speaking (VAD)
+    - Server streams binary audio response back (PCM 24kHz)
+    - Client plays audio response
     """
     await websocket.accept()
 
+    session = None
+
     try:
-        # Get user ID from websocket (check cookies/headers)
+        # Authenticate user
         user_id = await get_user_id_from_token_ws(websocket, db)
 
         if not user_id:
@@ -216,7 +264,7 @@ async def voice_assistant_websocket(
             await websocket.close(code=1008)
             return
 
-        # Create session
+        # Create voice assistant session
         session = VoiceAssistantSession(
             websocket=websocket,
             session_id=session_id,
@@ -224,39 +272,42 @@ async def voice_assistant_websocket(
             db=db
         )
 
-        print(f"Voice assistant connected: user={user_id}, session={session_id}")
+        # Start Gemini Live API session
+        await session.start_live_session()
+
+        print(f"[Voice Assistant] ✓ Connected: user={user_id}, session={session_id}")
 
         # Main message loop
-        while True:
-            message = await websocket.receive()
+        while session.is_active:
+            try:
+                message = await websocket.receive()
 
-            if "bytes" in message:
-                # Audio chunk received
-                audio_chunk = message["bytes"]
-                session.audio_buffer.append(audio_chunk)
-                session.is_recording = True
+                if "bytes" in message:
+                    # Audio chunk received - forward to Gemini
+                    audio_chunk = message["bytes"]
+                    await session.send_audio_chunk(audio_chunk)
 
-            elif "text" in message:
-                # Control message
-                try:
-                    data = json.loads(message["text"])
+                elif "text" in message:
+                    # Control message
+                    try:
+                        data = json.loads(message["text"])
 
-                    if data.get("type") == "recording_complete":
-                        # Process the complete audio
-                        if session.is_recording:
-                            await session.process_audio_stream()
+                        if data.get("type") == "stop":
+                            # Client requested stop
+                            print(f"[Voice Assistant] Client requested stop")
+                            break
 
-                    elif data.get("type") == "stop_recording":
-                        # Server VAD detected silence (not used in this implementation)
-                        session.is_recording = False
+                    except json.JSONDecodeError:
+                        print(f"[Voice Assistant] Invalid JSON: {message['text']}")
 
-                except json.JSONDecodeError:
-                    print(f"Invalid JSON received: {message['text']}")
+            except WebSocketDisconnect:
+                print(f"[Voice Assistant] Client disconnected: session={session_id}")
+                break
 
-    except WebSocketDisconnect:
-        print(f"Voice assistant disconnected: session={session_id}")
     except Exception as e:
-        print(f"Voice assistant error: {e}")
+        print(f"[Voice Assistant] Error: {e}")
+        import traceback
+        traceback.print_exc()
         try:
             await websocket.send_json({
                 "type": "error",
@@ -264,7 +315,11 @@ async def voice_assistant_websocket(
             })
         except:
             pass
+
     finally:
+        # Cleanup
+        if session:
+            await session.close()
         try:
             await websocket.close()
         except:
