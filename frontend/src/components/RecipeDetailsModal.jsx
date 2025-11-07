@@ -90,7 +90,8 @@ export default function RecipeDetailsModal({
 
 	return (
 		<div
-			className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6"
+			className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-6"
+			style={{ backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
 			onClick={handleOverlayClick}
 			role="dialog"
 			aria-modal="true"
@@ -189,22 +190,7 @@ export default function RecipeDetailsModal({
 										</p>
 									</section>
 
-									<section>
-										<h3 className="text-base font-semibold text-[#035035] mb-2">
-											{t('options.details.cookingOverview', 'Cooking overview')}
-										</h3>
-										{overviewItems.length > 1 ? (
-											<ol className="list-decimal list-inside space-y-1 text-sm text-[#2D2D2D]">
-												{overviewItems.map((item, index) => (
-													<li key={`${item}-${index}`}>{item}</li>
-												))}
-											</ol>
-										) : (
-											<p className="text-sm text-[#2D2D2D] leading-relaxed whitespace-pre-line">
-												{overviewItems[0] || overviewRaw}
-											</p>
-										)}
-									</section>
+									
 								</div>
 							)}
 						</div>

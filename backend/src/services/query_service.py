@@ -2,17 +2,30 @@
 Utility class to get the queries for all the agents
 As the queries are very text heavy, I do not want to build them up in the agent or state service.
 """
-from typing import List
 
+from typing import List, Optional
 from google.genai import types
+
+from ..db.models.db_recipe import Recipe
 from ..agents.utils import create_text_query
 import logging
 import json
 
 logger = logging.getLogger(__name__)
 
-def get_recipe_gen_query(prompt: str, written_ingredients: str, collections: List[dict]) -> types.Content:
+
+def get_recipe_gen_query(prompt: str, written_ingredients: str, collections: List[dict], previous_recipes: Optional[List[Recipe]] = None) -> types.Content:
     """ builds the query for the recipe generation agent """
+    previous_recipes_section = ""
+    if previous_recipes:
+        previous_titles = [str(recipe.title) for recipe in previous_recipes if getattr(recipe, "title", None)]
+        if previous_titles:
+            # Provide context about what the user has already cooked/generated
+            previous_recipes_section = f"""
+        System: Previously generated recipes
+        User: {", ".join(previous_titles)}
+"""
+
     query = f"""
         System: What do you want to cook?
         User: {prompt}
@@ -21,6 +34,7 @@ def get_recipe_gen_query(prompt: str, written_ingredients: str, collections: Lis
         
         Collections you can sort the recipe into:
         {json.dumps(collections, indent=2)}
+{previous_recipes_section}
     """
 
     return create_text_query(query)

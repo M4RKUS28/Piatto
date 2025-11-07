@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { getImageUrl } from '../../../utils/imageUtils';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { AlertCircle } from 'lucide-react';
 import SaveRecipesCollectionModal from '../../../components/SaveRecipesCollectionModal';
 import RecipeDetailsModal from '../../../components/RecipeDetailsModal';
 import { getRecipeImage } from '../../../api/filesApi';
@@ -22,6 +23,7 @@ export default function RecipeOptionsStep({
 	onFinishSession,
 	sessionCompleting = false,
 	preparingSessionId,
+	onBack,
 }) {
 	const { t } = useTranslation('recipeGeneration');
 	const navigate = useNavigate();
@@ -36,6 +38,7 @@ export default function RecipeOptionsStep({
 	const [detailsError, setDetailsError] = useState(null);
 	const [enlargedImageUrl, setEnlargedImageUrl] = useState(null);
 	const [hoveredImageId, setHoveredImageId] = useState(null);
+	const [showConfirmBack, setShowConfirmBack] = useState(false);
 	const pollingIntervalRef = useRef(null);
 
 	const toggleRecipeSelection = (recipeId) => {
@@ -135,6 +138,22 @@ export default function RecipeOptionsStep({
 
 	const handleCloseEnlargedImage = () => {
 		setEnlargedImageUrl(null);
+	};
+
+	const handleBackAttempt = () => {
+		setShowConfirmBack(true);
+	};
+
+	const handleCancelBack = () => {
+		setShowConfirmBack(false);
+	};
+
+	const handleConfirmBack = async () => {
+		setShowConfirmBack(false);
+		// Delete session and go back to step 2
+		if (onBack) {
+			await onBack();
+		}
 	};
 
 	// Initialize recipes when recipeOptions changes
@@ -239,7 +258,7 @@ export default function RecipeOptionsStep({
 	const isDetailsModalOpen = activeDetailsId != null;
 
 	return (
-		<div className="space-y-3">
+		<div className="flex flex-col h-full">
 			{/* CSS keyframes for shimmer animation */}
 			<style>{`
 				@keyframes shimmer {
@@ -311,11 +330,11 @@ export default function RecipeOptionsStep({
 				}
 			`}</style>
 
-			<div>
-				<h2 className="text-2xl sm:text-3xl font-bold text-[#035035] mb-2 sm:mb-3 text-center">{t('options.title', 'Select Recipes to Generate')}</h2>
+			<div className="mb-3">
+				<h2 className="text-2xl sm:text-3xl font-bold text-[#035035] text-center">{t('options.title', 'Select Recipes to Generate')}</h2>
 			</div>
 
-			<div className="space-y-2" role="list" aria-label={t('options.aria.recipeList', 'Generated recipe options')}>
+			<div className="flex-1 overflow-y-auto space-y-2 pr-2" role="list" aria-label={t('options.aria.recipeList', 'Generated recipe options')}>
 				{recipes.map((recipe, index) => {
 					const isSelected = selectedRecipes.has(recipe.id);
 					const imageStatus = imageLoadStatus[recipe.id] || 'loading';
@@ -455,19 +474,33 @@ export default function RecipeOptionsStep({
 				})}
 			</div>
 
-			<div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 mt-3">
-				<button
-					type="button"
-					onClick={onRegenerate}
-					disabled={loading || sessionCompleting}
-					className="w-full sm:w-auto bg-white text-[#035035] border-2 border-[#035035] px-6 py-3 rounded-full font-semibold text-base text-center
-						hover:bg-[#035035] hover:text-white transition-all duration-200
-						disabled:opacity-50 disabled:cursor-not-allowed
-						focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2"
-					aria-label={t('options.aria.regenerate', 'Generate new recipe options with same ingredients')}
-				>
-					{loading ? t('options.generating', 'Generating...') : t('options.generateNewRecipes', 'Generate New Recipes')}
-				</button>
+			<div className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 mt-3 pt-3 border-t border-gray-200">
+				<div className="flex flex-col sm:flex-row gap-2">
+					<button
+						type="button"
+						onClick={handleBackAttempt}
+						disabled={loading || sessionCompleting}
+						className="w-full sm:w-auto bg-white text-[#2D2D2D] border-2 border-gray-300 px-6 py-3 rounded-full font-semibold text-base text-center
+							hover:bg-gray-100 transition-all duration-200
+							disabled:opacity-50 disabled:cursor-not-allowed
+							focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
+						aria-label={t('options.aria.back', 'Go back to ingredients step')}
+					>
+						{t('options.back', 'Back')}
+					</button>
+					<button
+						type="button"
+						onClick={() => onRegenerate(preparingSessionId)}
+						disabled={loading || sessionCompleting}
+						className="w-full sm:w-auto bg-white text-[#035035] border-2 border-[#035035] px-6 py-3 rounded-full font-semibold text-base text-center
+							hover:bg-[#035035] hover:text-white transition-all duration-200
+							disabled:opacity-50 disabled:cursor-not-allowed
+							focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2"
+						aria-label={t('options.aria.regenerate', 'Generate new recipe options with same ingredients')}
+					>
+						{loading ? t('options.generating', 'Generating...') : t('options.generateNewRecipes', 'Generate New Recipes')}
+					</button>
+				</div>
 
 				<button
 					type="button"
@@ -482,9 +515,9 @@ export default function RecipeOptionsStep({
 						hover:bg-[#024027] transition-all duration-200
 						disabled:opacity-50 disabled:cursor-not-allowed
 						focus:outline-none focus:ring-2 focus:ring-[#035035] focus:ring-offset-2"
-					aria-label={t('options.aria.generate', 'Generate selected recipes')}
+					aria-label={t('options.aria.save', 'Save selected recipes')}
 				>
-				{processingSelection ? t('options.processing', 'Processing...') : `${t('options.generate', 'Generate')} (${selectedRecipes.size})`}
+				{processingSelection ? t('options.processing', 'Processing...') : `${t('options.save', 'Save')} (${selectedRecipes.size})`}
 				</button>
 			</div>
 
@@ -529,6 +562,45 @@ export default function RecipeOptionsStep({
 							alt="Enlarged recipe"
 							className="h-full w-full rounded-lg object-cover shadow-2xl"
 						/>
+					</div>
+				</div>
+			)}
+
+			{/* Confirmation Modal for going back */}
+			{showConfirmBack && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+					<div
+						className="absolute inset-0 bg-black/60"
+						onClick={handleCancelBack}
+					/>
+					<div className="relative bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full">
+						<div className="flex items-start gap-4">
+							<div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+								<AlertCircle className="w-6 h-6 text-orange-600" />
+							</div>
+							<div className="flex-1">
+								<h3 className="text-xl font-bold text-[#035035] mb-2">
+									{t('options.confirmBack.title', 'Go Back?')}
+								</h3>
+								<p className="text-[#2D2D2D] opacity-80 mb-6">
+									{t('options.confirmBack.message', 'Are you sure you want to go back? Your current recipe options will be deleted.')}
+								</p>
+								<div className="flex gap-3">
+									<button
+										onClick={handleCancelBack}
+										className="flex-1 px-4 py-3 rounded-full border-2 border-[#F5F5F5] text-[#2D2D2D] font-semibold hover:bg-[#F5F5F5] transition-all"
+									>
+										{t('options.confirmBack.cancel', 'Stay Here')}
+									</button>
+									<button
+										onClick={handleConfirmBack}
+										className="flex-1 px-4 py-3 rounded-full bg-orange-600 text-white font-semibold hover:bg-orange-700 transition-all"
+									>
+										{t('options.confirmBack.confirm', 'Yes, Go Back')}
+									</button>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			)}
