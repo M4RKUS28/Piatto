@@ -252,6 +252,8 @@ const useWakeWordDetection = () => {
     error,
     browserSupported,
     toggleListening,
+    startListening,
+    stopListening,
   };
 };
 

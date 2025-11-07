@@ -1,10 +1,14 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { PiX, PiCaretRight } from 'react-icons/pi';
 import Recipe from './Recipe';
 import CookingInstructions from "./Instructions";
 import { useTranslation } from 'react-i18next'
 import useMediaQuery from '../../hooks/useMediaQuery';
+import InstructionOnboardingTour from '../../components/InstructionOnboardingTour';
+import useWakeWordDetection from '../../hooks/useWakeWordDetection';
+
+const ONBOARDING_STORAGE_KEY = 'piatto_instructions_onboarding_v1';
 
 // Main RecipeView component
 const RecipeView = () => {
@@ -15,16 +19,127 @@ const RecipeView = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [recipeMinimized, setRecipeMinimized] = useState(false);
   const containerRef = useRef(null);
+  const recipePanelRef = useRef(null);
   const isMobile = useMediaQuery('(max-width: 768px)');
   const parsedRecipeId = parseInt(recipeId, 10);
+  const voiceAssistant = useWakeWordDetection();
+  const { stopListening } = voiceAssistant;
+  const [recipePanelNode, setRecipePanelNode] = useState(null);
+  const [sessionControlsNode, setSessionControlsNode] = useState(null);
+  const [stepsContainerNode, setStepsContainerNode] = useState(null);
+  const [aiButtonNode, setAiButtonNode] = useState(null);
+  const [isOnboardingActive, setIsOnboardingActive] = useState(false);
+  const [pendingOnboarding, setPendingOnboarding] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(0);
 
   // Validate recipeId
   useEffect(() => {
     if (isNaN(parsedRecipeId) || parsedRecipeId <= 0) {
       console.error('Invalid recipe ID:', recipeId);
-      navigate('/app/recipe-library');
+      navigate('/app');
     }
   }, [recipeId, parsedRecipeId, navigate]);
+
+  useEffect(() => {
+    setRecipePanelNode(recipePanelRef.current);
+  }, [recipeMinimized, isMobile]);
+
+  useEffect(() => {
+    try {
+      const seen = localStorage.getItem(ONBOARDING_STORAGE_KEY);
+      if (!seen) {
+        setPendingOnboarding(true);
+      }
+    } catch (err) {
+      console.warn('Failed to read onboarding state:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!pendingOnboarding) {
+      return;
+    }
+    if (recipePanelNode && sessionControlsNode && stepsContainerNode && aiButtonNode) {
+      setIsOnboardingActive(true);
+      setPendingOnboarding(false);
+    }
+  }, [pendingOnboarding, recipePanelNode, sessionControlsNode, stepsContainerNode, aiButtonNode]);
+
+  useEffect(() => {
+    if (!isOnboardingActive) {
+      document.body.style.overflow = '';
+      return undefined;
+    }
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOnboardingActive]);
+
+  useEffect(() => () => {
+    stopListening?.();
+  }, [stopListening]);
+
+  const onboardingSteps = useMemo(() => ([
+    {
+      key: 'ingredients',
+      title: t('onboarding.ingredientsTitle', 'Linke Seite: Zutaten & Details'),
+      description: t('onboarding.ingredientsDescription', 'Hier findest du alle Zutaten, Nährwerte und Infos zum Rezept. Scrolle nach unten, um alles im Blick zu behalten.'),
+      target: recipePanelNode,
+    },
+    {
+      key: 'steps',
+      title: t('onboarding.stepsTitle', 'Schritt-für-Schritt Anleitung'),
+      description: t('onboarding.stepsDescription', 'Folge dem Pfad durch die einzelnen Koch-Schritte. Jeder Schritt zeigt dir genau, was zu tun ist.'),
+      target: stepsContainerNode,
+    },
+    {
+      key: 'ai-button',
+      title: t('onboarding.aiButtonTitle', 'AI Fragen'),
+      description: t('onboarding.aiButtonDescription', 'Zu jedem Schritt kannst du die AI um Hilfe bitten. Klicke auf den ✨ AI Fragen Button, um Fragen zum aktuellen Schritt zu stellen.'),
+      target: aiButtonNode,
+    },
+    {
+      key: 'session-controls',
+      title: t('onboarding.sessionControlsTitle', 'Session Steuerung'),
+      description: t('onboarding.sessionControlsDescription', 'Navigiere durch die Schritte, sieh deinen Fortschritt und steuere den Voice Assistant – alles von hier aus.'),
+      target: sessionControlsNode,
+    },
+  ]), [t, recipePanelNode, sessionControlsNode, stepsContainerNode, aiButtonNode]);
+
+  const finalizeOnboarding = useCallback(() => {
+    setIsOnboardingActive(false);
+    setOnboardingStep(0);
+    try {
+      localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
+    } catch (err) {
+      console.warn('Failed to persist onboarding state:', err);
+    }
+  }, []);
+
+  const handleOnboardingNext = useCallback(() => {
+    if (!isOnboardingActive) {
+      return;
+    }
+    if (onboardingStep >= onboardingSteps.length - 1) {
+      finalizeOnboarding();
+      return;
+    }
+    setOnboardingStep((prev) => prev + 1);
+  }, [isOnboardingActive, onboardingStep, finalizeOnboarding, onboardingSteps.length]);
+
+  const handleOnboardingBack = useCallback(() => {
+    if (!isOnboardingActive) {
+      return;
+    }
+    setOnboardingStep((prev) => Math.max(prev - 1, 0));
+  }, [isOnboardingActive]);
+
+  const handleOnboardingSkip = useCallback(() => {
+    finalizeOnboarding();
+  }, [finalizeOnboarding]);
+
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -64,23 +179,32 @@ const RecipeView = () => {
     setRecipeMinimized(!recipeMinimized);
   };
 
-  if (isMobile) {
-    return (
-      <div className="min-h-screen w-full max-w-full flex flex-col bg-[#F5F5F5]">
-        <div className="w-full">
-          <Recipe recipeId={parsedRecipeId} />
-        </div>
-        <div className="w-full flex-1">
-          <CookingInstructions recipeId={parsedRecipeId} />
-        </div>
-      </div>
-    );
-  }
+  const activeOnboardingStep = isOnboardingActive
+    ? onboardingSteps[Math.min(onboardingStep, Math.max(onboardingSteps.length - 1, 0))] ?? null
+    : null;
 
-  return (
+  const instructionsProps = {
+    recipeId: parsedRecipeId,
+    voiceAssistant,
+    onRegisterSessionControls: setSessionControlsNode,
+    onRegisterStepsArea: setStepsContainerNode,
+    onRegisterAiButton: setAiButtonNode,
+  };
+
+  const layout = isMobile ? (
+    <div className="min-h-screen w-full max-w-full flex flex-col bg-[#F5F5F5]">
+      <div ref={recipePanelRef} className="w-full">
+        <Recipe recipeId={parsedRecipeId} />
+      </div>
+      <div className="w-full flex-1">
+        <CookingInstructions {...instructionsProps} />
+      </div>
+    </div>
+  ) : (
     <div ref={containerRef} className="h-screen w-full max-w-full flex overflow-hidden bg-[#F5F5F5]">
       {/* Recipe Panel */}
       <div
+        ref={recipePanelRef}
         className="relative flex-shrink-0 transition-all duration-300 ease-out min-w-[64px]"
         style={{
           width: recipeMinimized ? '64px' : `${leftWidth}%`,
@@ -125,10 +249,26 @@ const RecipeView = () => {
       {/* Instructions Panel (now permanent) */}
       <div className="relative flex-1 min-w-0">
         <div className="h-full overflow-y-auto">
-          <CookingInstructions recipeId={parsedRecipeId} />
+          <CookingInstructions {...instructionsProps} />
         </div>
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {layout}
+      {isOnboardingActive && activeOnboardingStep && (
+        <InstructionOnboardingTour
+          step={activeOnboardingStep}
+          stepIndex={onboardingStep}
+          totalSteps={onboardingSteps.length}
+          onNext={handleOnboardingNext}
+          onBack={handleOnboardingBack}
+          onSkip={handleOnboardingSkip}
+        />
+      )}
+    </>
   );
 };
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import Lottie from 'lottie-react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { getInstructions } from '../../api/instructionApi';
 import {
   startCookingSession,
@@ -10,7 +10,7 @@ import {
   getStoredCookingSessionId,
   clearStoredCookingSessionId
 } from '../../api/cookingApi';
-import WakeWordDetection from '../../components/WakeWordDetection';
+import SessionStartDialog from '../../components/SessionStartDialog';
 import AnimatedTimer from './Instructions/AnimatedTimer';
 import AnimatingTimerPortal from './Instructions/AnimatingTimerPortal';
 import ChatContainer from './Instructions/ChatContainer';
@@ -68,13 +68,14 @@ const StepCircle = ({ animationFile, circleRadius }) => {
 };
 
 // --- AI Question Button Component ---
-const AIQuestionButton = ({ onClick, isFocused, isEnabled }) => {
+const AIQuestionButton = React.forwardRef(({ onClick, isFocused, isEnabled }, ref) => {
   const [isHovered, setIsHovered] = React.useState(false);
 
   if (!isFocused || !isEnabled) return null;
 
   return (
     <button
+      ref={ref}
       onClick={(e) => {
         e.stopPropagation();
         onClick();
@@ -95,15 +96,15 @@ const AIQuestionButton = ({ onClick, isFocused, isEnabled }) => {
       </span>
     </button>
   );
-};
+});
 
 // --- Build Instruction Content ---
-const buildInstructionContent = (instruction, stepIndex, timerData, handlers, isFocused, canOpenChat, timerState) => {
+const buildInstructionContent = (instruction, stepIndex, timerData, handlers, isFocused, canOpenChat, timerState, aiButtonRef) => {
   const { heading, description, timer } = instruction;
 
   return (
     <div className="p-4 sm:p-5 md:p-6 bg-white rounded-2xl shadow-md relative">
-      <AIQuestionButton onClick={handlers.onOpenChat} isFocused={isFocused} isEnabled={canOpenChat} />
+      <AIQuestionButton ref={aiButtonRef} onClick={handlers.onOpenChat} isFocused={isFocused} isEnabled={canOpenChat} />
       <h3 className="text-lg sm:text-xl md:text-xl font-semibold text-[#2D2D2D] mb-2">{heading}</h3>
       <p className="text-sm sm:text-base text-[#2D2D2D] mb-4">{description}</p>
 
@@ -165,10 +166,17 @@ const StepDiv = React.forwardRef(({ instruction, content, index, circleRef, circ
 
 // --- Main Component ---
 const CookingInstructions = ({
-  instructions: instructionsProp
+  instructions: instructionsProp,
+  recipeId: recipeIdProp,
+  voiceAssistant = null,
+  onRegisterSessionControls,
+  onRegisterStepsArea,
+  onRegisterAiButton,
 }) => {
   const { t } = useTranslation(['pages']);
-  const { recipeId } = useParams();
+  const { recipeId: recipeIdFromParams } = useParams();
+  const navigate = useNavigate();
+  const recipeId = recipeIdProp ?? recipeIdFromParams;
   const [instructions, setInstructions] = React.useState(instructionsProp || null);
   const [loading, setLoading] = React.useState(!instructionsProp);
   const [error, setError] = React.useState(null);
@@ -179,6 +187,8 @@ const CookingInstructions = ({
   const containerRef = React.useRef(null);
   const pollIntervalRef = React.useRef(null);
   const [focusedStep, setFocusedStep] = React.useState(null);
+  const sessionControlsRef = React.useRef(null);
+  const aiButtonRef = React.useRef(null);
 
   // Cooking session state
   const [cookingSessionId, setCookingSessionId] = React.useState(null);
@@ -195,6 +205,103 @@ const CookingInstructions = ({
   const totalSteps = instructions?.length ?? 0;
   const isLastStep = hasActiveStep && totalSteps > 0 ? focusedStep === totalSteps : false;
   const navigationBusy = isNavigating || isFinishingSession;
+  const [isStartDialogOpen, setIsStartDialogOpen] = React.useState(false);
+  const [startDialogMode, setStartDialogMode] = React.useState('new');
+  const [voicePreference, setVoicePreference] = React.useState(null);
+  const [resumeVoicePrompted, setResumeVoicePrompted] = React.useState(false);
+  const [isNewSessionStart, setIsNewSessionStart] = React.useState(false);
+  const sessionSnapshotRef = React.useRef({ sessionActive: false, isLastStep: false, cookingSessionId: null });
+  const voiceAssistantActive = voiceAssistant?.isActive ?? false;
+
+  const resetSessionVisuals = React.useCallback(() => {
+    setOpenChatStep(null);
+    setChatStepPosition(null);
+    setFloatingTimerSteps([]);
+    setExpandedTimerStep(null);
+    setAnimatingTimers([]);
+    setHiddenTimers([]);
+    setTimerStates({});
+    timerRefs.current = {};
+    previousSyncedStep.current = null;
+  }, []);
+
+  const startVoiceAssistant = React.useCallback(() => {
+    voiceAssistant?.startListening?.();
+  }, [voiceAssistant]);
+
+  const stopVoiceAssistant = React.useCallback(() => {
+    voiceAssistant?.stopListening?.();
+  }, [voiceAssistant]);
+
+  React.useEffect(() => {
+    if (!onRegisterSessionControls) {
+      return undefined;
+    }
+    onRegisterSessionControls(sessionControlsRef.current);
+    return () => {
+      onRegisterSessionControls(null);
+    };
+  }, [onRegisterSessionControls, sessionActive, isSessionStarting]);
+
+  React.useEffect(() => {
+    if (!onRegisterStepsArea) {
+      return undefined;
+    }
+    onRegisterStepsArea(containerRef.current);
+    return () => {
+      onRegisterStepsArea(null);
+    };
+  }, [onRegisterStepsArea, instructions]);
+
+  React.useEffect(() => {
+    if (!onRegisterAiButton) {
+      return undefined;
+    }
+    onRegisterAiButton(aiButtonRef.current);
+    return () => {
+      onRegisterAiButton(null);
+    };
+  }, [onRegisterAiButton, focusedStep, sessionActive]);
+
+  React.useEffect(() => {
+    sessionSnapshotRef.current = {
+      sessionActive,
+      isLastStep,
+      cookingSessionId,
+    };
+  }, [sessionActive, isLastStep, cookingSessionId]);
+
+  React.useEffect(() => {
+    const handleBeforeUnload = () => {
+      const snapshot = sessionSnapshotRef.current;
+      if (snapshot.sessionActive && snapshot.isLastStep && snapshot.cookingSessionId) {
+        try {
+          fetch(`/api/cooking/${snapshot.cookingSessionId}/finish`, {
+            method: 'DELETE',
+            credentials: 'include',
+            keepalive: true,
+          }).catch(() => {});
+        } catch (err) {
+          console.warn('Failed to finish session on unload:', err);
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    return () => {
+      const snapshot = sessionSnapshotRef.current;
+      if (snapshot.sessionActive && snapshot.isLastStep && snapshot.cookingSessionId) {
+        finishCookingSession(snapshot.cookingSessionId).catch(() => {});
+      }
+      stopVoiceAssistant();
+    };
+  }, [stopVoiceAssistant]);
 
   // Timer state management
   // Track which step timers are floating and which is expanded
@@ -469,7 +576,7 @@ const CookingInstructions = ({
     navigateToStep(index + 1); // Convert 0-based array index to 1-based step
   }, [sessionActive, navigateToStep, t]);
 
-  const handleStartCooking = React.useCallback(async () => {
+  const handleStartCooking = React.useCallback(async (withVoice) => {
     if (!recipeId || !instructions || instructions.length === 0) {
       return;
     }
@@ -479,15 +586,10 @@ const CookingInstructions = ({
     setSessionError(null);
     setNavigationError(null);
     setSessionFinished(false);
-    setOpenChatStep(null);
-    setChatStepPosition(null);
-    setFloatingTimerSteps([]);
-    setExpandedTimerStep(null);
-    setAnimatingTimers([]);
-    setHiddenTimers([]);
-    setTimerStates({});
-    timerRefs.current = {};
-    previousSyncedStep.current = null;
+    setVoicePreference(null);
+    setResumeVoicePrompted(false);
+    setIsNewSessionStart(true);
+    resetSessionVisuals();
 
     setIsSessionStarting(true);
     try {
@@ -495,13 +597,19 @@ const CookingInstructions = ({
       setCookingSessionId(sessionId);
       console.log('✅ Cooking session started with ID:', sessionId);
       await navigateToStep(1, { sessionIdOverride: sessionId });
+      setVoicePreference(withVoice ? 'with' : 'without');
+      if (withVoice) {
+        startVoiceAssistant();
+      } else {
+        stopVoiceAssistant();
+      }
     } catch (err) {
       console.error('Failed to start cooking session:', err);
       setSessionError(t('instructions.startError', 'Die Kochsession konnte nicht gestartet werden. Bitte versuche es erneut.'));
     } finally {
       setIsSessionStarting(false);
     }
-  }, [recipeId, instructions, navigateToStep, t]);
+  }, [recipeId, instructions, navigateToStep, t, resetSessionVisuals, startVoiceAssistant, stopVoiceAssistant]);
 
   const handlePreviousStep = React.useCallback(() => {
     if (!sessionActive || !hasActiveStep || focusedStep === 1) {
@@ -510,6 +618,75 @@ const CookingInstructions = ({
 
     navigateToStep(focusedStep - 1);
   }, [sessionActive, hasActiveStep, focusedStep, navigateToStep]);
+
+  const finalizeSession = React.useCallback(async ({ silent = false } = {}) => {
+    if (!cookingSessionId) {
+      return false;
+    }
+
+    if (!silent) {
+      setNavigationError(null);
+      setIsFinishingSession(true);
+    }
+
+    try {
+      await finishCookingSession(cookingSessionId);
+      stopVoiceAssistant();
+      resetSessionVisuals();
+      setCookingSessionId(null);
+      setFocusedStep(null);
+      setVoicePreference(null);
+      setResumeVoicePrompted(false);
+      setIsNewSessionStart(false);
+      if (!silent) {
+        setSessionFinished(true);
+        setSessionError(null);
+      }
+      return true;
+    } catch (err) {
+      console.error('Failed to finish cooking session:', err);
+      if (!silent) {
+        setNavigationError(t('instructions.finishError', 'Die Kochsession konnte nicht beendet werden.'));
+      }
+      return false;
+    } finally {
+      if (!silent) {
+        setIsFinishingSession(false);
+      }
+    }
+  }, [cookingSessionId, resetSessionVisuals, stopVoiceAssistant, t]);
+
+  const applyVoicePreference = React.useCallback((withVoice) => {
+    setVoicePreference(withVoice ? 'with' : 'without');
+    if (withVoice) {
+      startVoiceAssistant();
+    } else {
+      stopVoiceAssistant();
+    }
+    setIsStartDialogOpen(false);
+    setStartDialogMode('new');
+  }, [startVoiceAssistant, stopVoiceAssistant]);
+
+  const handleVoicePreferenceSelection = React.useCallback(async (withVoice) => {
+    if (startDialogMode === 'resume') {
+      applyVoicePreference(withVoice);
+      return;
+    }
+
+    setIsStartDialogOpen(false);
+    setStartDialogMode('new');
+    await handleStartCooking(withVoice);
+  }, [startDialogMode, applyVoicePreference, handleStartCooking]);
+
+  const handleReturnToLibrary = React.useCallback(async () => {
+    if (sessionActive && isLastStep) {
+      const completed = await finalizeSession();
+      if (!completed) {
+        return;
+      }
+    }
+    navigate('/app');
+  }, [sessionActive, isLastStep, finalizeSession, navigate]);
 
   const handleNextStep = React.useCallback(async () => {
     if (!sessionActive || !hasActiveStep) {
@@ -522,38 +699,12 @@ const CookingInstructions = ({
     }
 
     if (focusedStep >= totalSteps) {
-      if (!cookingSessionId) {
-        return;
-      }
-
-      setNavigationError(null);
-      setIsFinishingSession(true);
-      try {
-        await finishCookingSession(cookingSessionId);
-        setSessionFinished(true);
-        setSessionError(null);
-        setOpenChatStep(null);
-        setChatStepPosition(null);
-        setCookingSessionId(null);
-        setFocusedStep(null);
-        setFloatingTimerSteps([]);
-        setExpandedTimerStep(null);
-        setAnimatingTimers([]);
-        setHiddenTimers([]);
-        setTimerStates({});
-        timerRefs.current = {};
-        previousSyncedStep.current = null;
-      } catch (err) {
-        console.error('Failed to finish cooking session:', err);
-        setNavigationError(t('instructions.finishError', 'Die Kochsession konnte nicht beendet werden.'));
-      } finally {
-        setIsFinishingSession(false);
-      }
+      await finalizeSession();
       return;
     }
 
     await navigateToStep(focusedStep + 1);
-  }, [sessionActive, hasActiveStep, totalSteps, focusedStep, navigateToStep, cookingSessionId, t]);
+  }, [sessionActive, hasActiveStep, totalSteps, focusedStep, navigateToStep, finalizeSession, t]);
 
   // Attempt to restore an existing session for this recipe
   React.useEffect(() => {
@@ -594,12 +745,16 @@ const CookingInstructions = ({
           instructions.length
         );
 
-        setCookingSessionId(session.id);
-        setSessionFinished(false);
-        setSessionError(null);
-        setNavigationError(null);
-        setOpenChatStep(null);
-        previousSyncedStep.current = clampedStep;
+  resetSessionVisuals();
+  setCookingSessionId(session.id);
+  setSessionFinished(false);
+  setSessionError(null);
+  setNavigationError(null);
+  setVoicePreference(null);
+  setResumeVoicePrompted(false);
+  setIsNewSessionStart(false);
+  stopVoiceAssistant();
+  previousSyncedStep.current = clampedStep;
 
         console.log('🔄 Restored cooking session. Session ID:', session.id, 'Initial state:', clampedStep);
         setFocusedStep(clampedStep);
@@ -621,7 +776,15 @@ const CookingInstructions = ({
     return () => {
       isCancelled = true;
     };
-  }, [recipeId, instructions, sessionActive, sessionRestored, scrollStepIntoView]);
+  }, [recipeId, instructions, sessionActive, sessionRestored, scrollStepIntoView, resetSessionVisuals, stopVoiceAssistant]);
+
+  React.useEffect(() => {
+    if (sessionRestored && sessionActive && !resumeVoicePrompted && !isNewSessionStart) {
+      setStartDialogMode('resume');
+      setIsStartDialogOpen(true);
+      setResumeVoicePrompted(true);
+    }
+  }, [sessionRestored, sessionActive, resumeVoicePrompted, isNewSessionStart]);
 
   // Fetch instructions with polling logic
   React.useEffect(() => {
@@ -774,80 +937,43 @@ const CookingInstructions = ({
         </p>
       </div>
 
-        {/* Session Controls */}
+        {/* Session Start Control */}
         <div className="w-full max-w-4xl mb-6">
           {!sessionActive ? (
-            <div className="bg-white border-2 border-[#A8C9B8] rounded-2xl px-4 py-5 sm:px-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
-              <div className="flex-1 text-sm sm:text-base text-[#2D2D2D]">
-                {t('instructions.startDescription', 'Starte die Kochsession, sobald du bereit bist loszulegen.')}
-              </div>
+            <div className="flex flex-col items-center justify-center py-12 px-6">
               <button
+                ref={sessionControlsRef}
                 type="button"
-                onClick={handleStartCooking}
+                onClick={() => {
+                  setStartDialogMode('new');
+                  setIsStartDialogOpen(true);
+                }}
                 disabled={isSessionStarting || totalSteps === 0}
-                className={`w-full sm:w-auto px-5 py-3 rounded-xl font-semibold text-sm uppercase tracking-wide transition-all duration-200 ${
+                className={`group relative px-12 py-6 rounded-full font-bold text-lg uppercase tracking-wide transition-all duration-300 ${
                   isSessionStarting || totalSteps === 0
                     ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                    : 'bg-[#035035] text-white hover:bg-[#024028] hover:scale-105 active:scale-95'
+                    : 'bg-gradient-to-r from-[#035035] to-[#046847] text-white hover:scale-110 active:scale-95 shadow-2xl hover:shadow-[0_20px_60px_rgba(3,80,53,0.4)] animate-pulse hover:animate-none'
                 }`}
               >
-                {isSessionStarting ? t('instructions.starting', 'Starte...') : t('instructions.startButton', 'Start Cooking')}
+                <span className="relative z-10">
+                  {isSessionStarting ? t('instructions.starting', 'Starte...') : '🚀 Session Starten'}
+                </span>
+                {!isSessionStarting && totalSteps > 0 && (
+                  <span className="absolute inset-0 rounded-full bg-[#A8C9B8] opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
+                )}
               </button>
+              <p className="mt-6 text-sm text-[#2D2D2D]/70 text-center max-w-md">
+                {t('instructions.startVoiceInfo', 'Im nächsten Schritt entscheidest du dich für oder gegen den Voice Assistant.')}
+              </p>
             </div>
-          ) : (
-            <div className="bg-white border-2 border-[#A8C9B8] rounded-2xl px-4 py-5 sm:px-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
-              <div className="text-sm sm:text-base text-[#2D2D2D] font-medium">
-                {t('instructions.currentStep', 'Aktueller Schritt')}: {hasActiveStep ? `${focusedStep}/${totalSteps}` : '—'}
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handlePreviousStep}
-                  disabled={!hasActiveStep || focusedStep === 1 || navigationBusy}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    !hasActiveStep || focusedStep === 1 || navigationBusy
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : 'bg-white border-2 border-[#035035] text-[#035035] hover:bg-[#f1f9f5]'
-                  }`}
-                >
-                  {t('instructions.previous', 'Zurück')}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleNextStep}
-                  disabled={!hasActiveStep || navigationBusy}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    !hasActiveStep || navigationBusy
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : 'bg-[#035035] text-white hover:bg-[#024028] hover:scale-105 active:scale-95'
-                  }`}
-                >
-                  {navigationBusy
-                    ? t('instructions.working', 'Bitte warten...')
-                    : isLastStep
-                      ? t('instructions.finish', 'Finish')
-                      : t('instructions.next', 'Weiter')}
-                </button>
-              </div>
-            </div>
-          )}
-          {(sessionError || navigationError || sessionFinished) && (
+          ) : null}
+          {(sessionError || navigationError) && (
             <div className="mt-3 space-y-2">
               {sessionError && <p className="text-sm text-red-600">{sessionError}</p>}
               {navigationError && <p className="text-sm text-red-600">{navigationError}</p>}
-              {sessionFinished && (
-                <p className="text-sm text-green-700">
-                  {t('instructions.finishedMessage', 'Kochsession abgeschlossen – guten Appetit!')}
-                </p>
-              )}
             </div>
           )}
         </div>
-
-      {/* Wake Word Detection Module */}
-      <div className="w-full max-w-4xl mb-6">
-        <WakeWordDetection />
-      </div>
 
       {/* Main Content Area */}
       <div
@@ -905,6 +1031,8 @@ const CookingInstructions = ({
             };
 
             const timerState = timerStates[index];
+            // Only pass aiButtonRef for the first step (index 0)
+            const buttonRef = index === 0 ? aiButtonRef : null;
 
             return (
               <StepDiv
@@ -912,7 +1040,7 @@ const CookingInstructions = ({
                 ref={(el) => (stepRefs.current[index] = el)}
                 circleRef={(el) => (circleRefs.current[index] = el)}
                 instruction={instruction}
-                content={buildInstructionContent(instruction, index, timerData, handlers, focusedStep === index + 1, sessionActive, timerState)}
+                content={buildInstructionContent(instruction, index, timerData, handlers, focusedStep === index + 1, sessionActive, timerState, buttonRef)}
                 index={index}
                 circleRadius={circleRadius}
                 isFocused={focusedStep === index + 1}
@@ -924,6 +1052,24 @@ const CookingInstructions = ({
           })}
         </div>
       </div>
+
+      {/* Session Finished Message - Shown at the bottom after all instructions */}
+      {sessionFinished && (
+        <div className="w-full max-w-4xl mt-12 mb-6">
+          <div className="text-center py-8">
+            <p className="text-2xl font-bold text-green-700 mb-6">
+              {t('instructions.finishedMessage', 'Kochsession abgeschlossen – guten Appetit!')}
+            </p>
+            <button
+              type="button"
+              onClick={handleReturnToLibrary}
+              className="px-8 py-4 rounded-full text-base font-semibold uppercase tracking-wide bg-[#FF9B7B] text-white transition hover:bg-[#ff8a61] hover:scale-105 active:scale-95 shadow-lg"
+            >
+              ← {t('instructions.backToLibrary', 'Zurück zur Library')}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Floating Timers Container */}
       {floatingTimerSteps.length > 0 && (
@@ -989,6 +1135,88 @@ const CookingInstructions = ({
           })()}
           initialSize={savedChatConfig.size || { width: 400, height: 500 }}
         />
+      )}
+
+      <SessionStartDialog
+        isOpen={isStartDialogOpen}
+        mode={startDialogMode}
+        isSubmitting={startDialogMode === 'new' ? isSessionStarting : false}
+        onClose={() => {
+          setIsStartDialogOpen(false);
+          setStartDialogMode('new');
+        }}
+        onSelect={handleVoicePreferenceSelection}
+      />
+
+      {/* Fixed Navigation Controls - Bottom Right - Only show when session is active */}
+      {sessionActive && (
+        <div ref={sessionControlsRef} className="fixed bottom-6 right-6 z-40 flex items-center gap-3">
+          {/* Previous Step Button */}
+          <button
+            type="button"
+            onClick={handlePreviousStep}
+            disabled={!hasActiveStep || focusedStep === 1 || navigationBusy}
+            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${
+              !hasActiveStep || focusedStep === 1 || navigationBusy
+                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                : 'bg-white border-2 border-[#035035] text-[#035035] hover:bg-[#f1f9f5] hover:scale-110'
+            } shadow-lg`}
+            title={t('instructions.previous', 'Zurück')}
+          >
+            <span className="text-lg">◀</span>
+          </button>
+
+          {/* Next Step Button */}
+          <button
+            type="button"
+            onClick={handleNextStep}
+            disabled={!hasActiveStep || navigationBusy}
+            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${
+              !hasActiveStep || navigationBusy
+                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                : 'bg-[#035035] text-white hover:bg-[#024028] hover:scale-110'
+            } shadow-lg`}
+            title={isLastStep ? t('instructions.finish', 'Fertig') : t('instructions.next', 'Weiter')}
+          >
+            <span className="text-lg">{isLastStep ? '✓' : '▶'}</span>
+          </button>
+
+          {/* Step Status */}
+          <div className="bg-white border-2 border-[#A8C9B8] rounded-full px-4 py-2 shadow-lg">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#035035]">
+                Schritt
+              </span>
+              <span className="text-sm font-bold text-[#035035]">
+                {hasActiveStep ? `${focusedStep}/${totalSteps}` : '—'}
+              </span>
+            </div>
+          </div>
+
+          {/* Voice Assistant Status */}
+          <button
+            type="button"
+            onClick={() => {
+              setStartDialogMode('resume');
+              setIsStartDialogOpen(true);
+            }}
+            className="relative transition-all duration-200 hover:scale-110"
+            title={voiceAssistantActive ? 'Voice Assistant aktiv' : 'Voice Assistant inaktiv'}
+          >
+            <div className="relative">
+              <div className={`w-10 h-10 rounded-full border-4 ${
+                voiceAssistantActive
+                  ? 'bg-green-500 border-green-300 shadow-lg shadow-green-500/50'
+                  : 'bg-orange-500 border-orange-300 shadow-lg shadow-orange-500/50'
+              } flex items-center justify-center transition-all duration-300`}>
+                <span className="text-lg">🎤</span>
+              </div>
+              {voiceAssistantActive && (
+                <div className="absolute inset-0 rounded-full bg-green-400 animate-ping opacity-75" />
+              )}
+            </div>
+          </button>
+        </div>
       )}
     </div>
   );

@@ -1,11 +1,10 @@
 import React from 'react';
-import useWakeWordDetection from '../hooks/useWakeWordDetection';
 
-/**
- * Visual component for Wake Word Detection
- * Shows listening status, controls, and detection feedback
- */
-const WakeWordDetection = () => {
+const WakeWordDetection = ({ assistant }) => {
+  if (!assistant) {
+    return null;
+  }
+
   const {
     isListening,
     isActive,
@@ -13,8 +12,9 @@ const WakeWordDetection = () => {
     lastDetectedTime,
     error,
     browserSupported,
-    toggleListening,
-  } = useWakeWordDetection();
+    startListening,
+    stopListening,
+  } = assistant;
 
   // Don't render if browser doesn't support speech recognition
   if (!browserSupported) {
@@ -33,8 +33,16 @@ const WakeWordDetection = () => {
     );
   }
 
+  const handlePrimaryAction = () => {
+    if (isActive) {
+      stopListening?.();
+    } else {
+      startListening?.();
+    }
+  };
+
   return (
-    <div className="bg-white border-2 border-[#A8C9B8] rounded-xl p-4 sm:p-5 mb-6 shadow-sm">
+    <div className="bg-white border-2 border-[#A8C9B8] rounded-2xl p-4 sm:p-5 mb-6 shadow-sm">
       {/* Header with Status */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
@@ -69,7 +77,7 @@ const WakeWordDetection = () => {
       {/* Control Button */}
       <div className="mb-4">
         <button
-          onClick={toggleListening}
+          onClick={handlePrimaryAction}
           className={`
             w-full sm:w-auto px-6 py-3 rounded-lg font-medium text-sm uppercase tracking-wide
             transition-all duration-200 hover:scale-105 active:scale-95
