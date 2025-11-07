@@ -135,7 +135,7 @@ export default function RecipeGenerationModal({ isOpen, onClose }) {
     }
   }, []);
 
-  const handleGenerateRecipes = async ({ ingredientsOverride, imageKeyOverride } = {}) => {
+  const handleGenerateRecipes = async ({ ingredientsOverride, imageKeyOverride, sessionIdOverride } = {}) => {
     if (loading) return;
 
     const nextIngredients = typeof ingredientsOverride === 'string' ? ingredientsOverride : ingredients;
@@ -160,11 +160,12 @@ export default function RecipeGenerationModal({ isOpen, onClose }) {
 
     try {
       setLoading(true);
+      const sessionIdForRequest = typeof sessionIdOverride === 'number' ? sessionIdOverride : preparingSessionId;
       const sessionId = await generateRecipes(
         prompt,
         sanitizedIngredients,
         sanitizedImageKey,
-        preparingSessionId
+        sessionIdForRequest
       );
       setPreparingSessionId(sessionId);
       storeSessionId(sessionId);
@@ -242,8 +243,10 @@ export default function RecipeGenerationModal({ isOpen, onClose }) {
     handleGenerateRecipes();
   };
 
-  const handleRegenerateRecipes = async () => {
-    await handleGenerateRecipes();
+  const handleRegenerateRecipes = async (sessionIdOverride) => {
+    await handleGenerateRecipes({
+      sessionIdOverride: typeof sessionIdOverride === 'number' ? sessionIdOverride : preparingSessionId,
+    });
   };
 
   const handleCloseAttempt = () => {
