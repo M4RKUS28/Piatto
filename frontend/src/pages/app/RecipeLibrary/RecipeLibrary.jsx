@@ -177,7 +177,7 @@ export default function RecipeLibrary() {
                 {/* Welcome Header */}
                 <div className="text-center space-y-1">
                   <h1 className="text-3xl sm:text-4xl lg:text-4xl font-bold text-[#035035]">
-                    Welcome, Chef👋
+                    Welcome Back, Chef👋
                   </h1>
                   <p className="text-lg sm:text-xl text-[#2D2D2D] opacity-70">
                     {t("library.welcomeSubtitle", "Let's cook something delicious today")}

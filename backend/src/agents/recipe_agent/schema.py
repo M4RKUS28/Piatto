@@ -32,6 +32,9 @@ class Recipe(BaseModel):
         Field(description="Critical preparation notes, e.g. long waiting times, special required tools, or cautions expressed as a short paragraph."))
     cooking_overview: str = (
         Field(description="Brief high-level summary of the cooking flow in 3-4 steps."))
+    suggested_collection: str = (
+        Field(description="Which collection the recipe fits into. The string must exactly match the name of the collection as specified in the users prompt.")
+    )
 
 class Recipes(BaseModel):
     recipes: List[Recipe] = (
