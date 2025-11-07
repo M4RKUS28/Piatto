@@ -395,7 +395,7 @@ const CookingInstructions = ({
   // Handle opening chat for a step
   const handleOpenChat = React.useCallback((stepIndex) => {
     if (!sessionActive) {
-  setSessionError(t('instructions.startPrompt', 'Please start the cooking session first.'));
+  setSessionError(t('startPrompt', 'Please start the cooking session first.'));
       return;
     }
     setSessionError(null);
@@ -603,7 +603,7 @@ const CookingInstructions = ({
         previousSyncedStep.current = step;
       } catch (err) {
         console.error('Failed to update cooking state:', err);
-  setNavigationError(t('instructions.syncError', 'Failed to update the cooking state. Please try again.'));
+  setNavigationError(t('syncError', 'Failed to update the cooking state. Please try again.'));
       } finally {
         setIsNavigating(false);
       }
@@ -707,7 +707,7 @@ const CookingInstructions = ({
       }
     } catch (err) {
       console.error('Failed to start cooking session:', err);
-  setSessionError(t('instructions.startError', 'Failed to start the cooking session. Please try again.'));
+  setSessionError(t('startError', 'Failed to start the cooking session. Please try again.'));
     } finally {
       setIsSessionStarting(false);
     }

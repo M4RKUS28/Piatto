@@ -4,6 +4,8 @@ As the queries are very text heavy, I do not want to build them up in the agent 
 """
 from typing import Optional, List
 
+
+from typing import List, Optional
 from google.genai import types
 
 from ..db.models.db_recipe import Recipe
@@ -13,7 +15,8 @@ import json
 
 logger = logging.getLogger(__name__)
 
-def get_recipe_gen_query(prompt: str, written_ingredients: str, previous_recipes: Optional[List[Recipe]] = None) -> types.Content:
+
+def get_recipe_gen_query(prompt: str, written_ingredients: str, collections: List[dict], previous_recipes: Optional[List[Recipe]] = None) -> types.Content:
     """ builds the query for the recipe generation agent """
     previous_recipes_section = ""
     if previous_recipes:
@@ -30,6 +33,9 @@ def get_recipe_gen_query(prompt: str, written_ingredients: str, previous_recipes
         User: {prompt}
         System: Any ingredients you want to use?
         User: {written_ingredients}
+        
+        Collections you can sort the recipe into:
+        {json.dumps(collections, indent=2)}
 {previous_recipes_section}
     """
 
