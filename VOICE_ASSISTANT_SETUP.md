@@ -135,18 +135,28 @@ npm run dev
 #### Backend (`voice_assistant.py`)
 
 ```python
-# Adjust VAD sensitivity (optional)
+# Configure voice and speech settings
 config = types.LiveConnectConfig(
     response_modalities=["AUDIO"],
     system_instruction=context,
-    # Optional: Configure VAD
-    # speech_config={
-    #     "voice_config": {
-    #         "prebuilt_voice_config": {
-    #             "voice_name": "Aoede"  # Choose voice
-    #         }
-    #     }
-    # }
+    # Speech configuration for natural voice
+    speech_config=types.SpeechConfig(
+        voice_config=types.VoiceConfig(
+            prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                voice_name="Orus"  # Friendly, warm voice for cooking
+                # Other options: "Puck", "Charon", "Kore", "Fenrir", "Orus"
+            )
+        )
+    ),
+)
+```
+
+**Important**: The backend uses the v1beta API version for enhanced features:
+
+```python
+client = genai.Client(
+    http_options={"api_version": "v1beta"},
+    api_key=GEMINI_API_KEY
 )
 ```
 
@@ -164,6 +174,41 @@ const processor = audioContext.createScriptProcessor(
   1      // Output channels
 );
 ```
+
+## Implementation Details
+
+### Google Live API v1beta Integration
+
+The implementation follows Google's official best practices for the Gemini Live API:
+
+**Key Features:**
+
+1. **v1beta API Version**: Uses the latest API features with enhanced response handling
+2. **Audio Buffering**: Separate queue for smooth audio playback without stuttering
+3. **Interruption Support**: Automatically clears queued audio when user interrupts
+4. **Turn-Based Processing**: Supports multiple "Hey Piatto" interactions per session
+5. **Voice Selection**: Uses "Orus" voice for warm, friendly cooking assistance
+
+**Response Structure:**
+
+```python
+# v1beta uses simpler response attributes:
+async for response in turn:
+    if data := response.data:        # Audio chunks
+        queue.put_nowait(data)
+    if text := response.text:        # Text responses (debugging)
+        print(text)
+    if tool_call := response.tool_call:  # Future tool support
+        handle_tool_call(tool_call)
+```
+
+**Audio Pipeline:**
+
+1. Frontend sends PCM audio → WebSocket → Backend
+2. Backend streams to Gemini Live API
+3. Gemini processes with automatic VAD
+4. Audio response → Queue → WebSocket → Frontend
+5. Frontend plays audio with Web Audio API
 
 ## Technical Details
 

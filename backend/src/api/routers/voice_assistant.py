@@ -17,8 +17,11 @@ from ...config.settings import GEMINI_API_KEY
 from google import genai
 from google.genai import types
 
-# Configure Gemini client
-client = genai.Client(api_key=GEMINI_API_KEY)
+# Configure Gemini client with v1beta API
+client = genai.Client(
+    http_options={"api_version": "v1beta"},
+    api_key=GEMINI_API_KEY
+)
 
 router = APIRouter(
     prefix="/ws",
@@ -42,6 +45,7 @@ class VoiceAssistantSession:
         self.db = db
         self.live_session = None
         self.is_active = False
+        self.audio_in_queue = asyncio.Queue()  # Buffer for audio responses
 
     async def get_cooking_context(self) -> str:
         """
@@ -124,10 +128,18 @@ class VoiceAssistantSession:
             # Get cooking context
             context = await self.get_cooking_context()
 
-            # Configure Live API session
+            # Configure Live API session with Google's best practices
             config = types.LiveConnectConfig(
                 response_modalities=["AUDIO"],  # Native audio output
                 system_instruction=context,
+                # Speech configuration for natural voice
+                speech_config=types.SpeechConfig(
+                    voice_config=types.VoiceConfig(
+                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                            voice_name="Orus"  # Friendly, warm voice for cooking assistant
+                        )
+                    )
+                ),
             )
 
             # Connect to Live API
@@ -143,11 +155,14 @@ class VoiceAssistantSession:
 
             print(f"[Voice Assistant] ✓ Live API session established for cooking session {self.session_id}")
 
-            # Start receiving responses
+            # Start background tasks for receiving and playing audio
             asyncio.create_task(self._receive_responses())
+            asyncio.create_task(self._play_audio())
 
         except Exception as e:
             print(f"[Voice Assistant] Error starting Live API session: {e}")
+            import traceback
+            traceback.print_exc()
             await self.websocket.send_json({
                 "type": "error",
                 "message": f"Failed to start voice assistant: {str(e)}"
@@ -157,42 +172,45 @@ class VoiceAssistantSession:
     async def _receive_responses(self):
         """
         Receive and forward audio responses from Gemini Live API
-        Runs in background task
+        Runs in background task - uses v1beta API response structure
+        Continuously processes turns until session is closed
         """
         try:
-            async for response in self.live_session.receive():
-                # Check for server content (audio response)
-                if response.server_content:
-                    # Model has started responding
-                    if not response.server_content.turn_complete:
-                        # Send processing status
-                        try:
-                            await self.websocket.send_json({
-                                "type": "processing",
-                                "message": "Generating response..."
-                            })
-                        except:
-                            pass  # Ignore if websocket closed
+            # Continuously receive turns (supports multiple "Hey Piatto" interactions)
+            while self.is_active:
+                # Get next turn from Gemini
+                turn = self.live_session.receive()
 
-                    # Extract audio parts
-                    for part in response.server_content.model_turn.parts:
-                        if part.inline_data and part.inline_data.mime_type.startswith("audio/"):
-                            # Send audio data to frontend
-                            try:
-                                await self.websocket.send_bytes(part.inline_data.data)
-                            except:
-                                break  # Stop if websocket closed
+                async for response in turn:
+                    # Check for audio data
+                    if data := response.data:
+                        # Queue audio data for buffered playback
+                        self.audio_in_queue.put_nowait(data)
+                        continue
 
-                    # Turn complete - audio finished
-                    if response.server_content.turn_complete:
-                        print(f"[Voice Assistant] Response complete for session {self.session_id}")
+                    # Check for text response (for debugging)
+                    if text := response.text:
+                        print(f"[Voice Assistant] AI text response: {text}")
+                        continue
 
-                # Check for tool calls (not used currently, but available)
-                elif response.tool_call:
-                    print(f"[Voice Assistant] Tool call received: {response.tool_call}")
+                    # Check for tool calls (not used currently, but available)
+                    if tool_call := response.tool_call:
+                        print(f"[Voice Assistant] Tool call received: {tool_call}")
+                        continue
 
+                # Turn complete - if interrupted, clear audio queue
+                # This prevents old audio from playing after interruption
+                while not self.audio_in_queue.empty():
+                    self.audio_in_queue.get_nowait()
+
+                print(f"[Voice Assistant] Turn complete for session {self.session_id}")
+
+        except asyncio.CancelledError:
+            print(f"[Voice Assistant] Receive task cancelled for session {self.session_id}")
         except Exception as e:
             print(f"[Voice Assistant] Error receiving responses: {e}")
+            import traceback
+            traceback.print_exc()
             if self.is_active:
                 try:
                     await self.websocket.send_json({
@@ -201,6 +219,28 @@ class VoiceAssistantSession:
                     })
                 except:
                     pass
+
+    async def _play_audio(self):
+        """
+        Background task to stream audio from queue to WebSocket
+        Buffers audio responses and sends them to the frontend
+        """
+        try:
+            while self.is_active:
+                # Wait for audio data from Gemini
+                audio_data = await self.audio_in_queue.get()
+
+                # Send to frontend
+                try:
+                    await self.websocket.send_bytes(audio_data)
+                except Exception as e:
+                    print(f"[Voice Assistant] Error sending audio to client: {e}")
+                    break
+
+        except asyncio.CancelledError:
+            print(f"[Voice Assistant] Audio playback task cancelled")
+        except Exception as e:
+            print(f"[Voice Assistant] Error in audio playback: {e}")
 
     async def send_audio_chunk(self, audio_data: bytes):
         """
