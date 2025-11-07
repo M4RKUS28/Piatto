@@ -498,7 +498,7 @@ export default function RecipeOptionsStep({
 					</button>
 					<button
 						type="button"
-						onClick={onRegenerate}
+						onClick={() => onRegenerate(preparingSessionId)}
 						disabled={loading || sessionCompleting}
 						className="w-full sm:w-auto bg-white text-[#035035] border-2 border-[#035035] px-6 py-3 rounded-full font-semibold text-base text-center
 							hover:bg-[#035035] hover:text-white transition-all duration-200
