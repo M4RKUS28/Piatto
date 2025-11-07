@@ -5,6 +5,45 @@
   "generatingDescription": "Our AI chef is preparing detailed cooking instructions for your recipe. This usually takes just a few moments.",
   "errorTitle": "Oops! Something went wrong",
   "errorLoading": "Failed to load instructions. Please try again.",
+  "startPrompt": "Please start the cooking session first.",
+  "syncError": "Failed to update the cooking state. Please try again.",
+  "startError": "Failed to start the cooking session. Please try again.",
+  "finishError": "Failed to finish the cooking session.",
+  "starting": "Starting...",
+  "startSessionButton": "🚀 Start Session",
+  "startVoiceInfo": "In the next step you decide whether to use the voice assistant.",
+  "finishedMessage": "Cooking session complete - enjoy your meal!",
+  "backToLibrary": "Back to Library",
+  "previous": "Back",
+  "next": "Next",
+  "finish": "Finish",
+  "stepLabel": "Step",
+  "aiButtonLabel": "Ask AI",
+  "aiButtonAria": "Ask the AI for help",
+  "voiceAssistant": {
+    "activeTitle": "Voice assistant active",
+    "inactiveTitle": "Voice assistant inactive"
+  },
+  "sessionDialog": {
+    "badge": "Piatto Companion",
+    "titleNew": "Start cooking session",
+    "titleResume": "Resume cooking session",
+    "subtitleNew": "How would you like to be guided?",
+    "subtitleResume": "Do you want to keep using the voice assistant?",
+    "closeLabel": "Close dialog",
+    "withVoice": {
+      "label": "With voice assistant",
+      "description": "Enable voice control so you can keep cooking hands-free.",
+      "pill": "Recommended for hands-free cooking"
+    },
+    "withoutVoice": {
+      "label": "Without voice assistant",
+      "description": "Control the steps manually—perfect when you prefer it quiet.",
+      "pill": "You can change this anytime"
+    },
+    "info": "You can toggle the voice assistant at any time.",
+    "maybeLater": "Maybe later"
+  },
   "timer": {
     "running": "Running",
     "paused": "Paused",

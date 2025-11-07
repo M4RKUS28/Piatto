@@ -1,3 +1,20 @@
 {
-  "recipeLabel": "REZEPT"
+  "recipeLabel": "REZEPT",
+  "aria": {
+    "expandRecipePanel": "Rezeptbereich öffnen"
+  },
+  "onboarding": {
+    "ingredientsTitle": "Linke Seite: Zutaten & Details",
+    "ingredientsDescription": "Hier findest du alle Zutaten, Nährwerte und Rezeptinformationen. Scrolle, um alles im Blick zu behalten.",
+    "stepsTitle": "Schritt-für-Schritt Anleitung",
+    "stepsDescription": "Folge dem Pfad durch die Kochschritte. Jeder Schritt zeigt dir genau, was zu tun ist.",
+    "aiButtonTitle": "AI Fragen",
+    "aiButtonDescription": "Bitte die KI in jedem Schritt um Hilfe. Klicke auf den ✨ AI Fragen Button, um Unterstützung zum aktuellen Schritt zu erhalten.",
+    "sessionControlsTitle": "Session-Steuerung",
+    "sessionControlsDescription": "Navigiere durch die Schritte, behalte deinen Fortschritt im Blick und steuere hier den Voice Assistant.",
+    "stepCounter": "Schritt {{current}} von {{total}}",
+    "back": "Zurück",
+    "skip": "Tour überspringen",
+    "next": "Weiter"
+  }
 }

@@ -5,6 +5,45 @@
   "generatingDescription": "Unser KI-Koch bereitet detaillierte Kochanleitungen für dein Rezept vor. Dies dauert normalerweise nur wenige Augenblicke.",
   "errorTitle": "Hoppla! Etwas ist schief gelaufen",
   "errorLoading": "Fehler beim Laden der Anleitungen. Bitte versuche es erneut.",
+  "startPrompt": "Bitte starte zuerst die Kochsession.",
+  "syncError": "Kochstatus konnte nicht aktualisiert werden. Bitte versuche es erneut.",
+  "startError": "Die Kochsession konnte nicht gestartet werden. Bitte versuche es erneut.",
+  "finishError": "Die Kochsession konnte nicht beendet werden.",
+  "starting": "Starte...",
+  "startSessionButton": "🚀 Session starten",
+  "startVoiceInfo": "Im nächsten Schritt entscheidest du dich für oder gegen den Voice Assistant.",
+  "finishedMessage": "Kochsession abgeschlossen - guten Appetit!",
+  "backToLibrary": "Zurück zur Library",
+  "previous": "Zurück",
+  "next": "Weiter",
+  "finish": "Fertig",
+  "stepLabel": "Schritt",
+  "aiButtonLabel": "AI Fragen",
+  "aiButtonAria": "Bitte die KI um Hilfe",
+  "voiceAssistant": {
+    "activeTitle": "Voice Assistant aktiv",
+    "inactiveTitle": "Voice Assistant inaktiv"
+  },
+  "sessionDialog": {
+    "badge": "Piatto Companion",
+    "titleNew": "Kochsession starten",
+    "titleResume": "Kochsession fortsetzen",
+    "subtitleNew": "Wie möchtest du dich begleiten lassen?",
+    "subtitleResume": "Möchtest du den Voice Assistant weiter nutzen?",
+    "closeLabel": "Dialog schließen",
+    "withVoice": {
+      "label": "Mit Voice Assistant",
+      "description": "Aktiviere die Sprachsteuerung, damit du freihändig weiterkochen kannst.",
+      "pill": "Empfohlen für freihändiges Kochen"
+    },
+    "withoutVoice": {
+      "label": "Ohne Voice Assistant",
+      "description": "Steuere die Schritte manuell – perfekt, wenn es leiser sein soll.",
+      "pill": "Jederzeit änderbar"
+    },
+    "info": "Du kannst den Voice Assistant jederzeit an- oder ausschalten.",
+    "maybeLater": "Vielleicht später"
+  },
   "timer": {
     "running": "Läuft",
     "paused": "Pausiert",

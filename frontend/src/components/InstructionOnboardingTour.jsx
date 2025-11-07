@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import { PiArrowLeftBold, PiArrowRightBold, PiLightningBold } from 'react-icons/pi';
 
 const OVERLAY_PADDING = 16;
@@ -14,6 +15,7 @@ const InstructionOnboardingTour = ({
 }) => {
   const [rect, setRect] = useState(null);
   const [extraHighlightRect, setExtraHighlightRect] = useState(null);
+  const { t } = useTranslation('recipeView');
 
   useEffect(() => {
     if (!step?.target) {
@@ -147,7 +149,7 @@ const InstructionOnboardingTour = ({
           <div className="flex items-center gap-3 text-[#035035]">
             <PiLightningBold className="text-2xl" />
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#A8C9B8]">
-              Schritt {stepIndex + 1} von {totalSteps}
+              {t('onboarding.stepCounter', 'Step {{current}} of {{total}}', { current: stepIndex + 1, total: totalSteps })}
             </p>
           </div>
           <h3 className="mt-3 font-['Poppins',_sans-serif] text-xl font-bold text-[#035035] sm:text-2xl">
@@ -166,14 +168,14 @@ const InstructionOnboardingTour = ({
                 className="flex items-center gap-2 rounded-full border-2 border-transparent px-4 py-2 text-xs font-semibold uppercase tracking-wide text-[#035035]/70 transition hover:border-[#A8C9B8] hover:text-[#035035] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <PiArrowLeftBold className="text-base" />
-                Zurück
+                {t('onboarding.back', 'Back')}
               </button>
               <button
                 type="button"
                 onClick={onSkip}
                 className="rounded-full border-2 border-[#FF9B7B] px-4 py-2 text-xs font-semibold uppercase tracking-wide text-[#FF9B7B] transition hover:bg-[#FF9B7B] hover:text-white"
               >
-                Tour überspringen
+                {t('onboarding.skip', 'Skip tour')}
               </button>
             </div>
             <button
@@ -181,7 +183,7 @@ const InstructionOnboardingTour = ({
               onClick={onNext}
               className="flex items-center gap-2 rounded-full bg-[#035035] px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:scale-105 hover:bg-[#024028] active:scale-95"
             >
-              Weiter
+              {t('onboarding.next', 'Next')}
               <PiArrowRightBold className="text-lg" />
             </button>
           </div>

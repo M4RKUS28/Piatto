@@ -70,6 +70,7 @@ const StepCircle = ({ animationFile, circleRadius }) => {
 // --- AI Question Button Component ---
 const AIQuestionButton = React.forwardRef(({ onClick, isFocused, isEnabled }, ref) => {
   const [isHovered, setIsHovered] = React.useState(false);
+  const { t } = useTranslation('instructions');
 
   if (!isFocused || !isEnabled) return null;
 
@@ -83,6 +84,8 @@ const AIQuestionButton = React.forwardRef(({ onClick, isFocused, isEnabled }, re
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className="absolute top-4 right-4 flex items-center gap-2 border border-gray-100 hover:border-gray-300 bg-white/50 hover:bg-white/90 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer z-10 px-2 py-2"
+      aria-label={t('aiButtonAria', 'Ask the AI for help')}
+      title={t('aiButtonAria', 'Ask the AI for help')}
     >
       <span className="text-xl flex-shrink-0">✨</span>
       <span
@@ -92,7 +95,7 @@ const AIQuestionButton = React.forwardRef(({ onClick, isFocused, isEnabled }, re
           opacity: isHovered ? 1 : 0
         }}
       >
-        AI Fragen
+        {t('aiButtonLabel', 'Ask AI')}
       </span>
     </button>
   );
@@ -173,7 +176,7 @@ const CookingInstructions = ({
   onRegisterStepsArea,
   onRegisterAiButton,
 }) => {
-  const { t } = useTranslation(['pages']);
+  const { t } = useTranslation(['instructions', 'pages']);
   const { recipeId: recipeIdFromParams } = useParams();
   const navigate = useNavigate();
   const recipeId = recipeIdProp ?? recipeIdFromParams;
@@ -207,7 +210,7 @@ const CookingInstructions = ({
   const navigationBusy = isNavigating || isFinishingSession;
   const [isStartDialogOpen, setIsStartDialogOpen] = React.useState(false);
   const [startDialogMode, setStartDialogMode] = React.useState('new');
-  const [voicePreference, setVoicePreference] = React.useState(null);
+  const [, setVoicePreference] = React.useState(null);
   const [resumeVoicePrompted, setResumeVoicePrompted] = React.useState(false);
   const [isNewSessionStart, setIsNewSessionStart] = React.useState(false);
   const sessionSnapshotRef = React.useRef({ sessionActive: false, isLastStep: false, cookingSessionId: null });
@@ -360,7 +363,7 @@ const CookingInstructions = ({
   // Handle opening chat for a step
   const handleOpenChat = React.useCallback((stepIndex) => {
     if (!sessionActive) {
-      setSessionError(t('instructions.startPrompt', 'Bitte starte zuerst die Kochsession.'));
+  setSessionError(t('instructions.startPrompt', 'Please start the cooking session first.'));
       return;
     }
     setSessionError(null);
@@ -560,7 +563,7 @@ const CookingInstructions = ({
         console.log('✅ State updated successfully. Current state:', step);
       } catch (err) {
         console.error('Failed to update cooking state:', err);
-        setNavigationError(t('instructions.syncError', 'Kochstatus konnte nicht aktualisiert werden. Bitte versuche es erneut.'));
+  setNavigationError(t('instructions.syncError', 'Failed to update the cooking state. Please try again.'));
       } finally {
         setIsNavigating(false);
       }
@@ -569,7 +572,7 @@ const CookingInstructions = ({
 
   const handleStepClick = React.useCallback((index) => {
     if (!sessionActive) {
-      setSessionError(t('instructions.startPrompt', 'Bitte starte zuerst die Kochsession.'));
+  setSessionError(t('instructions.startPrompt', 'Please start the cooking session first.'));
       return;
     }
 
@@ -605,7 +608,7 @@ const CookingInstructions = ({
       }
     } catch (err) {
       console.error('Failed to start cooking session:', err);
-      setSessionError(t('instructions.startError', 'Die Kochsession konnte nicht gestartet werden. Bitte versuche es erneut.'));
+  setSessionError(t('instructions.startError', 'Failed to start the cooking session. Please try again.'));
     } finally {
       setIsSessionStarting(false);
     }
@@ -646,7 +649,7 @@ const CookingInstructions = ({
     } catch (err) {
       console.error('Failed to finish cooking session:', err);
       if (!silent) {
-        setNavigationError(t('instructions.finishError', 'Die Kochsession konnte nicht beendet werden.'));
+  setNavigationError(t('instructions.finishError', 'Failed to finish the cooking session.'));
       }
       return false;
     } finally {
@@ -690,7 +693,7 @@ const CookingInstructions = ({
 
   const handleNextStep = React.useCallback(async () => {
     if (!sessionActive || !hasActiveStep) {
-      setSessionError(t('instructions.startPrompt', 'Bitte starte zuerst die Kochsession.'));
+  setSessionError(t('instructions.startPrompt', 'Please start the cooking session first.'));
       return;
     }
 
@@ -956,14 +959,14 @@ const CookingInstructions = ({
                 }`}
               >
                 <span className="relative z-10">
-                  {isSessionStarting ? t('instructions.starting', 'Starte...') : '🚀 Session Starten'}
+                  {isSessionStarting ? t('instructions.starting', 'Starting...') : t('instructions.startSessionButton', '🚀 Start Session')}
                 </span>
                 {!isSessionStarting && totalSteps > 0 && (
                   <span className="absolute inset-0 rounded-full bg-[#A8C9B8] opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
                 )}
               </button>
               <p className="mt-6 text-sm text-[#2D2D2D]/70 text-center max-w-md">
-                {t('instructions.startVoiceInfo', 'Im nächsten Schritt entscheidest du dich für oder gegen den Voice Assistant.')}
+                {t('instructions.startVoiceInfo', 'In the next step you decide whether to use the voice assistant.')}
               </p>
             </div>
           ) : null}
@@ -1058,14 +1061,14 @@ const CookingInstructions = ({
         <div className="w-full max-w-4xl mt-12 mb-6">
           <div className="text-center py-8">
             <p className="text-2xl font-bold text-green-700 mb-6">
-              {t('instructions.finishedMessage', 'Kochsession abgeschlossen – guten Appetit!')}
+              {t('instructions.finishedMessage', 'Cooking session complete – enjoy your meal!')}
             </p>
             <button
               type="button"
               onClick={handleReturnToLibrary}
               className="px-8 py-4 rounded-full text-base font-semibold uppercase tracking-wide bg-[#FF9B7B] text-white transition hover:bg-[#ff8a61] hover:scale-105 active:scale-95 shadow-lg"
             >
-              ← {t('instructions.backToLibrary', 'Zurück zur Library')}
+              ← {t('instructions.backToLibrary', 'Back to Library')}
             </button>
           </div>
         </div>
@@ -1161,7 +1164,7 @@ const CookingInstructions = ({
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 : 'bg-white border-2 border-[#035035] text-[#035035] hover:bg-[#f1f9f5] hover:scale-110'
             } shadow-lg`}
-            title={t('instructions.previous', 'Zurück')}
+            title={t('instructions.previous', 'Back')}
           >
             <span className="text-lg">◀</span>
           </button>
@@ -1176,7 +1179,7 @@ const CookingInstructions = ({
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 : 'bg-[#035035] text-white hover:bg-[#024028] hover:scale-110'
             } shadow-lg`}
-            title={isLastStep ? t('instructions.finish', 'Fertig') : t('instructions.next', 'Weiter')}
+            title={isLastStep ? t('instructions.finish', 'Finish') : t('instructions.next', 'Next')}
           >
             <span className="text-lg">{isLastStep ? '✓' : '▶'}</span>
           </button>
@@ -1185,7 +1188,7 @@ const CookingInstructions = ({
           <div className="bg-white border-2 border-[#A8C9B8] rounded-full px-4 py-2 shadow-lg">
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold uppercase tracking-wide text-[#035035]">
-                Schritt
+                {t('instructions.stepLabel', 'Step')}
               </span>
               <span className="text-sm font-bold text-[#035035]">
                 {hasActiveStep ? `${focusedStep}/${totalSteps}` : '—'}
@@ -1201,7 +1204,9 @@ const CookingInstructions = ({
               setIsStartDialogOpen(true);
             }}
             className="relative transition-all duration-200 hover:scale-110"
-            title={voiceAssistantActive ? 'Voice Assistant aktiv' : 'Voice Assistant inaktiv'}
+            title={voiceAssistantActive
+              ? t('instructions.voiceAssistant.activeTitle', 'Voice assistant active')
+              : t('instructions.voiceAssistant.inactiveTitle', 'Voice assistant inactive')}
           >
             <div className="relative">
               <div className={`w-10 h-10 rounded-full border-4 ${

@@ -84,29 +84,29 @@ const RecipeView = () => {
   const onboardingSteps = useMemo(() => ([
     {
       key: 'ingredients',
-      title: t('onboarding.ingredientsTitle', 'Linke Seite: Zutaten & Details'),
-      description: t('onboarding.ingredientsDescription', 'Hier findest du alle Zutaten, Nährwerte und Infos zum Rezept. Scrolle nach unten, um alles im Blick zu behalten.'),
+      title: t('onboarding.ingredientsTitle', 'Left Panel: Ingredients & Details'),
+      description: t('onboarding.ingredientsDescription', 'Here you can find all ingredients, nutrition facts, and recipe information. Scroll to keep everything within reach.'),
       target: recipePanelNode,
       borderRadius: '0px',
     },
     {
       key: 'steps',
-      title: t('onboarding.stepsTitle', 'Schritt-für-Schritt Anleitung'),
-      description: t('onboarding.stepsDescription', 'Folge dem Pfad durch die einzelnen Koch-Schritte. Jeder Schritt zeigt dir genau, was zu tun ist.'),
+      title: t('onboarding.stepsTitle', 'Step-by-step Guidance'),
+      description: t('onboarding.stepsDescription', 'Follow the path through each cooking step. Every step shows you exactly what to do.'),
       target: stepsContainerNode,
     },
     {
       key: 'ai-button',
-      title: t('onboarding.aiButtonTitle', 'AI Fragen'),
-      description: t('onboarding.aiButtonDescription', 'Zu jedem Schritt kannst du die AI um Hilfe bitten. Klicke auf den ✨ AI Fragen Button, um Fragen zum aktuellen Schritt zu stellen.'),
+      title: t('onboarding.aiButtonTitle', 'AI Questions'),
+      description: t('onboarding.aiButtonDescription', 'Ask the AI for help on any step. Click the ✨ Ask AI button to get support for the current step.'),
       target: aiButtonNode,
       highlightParent: true,
       borderRadius: '16px',
     },
     {
       key: 'session-controls',
-      title: t('onboarding.sessionControlsTitle', 'Session Steuerung'),
-      description: t('onboarding.sessionControlsDescription', 'Navigiere durch die Schritte, sieh deinen Fortschritt und steuere den Voice Assistant – alles von hier aus.'),
+      title: t('onboarding.sessionControlsTitle', 'Session Controls'),
+      description: t('onboarding.sessionControlsDescription', 'Navigate steps, track your progress, and control the voice assistant from here.'),
       target: sessionControlsNode,
       borderRadius: '9999px',
     },
@@ -218,7 +218,7 @@ const RecipeView = () => {
           <div
             className="h-full bg-[#035035] flex flex-col items-center justify-center gap-3 px-2 cursor-pointer hover:bg-[#046847] transition-colors"
             onClick={handleToggleRecipe}
-            aria-label="Expand recipe panel"
+            aria-label={t('aria.expandRecipePanel', 'Expand recipe panel')}
           >
             <span
               className="text-white font-bold text-sm tracking-[0.35em]"

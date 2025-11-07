@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { PiMicrophoneBold, PiSpeakerHighBold } from 'react-icons/pi';
 
 const SessionStartDialog = ({
@@ -8,19 +9,19 @@ const SessionStartDialog = ({
   onClose,
   onSelect,
 }) => {
+  const { t } = useTranslation('instructions');
+
   if (!isOpen) {
     return null;
   }
 
-  const titles = {
-    new: 'Kochsession starten',
-    resume: 'Kochsession fortsetzen',
-  };
+  const title = mode === 'resume'
+    ? t('sessionDialog.titleResume', 'Resume cooking session')
+    : t('sessionDialog.titleNew', 'Start cooking session');
 
-  const subtitles = {
-    new: 'Wie möchtest du deine Session begleiten lassen?',
-    resume: 'Willst du den Voice Assistant weiterhin nutzen?',
-  };
+  const subtitle = mode === 'resume'
+    ? t('sessionDialog.subtitleResume', 'Do you want to keep using the voice assistant?')
+    : t('sessionDialog.subtitleNew', 'How would you like to be guided?');
 
   const handleSelect = (withVoice) => {
     if (isSubmitting) {
@@ -36,18 +37,20 @@ const SessionStartDialog = ({
           type="button"
           onClick={onClose}
           className="absolute right-4 top-4 rounded-full bg-[#F5F5F5] p-2 text-[#2D2D2D] transition hover:scale-105 hover:bg-[#FF9B7B] hover:text-white"
-          aria-label="Dialog schließen"
+          aria-label={t('sessionDialog.closeLabel', 'Close dialog')}
         >
           ×
         </button>
         <div className="space-y-6">
           <div>
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-[#A8C9B8]">Piatto Companion</p>
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-[#A8C9B8]">
+              {t('sessionDialog.badge', 'Piatto Companion')}
+            </p>
             <h2 className="mt-2 font-['Poppins',_sans-serif] text-2xl font-bold text-[#035035] sm:text-3xl">
-              {titles[mode] || titles.new}
+              {title}
             </h2>
             <p className="mt-3 text-sm text-[#2D2D2D]/80 sm:text-base">
-              {subtitles[mode] || subtitles.new}
+              {subtitle}
             </p>
           </div>
 
@@ -60,13 +63,15 @@ const SessionStartDialog = ({
             >
               <span className="flex items-center gap-3 text-[#035035]">
                 <PiMicrophoneBold className="text-2xl" />
-                <span className="text-lg font-semibold">Mit Voice Assistant</span>
+                <span className="text-lg font-semibold">
+                  {t('sessionDialog.withVoice.label', 'With voice assistant')}
+                </span>
               </span>
               <p className="text-sm text-[#2D2D2D]/80">
-                Sprachsteuerung aktivieren, damit du freihändig weiterkochen kannst.
+                {t('sessionDialog.withVoice.description', 'Enable voice control so you can keep cooking hands-free.')}
               </p>
               <span className="mt-auto rounded-full bg-[#035035] px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white">
-                Empfohlen für Hands-Free
+                {t('sessionDialog.withVoice.pill', 'Recommended for hands-free cooking')}
               </span>
             </button>
 
@@ -78,20 +83,22 @@ const SessionStartDialog = ({
             >
               <span className="flex items-center gap-3 text-[#2D2D2D]">
                 <PiSpeakerHighBold className="text-2xl" />
-                <span className="text-lg font-semibold">Ohne Voice Assistant</span>
+                <span className="text-lg font-semibold">
+                  {t('sessionDialog.withoutVoice.label', 'Without voice assistant')}
+                </span>
               </span>
               <p className="text-sm text-[#2D2D2D]/80">
-                Du steuerst die Schritte manuell – perfekt, wenn es leiser sein soll.
+                {t('sessionDialog.withoutVoice.description', 'Control the steps manually—perfect when you prefer it quiet.')}
               </p>
               <span className="mt-auto rounded-full bg-[#FF9B7B]/20 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-[#FF9B7B]">
-                Jederzeit änderbar
+                {t('sessionDialog.withoutVoice.pill', 'You can change this anytime')}
               </span>
             </button>
           </div>
 
           <div className="flex items-center justify-between">
             <p className="text-xs text-[#2D2D2D]/60">
-              Du kannst den Voice Assistant später jederzeit wieder aktivieren oder deaktivieren.
+              {t('sessionDialog.info', 'You can toggle the voice assistant at any time.')}
             </p>
             <button
               type="button"
@@ -99,7 +106,7 @@ const SessionStartDialog = ({
               className="rounded-full border-2 border-transparent px-4 py-2 text-xs font-semibold uppercase tracking-wide text-[#2D2D2D]/70 transition hover:border-[#FF9B7B] hover:text-[#FF9B7B]"
               disabled={isSubmitting}
             >
-              Vielleicht später
+              {t('sessionDialog.maybeLater', 'Maybe later')}
             </button>
           </div>
         </div>
