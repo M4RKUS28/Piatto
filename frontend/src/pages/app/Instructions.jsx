@@ -37,7 +37,7 @@ const getCircleRadius = () => {
 };
 
 // --- StepCircle Component ---
-const StepCircle = ({ animationFile, circleRadius }) => {
+const StepCircle = ({ animationFile, circleRadius, isDimmed = false }) => {
   const [animationData, setAnimationData] = React.useState(null);
 
   React.useEffect(() => {
@@ -49,10 +49,12 @@ const StepCircle = ({ animationFile, circleRadius }) => {
 
   return (
     <div
-      className="relative flex-shrink-0 rounded-full border-[0px] border-[#035035] bg-[#FFF8F0]"
+      className="relative flex-shrink-0 rounded-full border-[0px] border-[#035035] bg-[#FFF8F0] transition-all duration-300"
       style={{
         width: `${circleRadius * 2}px`,
-        height: `${circleRadius * 2}px`
+        height: `${circleRadius * 2}px`,
+        opacity: isDimmed ? 0.4 : 1,
+        filter: isDimmed ? 'grayscale(100%)' : 'none'
       }}
     >
       <div className="absolute inset-2">
@@ -149,19 +151,34 @@ const buildInstructionContent = (instruction, stepIndex, timerData, handlers, is
 const StepDiv = React.forwardRef(({ instruction, content, index, circleRef, circleRadius, isFocused, hasActiveStep, isInteractive, onClick }, ref) => {
   // Alternate positioning: even steps at 0px, odd steps vary by screen size
   const marginLeftClass = index % 2 === 0 ? 'ml-0' : 'ml-0 sm:ml-12 md:ml-20 lg:ml-24';
-  const dimClass = hasActiveStep && !isFocused ? 'opacity-40 grayscale' : 'opacity-100';
+  const shouldDim = hasActiveStep && !isFocused;
   const cursorClass = isInteractive ? 'cursor-pointer' : 'cursor-not-allowed';
 
   return (
     <div
       ref={ref}
-      className={`flex items-center gap-3 sm:gap-4 md:gap-6 p-2 sm:p-3 md:p-4 ${marginLeftClass} transition-all duration-300 ${dimClass} ${cursorClass}`}
+      className={`relative flex items-center gap-3 sm:gap-4 md:gap-6 p-2 sm:p-3 md:p-4 ${marginLeftClass} transition-all duration-300 ${cursorClass}`}
       onClick={isInteractive ? onClick : undefined}
     >
-      <div ref={circleRef} className={cursorClass}>
-        <StepCircle animationFile={instruction.animationFile} circleRadius={circleRadius} />
+      <div ref={circleRef} className={cursorClass} style={{ position: 'relative' }}>
+        {/* Background box to mask the SVG line */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: `${circleRadius * 2}px`,
+            height: `${circleRadius * 2}px`,
+            backgroundColor: '#FFF8F0',
+            borderRadius: '50%',
+            zIndex: 5
+          }}
+        />
+        <div style={{ position: 'relative', zIndex: 10 }}>
+          <StepCircle animationFile={instruction.animationFile} circleRadius={circleRadius} isDimmed={shouldDim} />
+        </div>
       </div>
-      <div className={`flex-1 ${cursorClass}`}>
+      <div className={`flex-1 ${cursorClass} ${shouldDim ? 'opacity-40 grayscale' : ''} transition-all duration-300`}>
         {content}
       </div>
     </div>
@@ -1032,6 +1049,11 @@ const CookingInstructions = ({
             const nextStep = stepPositions[index + 1];
             if (!nextStep) return null;
 
+            // Check if either connected step is focused
+            const currentStepFocused = focusedStep === index + 1;
+            const nextStepFocused = focusedStep === index + 2;
+            const shouldDim = hasActiveStep && !currentStepFocused && !nextStepFocused;
+
             return (
               <path
                 key={step.id}
@@ -1041,6 +1063,11 @@ const CookingInstructions = ({
                 strokeWidth="3"
                 strokeLinecap="round"
                 strokeDasharray="10 12"
+                style={{
+                  opacity: shouldDim ? 0.4 : 1,
+                  filter: shouldDim ? 'grayscale(100%)' : 'none',
+                  transition: 'opacity 300ms, filter 300ms'
+                }}
               />
             );
           })}
@@ -1049,7 +1076,7 @@ const CookingInstructions = ({
         {/* StepDivs */}
         <div
           className="relative flex flex-col gap-6 sm:gap-8 md:gap-10"
-          style={{ zIndex: 1 }}
+          style={{ zIndex: 10 }}
         >
           {instructions.map((instruction, index) => {
             const isFloating = floatingTimerSteps.includes(index);
