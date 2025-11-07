@@ -24,6 +24,7 @@ export default function RecipeOptionsStep({
 	sessionCompleting = false,
 	preparingSessionId,
 	onBack,
+	suggestedCollection,
 }) {
 	const { t } = useTranslation('recipeGeneration');
 	const navigate = useNavigate();
@@ -58,6 +59,7 @@ export default function RecipeOptionsStep({
 			return;
 		}
 
+		console.log('!!! DEBUG RecipeOptionsStep: Opening modal with suggestedCollection:', suggestedCollection);
 		// Show collection selection modal instead of directly saving
 		setShowCollectionModal(true);
 	};
@@ -527,6 +529,7 @@ export default function RecipeOptionsStep({
 				isOpen={showCollectionModal}
 				onClose={() => setShowCollectionModal(false)}
 				onSave={handleSaveToCollections}
+				suggestedCollection={suggestedCollection}
 			/>
 
 			<RecipeDetailsModal

@@ -9,6 +9,8 @@ from ..schemas.recipe import GenerateRecipeRequest, RecipePreview
 from ...utils.auth import get_read_write_user_id, get_read_only_user_id
 from ...db.crud import recipe_crud, preparing_crud
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from ...db.models.db_recipe import PreparingSession
 from ...services.agent_service import AgentService
 from fastapi import BackgroundTasks
 
@@ -55,6 +57,18 @@ async def get_recipe_options(preparing_session_id: int,
         List[RecipePreview]: A list of recipe previews.
     """
     print("!!! Hello from get_recipe_options !!!")
+
+    # Get the preparing session to access suggested_collection
+    session_result = await db.execute(
+        select(PreparingSession).filter(PreparingSession.id == preparing_session_id)
+    )
+    session = session_result.scalar_one_or_none()
+    if session is None:
+        raise HTTPException(status_code=404, detail="Preparing session not found")
+
+    suggested_collection = session.suggested_collection
+    print(f"!!! DEBUG: suggested_collection from session = {suggested_collection}")
+
     recipes = await recipe_crud.get_recipe_previews_by_preparing_session_id(db, preparing_session_id,
                                                                             user_id=user_id)
     if recipes is None:
@@ -71,6 +85,7 @@ async def get_recipe_options(preparing_session_id: int,
             total_time_minutes=getattr(recipe, "total_time_minutes", None),
             difficulty=getattr(recipe, "difficulty", None),
             food_category=getattr(recipe, "food_category", None),
+            suggested_collection=suggested_collection,
         ))
     return result
 

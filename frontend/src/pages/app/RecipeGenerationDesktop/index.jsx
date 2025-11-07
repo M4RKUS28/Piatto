@@ -30,6 +30,7 @@ export default function RecipeGeneration() {
 	const [error, setError] = useState(null);
 	const [preparingSessionId, setPreparingSessionId] = useState(null);
 	const [recipeOptions, setRecipeOptions] = useState([]);
+	const [suggestedCollection, setSuggestedCollection] = useState(null);
 	const [, setImageAnalysis] = useState(null);
 	const [finishingSession, setFinishingSession] = useState(false);
 
@@ -223,6 +224,14 @@ export default function RecipeGeneration() {
 			const options = await getRecipeOptions(sessionId);
 			console.log('!!!Received recipe options:', options);
 			setRecipeOptions(options);
+			// Extract suggested_collection from the first recipe (all recipes have the same value)
+			if (options && options.length > 0 && options[0].suggested_collection) {
+				console.log('!!! DEBUG: Setting suggested collection:', options[0].suggested_collection);
+				setSuggestedCollection(options[0].suggested_collection);
+			} else {
+				console.log('!!! DEBUG: No suggested collection found in options');
+				setSuggestedCollection(null);
+			}
 			if (shouldNavigate) {
 				goToStep(3);
 			}
@@ -406,6 +415,7 @@ export default function RecipeGeneration() {
 								sessionCompleting={finishingSession}
 								preparingSessionId={preparingSessionId}
 								onBack={handleBackToIngredients}
+								suggestedCollection={suggestedCollection}
 							/>
 						)}
 

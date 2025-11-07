@@ -13,9 +13,9 @@ const FOOD_EMOJIS = [
   '🍏', '🍐', '🍑', '🍒', '🍓', '🫐', '🥝', '🍅', '🫒', '🥥'
 ];
 
-const GRAVITY = 0.11; // gentler acceleration
+const GRAVITY = 0.15; // gentler acceleration
 const RESTITUTION = 0.6; // bounciness (0 = no bounce, 1 = perfect bounce)
-const FRICTION = 0.99; // velocity damping
+const FRICTION = 1.0; // velocity damping
 const GROUND_FRICTION = 0.95;
 const ROTATION_DAMPING = 0.95; // damping for rotation
 const MIN_VELOCITY = 0.01; // threshold to stop moving
