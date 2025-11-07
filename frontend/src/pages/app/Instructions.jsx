@@ -21,6 +21,7 @@ import useMediaQuery from '../../hooks/useMediaQuery';
  // --- Configuration ---
 const CURVE_AMOUNT = 180;
 const MOBILE_NAV_HEIGHT = 64;
+const VOICE_PREFERENCE_STORAGE_KEY = 'piatto_voice_assistant_preference';
 
 // Calculate responsive circle radius based on viewport width
 const getCircleRadius = () => {
@@ -600,7 +601,17 @@ const CookingInstructions = ({
       setCookingSessionId(sessionId);
       console.log('✅ Cooking session started with ID:', sessionId);
       await navigateToStep(1, { sessionIdOverride: sessionId });
-      setVoicePreference(withVoice ? 'with' : 'without');
+
+      const preference = withVoice ? 'with' : 'without';
+      setVoicePreference(preference);
+
+      // Save preference to localStorage
+      try {
+        localStorage.setItem(VOICE_PREFERENCE_STORAGE_KEY, preference);
+      } catch (err) {
+        console.warn('Failed to save voice preference:', err);
+      }
+
       if (withVoice) {
         startVoiceAssistant();
       } else {
@@ -660,7 +671,16 @@ const CookingInstructions = ({
   }, [cookingSessionId, resetSessionVisuals, stopVoiceAssistant, t]);
 
   const applyVoicePreference = React.useCallback((withVoice) => {
-    setVoicePreference(withVoice ? 'with' : 'without');
+    const preference = withVoice ? 'with' : 'without';
+    setVoicePreference(preference);
+
+    // Save preference to localStorage
+    try {
+      localStorage.setItem(VOICE_PREFERENCE_STORAGE_KEY, preference);
+    } catch (err) {
+      console.warn('Failed to save voice preference:', err);
+    }
+
     if (withVoice) {
       startVoiceAssistant();
     } else {
@@ -783,11 +803,31 @@ const CookingInstructions = ({
 
   React.useEffect(() => {
     if (sessionRestored && sessionActive && !resumeVoicePrompted && !isNewSessionStart) {
+      // Check if user has a saved voice preference
+      try {
+        const savedPreference = localStorage.getItem(VOICE_PREFERENCE_STORAGE_KEY);
+        if (savedPreference) {
+          // Auto-apply saved preference without showing dialog
+          const withVoice = savedPreference === 'with';
+          setVoicePreference(savedPreference);
+          if (withVoice) {
+            startVoiceAssistant();
+          } else {
+            stopVoiceAssistant();
+          }
+          setResumeVoicePrompted(true);
+          return;
+        }
+      } catch (err) {
+        console.warn('Failed to load voice preference:', err);
+      }
+
+      // No saved preference - show dialog
       setStartDialogMode('resume');
       setIsStartDialogOpen(true);
       setResumeVoicePrompted(true);
     }
-  }, [sessionRestored, sessionActive, resumeVoicePrompted, isNewSessionStart]);
+  }, [sessionRestored, sessionActive, resumeVoicePrompted, isNewSessionStart, startVoiceAssistant, stopVoiceAssistant]);
 
   // Fetch instructions with polling logic
   React.useEffect(() => {
