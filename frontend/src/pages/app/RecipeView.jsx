@@ -87,6 +87,7 @@ const RecipeView = () => {
       title: t('onboarding.ingredientsTitle', 'Linke Seite: Zutaten & Details'),
       description: t('onboarding.ingredientsDescription', 'Hier findest du alle Zutaten, Nährwerte und Infos zum Rezept. Scrolle nach unten, um alles im Blick zu behalten.'),
       target: recipePanelNode,
+      borderRadius: '0px',
     },
     {
       key: 'steps',
@@ -99,12 +100,15 @@ const RecipeView = () => {
       title: t('onboarding.aiButtonTitle', 'AI Fragen'),
       description: t('onboarding.aiButtonDescription', 'Zu jedem Schritt kannst du die AI um Hilfe bitten. Klicke auf den ✨ AI Fragen Button, um Fragen zum aktuellen Schritt zu stellen.'),
       target: aiButtonNode,
+      highlightParent: true,
+      borderRadius: '16px',
     },
     {
       key: 'session-controls',
       title: t('onboarding.sessionControlsTitle', 'Session Steuerung'),
       description: t('onboarding.sessionControlsDescription', 'Navigiere durch die Schritte, sieh deinen Fortschritt und steuere den Voice Assistant – alles von hier aus.'),
       target: sessionControlsNode,
+      borderRadius: '9999px',
     },
   ]), [t, recipePanelNode, sessionControlsNode, stepsContainerNode, aiButtonNode]);
 

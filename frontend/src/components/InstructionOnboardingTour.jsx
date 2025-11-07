@@ -13,21 +13,50 @@ const InstructionOnboardingTour = ({
   onSkip,
 }) => {
   const [rect, setRect] = useState(null);
+  const [extraHighlightRect, setExtraHighlightRect] = useState(null);
 
   useEffect(() => {
     if (!step?.target) {
       setRect(null);
+      setExtraHighlightRect(null);
       return undefined;
     }
 
     const updateRect = () => {
-      const bounds = step.target.getBoundingClientRect();
+      let targetElement = step.target;
+
+      // If highlightParent is true, use the parent element
+      if (step.highlightParent && step.target) {
+        // Find the step container parent (the one with the white background)
+        let parent = step.target.parentElement;
+        while (parent && !parent.classList.contains('bg-white')) {
+          parent = parent.parentElement;
+        }
+        if (parent) {
+          targetElement = parent;
+        }
+      }
+
+      const bounds = targetElement.getBoundingClientRect();
       setRect({
         top: bounds.top - OVERLAY_PADDING,
         left: bounds.left - OVERLAY_PADDING,
         width: bounds.width + OVERLAY_PADDING * 2,
         height: bounds.height + OVERLAY_PADDING * 2,
       });
+
+      // Set extra highlight for the original target if highlightParent is true
+      if (step.highlightParent && step.target) {
+        const originalBounds = step.target.getBoundingClientRect();
+        setExtraHighlightRect({
+          top: originalBounds.top - 4,
+          left: originalBounds.left - 4,
+          width: originalBounds.width + 8,
+          height: originalBounds.height + 8,
+        });
+      } else {
+        setExtraHighlightRect(null);
+      }
     };
 
     updateRect();
@@ -89,14 +118,29 @@ const InstructionOnboardingTour = ({
 
       {/* Highlight border around focused element */}
       <div
-        className="pointer-events-none absolute rounded-3xl border-4 border-[#FF9B7B] transition-all duration-300 shadow-lg shadow-[#FF9B7B]/50"
+        className="pointer-events-none absolute border-4 border-[#FF9B7B] transition-all duration-300 shadow-lg shadow-[#FF9B7B]/50"
         style={{
           top: `${Math.max(rect.top, 16)}px`,
           left: `${Math.max(rect.left, 16)}px`,
           width: `${rect.width}px`,
           height: `${rect.height}px`,
+          borderRadius: '0px',
         }}
       />
+
+      {/* Extra highlight for specific element (like AI button) */}
+      {extraHighlightRect && (
+        <div
+          className="pointer-events-none absolute border-4 border-[#035035] transition-all duration-300 shadow-lg shadow-[#035035]/50 animate-pulse"
+          style={{
+            top: `${extraHighlightRect.top}px`,
+            left: `${extraHighlightRect.left}px`,
+            width: `${extraHighlightRect.width}px`,
+            height: `${extraHighlightRect.height}px`,
+            borderRadius: '12px',
+          }}
+        />
+      )}
 
       <div className="pointer-events-auto absolute inset-x-0 bottom-10 flex justify-center px-4">
         <div className="w-full max-w-2xl rounded-3xl border-2 border-white/40 bg-white/95 p-6 shadow-2xl backdrop-blur-md">
