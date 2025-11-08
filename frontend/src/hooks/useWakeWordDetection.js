@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
+const ASSISTANT_PAUSE_REASON = 'assistant-interaction';
+
 /**
  * Custom hook for detecting wake word "Hey Piatto" using Web Speech API
  * Auto-restarts listening every 55 seconds to prevent browser timeout
@@ -26,6 +28,9 @@ const useWakeWordDetection = (cookingSessionId = null) => {
   const cookingSessionIdRef = useRef(cookingSessionId);
   const assistantStateRef = useRef(assistantState);
   const startRecordingRef = useRef(null);
+  const startListeningRef = useRef(null);
+  const wakeWordPauseReasonsRef = useRef(new Set());
+  const wakeWordHoldRef = useRef(false);
 
   useEffect(() => {
     cookingSessionIdRef.current = cookingSessionId;
@@ -49,8 +54,68 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     }
   }, []);
 
+  const pauseWakeWordDetection = useCallback((reason = ASSISTANT_PAUSE_REASON) => {
+    if (!isActiveRef.current) {
+      return;
+    }
+
+    const reasons = wakeWordPauseReasonsRef.current;
+    const wasPaused = reasons.size > 0;
+    reasons.add(reason);
+    wakeWordHoldRef.current = true;
+
+    if (!wasPaused) {
+      debugLog(`Pausing wake word detection (${reason})`);
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (err) {
+          if (err?.message) {
+            debugLog('Error pausing recognition:', err.message);
+          }
+        }
+      }
+    }
+  }, [debugLog]);
+
+  const resumeWakeWordDetection = useCallback((reason = ASSISTANT_PAUSE_REASON) => {
+    const reasons = wakeWordPauseReasonsRef.current;
+    if (!reasons.has(reason)) {
+      return;
+    }
+
+    reasons.delete(reason);
+
+    if (reasons.size > 0) {
+      debugLog(`Resume request (${reason}) delayed. Still paused for: ${Array.from(reasons).join(', ')}`);
+      return;
+    }
+
+    wakeWordHoldRef.current = false;
+
+    if (!isActiveRef.current) {
+      return;
+    }
+
+    debugLog('Resuming wake word detection');
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.start();
+      } catch (err) {
+        if (err?.name === 'InvalidStateError') {
+          debugLog('Recognition already active on resume');
+        } else if (err?.message) {
+          debugLog('Error restarting recognition on resume:', err.message);
+        }
+      }
+    } else if (startListeningRef.current) {
+      startListeningRef.current();
+    }
+  }, [debugLog]);
+
   // Play audio response (PCM data from Gemini) - Queue-based playback
   const playAudioResponse = useCallback(async (pcmData) => {
+    let startedPlayback = false;
     try {
       // Add to queue
       audioQueueRef.current.push(pcmData);
@@ -61,6 +126,8 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       }
 
       // Start processing queue
+      startedPlayback = true;
+      pauseWakeWordDetection();
       isPlayingRef.current = true;
       setAssistantState('playing');
 
@@ -118,8 +185,12 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       setError('Failed to play audio response');
       isPlayingRef.current = false;
       setAssistantState('idle');
+    } finally {
+      if (startedPlayback) {
+        resumeWakeWordDetection();
+      }
     }
-  }, [debugLog]);
+  }, [debugLog, pauseWakeWordDetection, resumeWakeWordDetection]);
   // Stop recording audio (called when Gemini responds or user manually stops)
   const stopRecording = useCallback(() => {
     debugLog('Stopping recording...');
@@ -228,6 +299,7 @@ const useWakeWordDetection = (cookingSessionId = null) => {
             setError(data.message);
             setAssistantState('idle');
             stopRecording();
+            resumeWakeWordDetection();
           }
         } catch (err) {
           debugLog('Unknown WebSocket message format:', event.data);
@@ -239,6 +311,7 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       debugLog('WebSocket error:', error);
       setError('WebSocket connection error');
       setAssistantState('idle');
+      resumeWakeWordDetection();
     };
 
     ws.onclose = () => {
@@ -246,16 +319,18 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       if (assistantState !== 'idle') {
         setAssistantState('idle');
       }
+      resumeWakeWordDetection();
     };
 
     return ws;
-  }, [cookingSessionId, assistantState, debugLog, playAudioResponse, stopRecording]);
+  }, [cookingSessionId, assistantState, debugLog, playAudioResponse, stopRecording, resumeWakeWordDetection]);
 
   // Start recording audio
   const startRecording = useCallback(async () => {
     try {
       debugLog('Starting audio recording...');
       setAssistantState('detected');
+      pauseWakeWordDetection();
 
       // Request microphone access
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -264,6 +339,7 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       const ws = setupWebSocket();
       if (!ws) {
         stream.getTracks().forEach(track => track.stop());
+        resumeWakeWordDetection();
         return;
       }
       websocketRef.current = ws;
@@ -328,6 +404,7 @@ const useWakeWordDetection = (cookingSessionId = null) => {
           stream.getTracks().forEach(track => track.stop());
           setError('Failed to initialize audio processing');
           setAssistantState('idle');
+          resumeWakeWordDetection();
         }
       });
 
@@ -335,8 +412,9 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       debugLog('Error starting recording:', err.message);
       setError('Failed to access microphone');
       setAssistantState('idle');
+      resumeWakeWordDetection();
     }
-  }, [setupWebSocket, debugLog]);
+  }, [setupWebSocket, debugLog, pauseWakeWordDetection, resumeWakeWordDetection]);
 
   // Update ref to latest startRecording function
   useEffect(() => {
@@ -476,6 +554,11 @@ const useWakeWordDetection = (cookingSessionId = null) => {
         debugLog(`Recognition ended - isActiveRef.current = ${isActiveRef.current}`);
         setIsListening(false);
 
+        if (wakeWordHoldRef.current) {
+          debugLog('Auto-restart paused while assistant interaction is active');
+          return;
+        }
+
         // ALWAYS auto-restart if still active (no retry limit!)
         if (isActiveRef.current) {
           debugLog('Auto-restart condition met, scheduling restart...');
@@ -526,6 +609,10 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     }
   }, [initializeSpeechRecognition, checkForWakeWord, debugLog]);
 
+  useEffect(() => {
+    startListeningRef.current = startListening;
+  }, [startListening]);
+
   // Stop listening
   const stopListening = useCallback(() => {
     debugLog('Stopping listening...');
@@ -542,6 +629,8 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     setIsListening(false);
     setIsActive(false);
     isActiveRef.current = false;
+    wakeWordPauseReasonsRef.current.clear();
+    wakeWordHoldRef.current = false;
     debugLog('✓ Stopped listening');
   }, [debugLog]);
 
@@ -552,6 +641,8 @@ const useWakeWordDetection = (cookingSessionId = null) => {
   useEffect(() => {
     return () => {
       console.log('[WakeWord] Component unmounting - cleaning up');
+      wakeWordPauseReasonsRef.current.clear();
+      wakeWordHoldRef.current = false;
       // Use isActiveRef to stop listening
       if (isActiveRef.current) {
         isActiveRef.current = false;
