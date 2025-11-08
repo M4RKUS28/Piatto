@@ -366,8 +366,17 @@ const useWakeWordDetection = (cookingSessionId = null) => {
             if (cookingSessionId && assistantState === 'idle') {
               debugLog('Starting voice assistant conversation...');
               startRecording();
+              setAssistantState('detected');
             } else if (!cookingSessionId) {
-              debugLog('WARNING: No cooking session ID, skipping voice assistant');
+              debugLog('⚠️ WARNING: No cooking session active!');
+              debugLog('💡 TIP: Start a cooking session first to use the voice assistant');
+              setError('Please start a cooking session first');
+              // Show temporary visual feedback
+              setAssistantState('detected');
+              setTimeout(() => {
+                setAssistantState('idle');
+                setError(null);
+              }, 3000);
             } else if (assistantState !== 'idle') {
               debugLog(`Assistant busy (state: ${assistantState}), ignoring wake word`);
             }

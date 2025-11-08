@@ -235,7 +235,8 @@ const CookingInstructions = ({
 
   // Initialize voice assistant with cooking session ID
   const voiceAssistant = useWakeWordDetection(cookingSessionId);
-  const voiceAssistantActive = voiceAssistant?.isActive ?? false;
+  // Show as active when wake word detection is listening (not just when session active)
+  const voiceAssistantActive = voiceAssistant?.isListening ?? false;
 
   const resetSessionVisuals = React.useCallback(() => {
     setOpenChatStep(null);
@@ -616,7 +617,13 @@ const CookingInstructions = ({
       return;
     }
 
-    // Prevent default scrolling behavior
+    // Only handle scroll events from the instructions container
+    // Allow recipe view and other areas to scroll normally
+    if (containerRef.current && !containerRef.current.contains(event.target)) {
+      return; // Scroll event is outside instructions - allow normal scrolling
+    }
+
+    // Prevent default scrolling behavior (only for instructions area)
     event.preventDefault();
 
     const now = Date.now();
