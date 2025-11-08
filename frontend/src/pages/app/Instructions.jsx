@@ -1418,6 +1418,32 @@ const CookingInstructions = ({
             </div>
           </div>
 
+          {/* Ask Piatto Button (Direct Voice Assistant) */}
+          {voiceAssistantActive && cookingSessionId && (
+            <button
+              type="button"
+              onClick={() => voiceAssistant?.startRecording?.()}
+              disabled={voiceAssistant?.assistantState !== 'idle'}
+              className={`relative transition-all duration-200 ${
+                voiceAssistant?.assistantState === 'idle'
+                  ? 'hover:scale-110 cursor-pointer'
+                  : 'opacity-50 cursor-not-allowed'
+              }`}
+              title={t('voiceAssistant.askPiatto', 'Ask Piatto directly')}
+            >
+              <div className={`w-10 h-10 rounded-full border-4 flex items-center justify-center shadow-lg ${
+                voiceAssistant?.assistantState === 'idle'
+                  ? 'bg-[#035035] border-[#024028] shadow-[#035035]/50'
+                  : 'bg-gray-400 border-gray-300 shadow-gray-400/50'
+              } transition-all duration-300`}>
+                <span className="text-lg">💬</span>
+              </div>
+              {voiceAssistant?.assistantState === 'listening' && (
+                <div className="absolute inset-0 rounded-full bg-red-400 animate-pulse opacity-75" />
+              )}
+            </button>
+          )}
+
           {/* Voice Assistant Status */}
           <button
             type="button"

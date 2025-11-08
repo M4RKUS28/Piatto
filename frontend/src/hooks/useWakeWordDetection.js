@@ -546,6 +546,8 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     // New voice assistant states
     assistantState, // 'idle', 'detected', 'listening', 'processing', 'playing'
     isRecording,
+    // Direct voice assistant control (skip wake word)
+    startRecording,
   };
 };
 
