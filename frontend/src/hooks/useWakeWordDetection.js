@@ -18,12 +18,8 @@ const useWakeWordDetection = (cookingSessionId = null) => {
   const [isRecording, setIsRecording] = useState(false);
 
   const recognitionRef = useRef(null);
-  const restartTimerRef = useRef(null);
-  const retryCountRef = useRef(0);
   const isActiveRef = useRef(false); // Ref to track active state for callbacks
   const lastDetectionTimeRef = useRef(0); // Track last detection time for debounce
-  const maxRetries = 3;
-  const restartInterval = 30000; // Restart every 30 seconds to avoid browser timeout
   const debounceInterval = 3000; // Debounce detection for 3 seconds
 
   // New refs for voice assistant
@@ -139,12 +135,12 @@ const useWakeWordDetection = (cookingSessionId = null) => {
 
       // Handle playback end
       source.onended = () => {
-        debugLog('Audio playback finished');
+        debugLog('Audio playback finished - ready for next "Hey Piatto"');
         setAssistantState('idle');
         audioContext.close();
 
         // Don't close WebSocket - keep it open for next question
-        // User can say "Hey Piatto" again without reconnecting
+        // Speech recognition will auto-restart via onend handler
       };
 
       // Start playback
@@ -415,26 +411,35 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       };
 
       recognitionRef.current.onend = () => {
-        debugLog('Recognition ended');
+        debugLog('Recognition ended - auto-restarting...');
         setIsListening(false);
 
-        // Auto-restart if still active and not at max retries
-        if (isActiveRef.current && retryCountRef.current < maxRetries) {
-          debugLog(`Auto-restarting (attempt ${retryCountRef.current + 1}/${maxRetries})...`);
-          retryCountRef.current += 1;
-
+        // ALWAYS auto-restart if still active (no retry limit!)
+        if (isActiveRef.current) {
           setTimeout(() => {
             if (isActiveRef.current) {
               try {
+                debugLog('🔄 Restarting wake word detection...');
                 recognitionRef.current?.start();
               } catch (err) {
-                debugLog('Error restarting:', err.message);
+                if (err.name === 'InvalidStateError') {
+                  debugLog('Already running, ignoring restart');
+                } else {
+                  debugLog('Error restarting:', err.message);
+                  // Try again after longer delay
+                  setTimeout(() => {
+                    if (isActiveRef.current) {
+                      try {
+                        recognitionRef.current?.start();
+                      } catch (e) {
+                        debugLog('Retry failed:', e.message);
+                      }
+                    }
+                  }, 1000);
+                }
               }
             }
-          }, 500); // Small delay before restart
-        } else if (retryCountRef.current >= maxRetries) {
-          debugLog('Max retries reached');
-          setError('Connection lost. Please restart listening.');
+          }, 100); // Very short delay for immediate restart
         }
       };
     }
@@ -457,11 +462,6 @@ const useWakeWordDetection = (cookingSessionId = null) => {
   const stopListening = useCallback(() => {
     debugLog('Stopping listening...');
 
-    if (restartTimerRef.current) {
-      clearInterval(restartTimerRef.current);
-      restartTimerRef.current = null;
-    }
-
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
@@ -474,36 +474,11 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     setIsListening(false);
     setIsActive(false);
     isActiveRef.current = false;
-    retryCountRef.current = 0;
     debugLog('✓ Stopped listening');
   }, [debugLog]);
 
-  // Setup auto-restart timer
-  useEffect(() => {
-    if (isActive && isListening) {
-      debugLog(`Setting up auto-restart timer (${restartInterval / 1000}s)`);
-
-      restartTimerRef.current = setInterval(() => {
-        debugLog('Auto-restart timer triggered - restarting recognition');
-
-        if (recognitionRef.current) {
-          try {
-            recognitionRef.current.stop();
-            // Will auto-restart via onend handler
-          } catch (err) {
-            debugLog('Error during auto-restart:', err.message);
-          }
-        }
-      }, restartInterval);
-
-      return () => {
-        if (restartTimerRef.current) {
-          clearInterval(restartTimerRef.current);
-          restartTimerRef.current = null;
-        }
-      };
-    }
-  }, [isActive, isListening, debugLog]);
+  // Auto-restart is now handled in onend callback - no need for timer
+  // Recognition will automatically restart whenever it stops while isActive is true
 
   // Cleanup on unmount
   useEffect(() => {
@@ -521,7 +496,6 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       setIsActive(true);
       isActiveRef.current = true;
       setError(null);
-      retryCountRef.current = 0;
       debugLog('=== STARTING WAKE WORD DETECTION ===');
       startListening();
     }

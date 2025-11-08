@@ -140,6 +140,8 @@ class VoiceAssistantSession:
                         )
                     )
                 ),
+                # Session resumption for automatic reconnection
+                session_resumption=types.SessionResumptionConfig(),
             )
 
             # Connect to Live API
