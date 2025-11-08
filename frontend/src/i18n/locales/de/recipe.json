@@ -5,6 +5,10 @@
   "ingredients": "Zutaten",
   "forServings": "Für {{count}} Portion",
   "forServings_plural": "Für {{count}} Portionen",
+  "preview": {
+    "ariaLabel": "Rezept auswählen: {{title}}. {{description}}",
+    "imageAlt": "{{title}} - Rezeptvorschau"
+  },
   "tabs": {
     "ingredients": "Zutaten",
     "nutrition": "Nährwerte"
@@ -66,7 +70,17 @@
     "share": "Teilen",
     "print": "Drucken",
     "editCollection": "Sammlung bearbeiten",
-    "deleteRecipe": "Rezept löschen"
+    "deleteRecipe": "Rezept löschen",
+    "optionsAriaLabel": "Rezeptoptionen"
+  },
+  "deleteModal": {
+    "title": "Rezept löschen",
+    "message": "Möchtest du das Rezept \"{{name}}\" wirklich löschen?",
+    "warning": "Diese Aktion kann nicht rückgängig gemacht werden. Das Rezept wird dauerhaft aus allen Sammlungen entfernt.",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "deleting": "Wird gelöscht...",
+    "error": "Löschen fehlgeschlagen. Bitte versuche es erneut."
   },
   "errors": {
     "noId": "Keine Rezept-ID angegeben",

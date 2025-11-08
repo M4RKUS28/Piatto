@@ -35,7 +35,7 @@ const RecipePreviewCard = ({ recipe, onClick }) => {
                         tabIndex={0}
                         aria-label={t('preview.ariaLabel', {
                                 title: recipe.title,
-                                description: recipe.description,
+                                description: recipe.description ?? '',
                                 defaultValue: `Select recipe: ${recipe.title}. ${recipe.description ?? ''}`,
                         })}
                 >
