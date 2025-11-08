@@ -49,16 +49,6 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     }
   }, []);
 
-  // Helper to get cookie value by name
-  const getCookie = useCallback((name) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) {
-      return parts.pop().split(';').shift();
-    }
-    return null;
-  }, []);
-
   // Setup WebSocket connection
   const setupWebSocket = useCallback(() => {
     if (!cookingSessionId) {
@@ -91,12 +81,24 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     ws.onmessage = async (event) => {
       // Check if it's binary data (audio response)
       if (event.data instanceof Blob) {
-        debugLog('Received audio response blob from Gemini');
+        debugLog('Received audio response from Gemini - VAD detected end of speech');
+
+        // Stop recording when first audio chunk arrives (Gemini's VAD triggered)
+        if (mediaRecorderRef.current) {
+          stopRecording();
+        }
+
         // Convert Blob to ArrayBuffer for PCM processing
         const arrayBuffer = await event.data.arrayBuffer();
         playAudioResponse(arrayBuffer);
       } else if (event.data instanceof ArrayBuffer) {
-        debugLog('Received audio response ArrayBuffer from Gemini');
+        debugLog('Received audio response from Gemini - VAD detected end of speech');
+
+        // Stop recording when first audio chunk arrives (Gemini's VAD triggered)
+        if (mediaRecorderRef.current) {
+          stopRecording();
+        }
+
         playAudioResponse(event.data);
       } else {
         // Text message (control messages)
@@ -133,53 +135,74 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     };
 
     return ws;
-  }, [cookingSessionId, assistantState, debugLog, getCookie]);
+  }, [cookingSessionId, assistantState, debugLog, playAudioResponse, stopRecording]);
 
-  // Play audio response (PCM data from Gemini)
+  // Play audio response (PCM data from Gemini) - Queue-based playback
   const playAudioResponse = useCallback(async (pcmData) => {
     try {
-      debugLog('Playing audio response (PCM 24kHz)');
-      setAssistantState('playing');
+      // Add to queue
+      audioQueueRef.current.push(pcmData);
 
-      // Create AudioContext for playback
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)({
-        sampleRate: 24000, // Gemini outputs 24kHz PCM
-      });
-
-      // Convert ArrayBuffer to Int16Array
-      const int16Data = new Int16Array(pcmData);
-
-      // Convert Int16 PCM to Float32 for Web Audio API
-      const float32Data = new Float32Array(int16Data.length);
-      for (let i = 0; i < int16Data.length; i++) {
-        float32Data[i] = int16Data[i] / (int16Data[i] < 0 ? 0x8000 : 0x7FFF);
+      // If already playing, return (queue will be processed)
+      if (isPlayingRef.current) {
+        return;
       }
 
-      // Create AudioBuffer
-      const audioBuffer = audioContext.createBuffer(1, float32Data.length, 24000);
-      audioBuffer.getChannelData(0).set(float32Data);
+      // Start processing queue
+      isPlayingRef.current = true;
+      setAssistantState('playing');
 
-      // Create buffer source
-      const source = audioContext.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(audioContext.destination);
+      // Create single AudioContext for all chunks
+      if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
+        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({
+          sampleRate: 24000, // Gemini outputs 24kHz PCM
+        });
+        debugLog('Created AudioContext for playback (24kHz)');
+      }
 
-      // Handle playback end
-      source.onended = () => {
-        debugLog('Audio playback finished - ready for next "Hey Piatto"');
-        setAssistantState('idle');
-        audioContext.close();
+      const audioContext = audioContextRef.current;
 
-        // Don't close WebSocket - keep it open for next question
-        // Speech recognition will auto-restart via onend handler
-      };
+      // Process queue
+      while (audioQueueRef.current.length > 0) {
+        const chunk = audioQueueRef.current.shift();
 
-      // Start playback
-      source.start(0);
+        // Convert ArrayBuffer to Int16Array
+        const int16Data = new Int16Array(chunk);
+
+        // Convert Int16 PCM to Float32 for Web Audio API
+        const float32Data = new Float32Array(int16Data.length);
+        for (let i = 0; i < int16Data.length; i++) {
+          float32Data[i] = int16Data[i] / (int16Data[i] < 0 ? 0x8000 : 0x7FFF);
+        }
+
+        // Create AudioBuffer
+        const audioBuffer = audioContext.createBuffer(1, float32Data.length, 24000);
+        audioBuffer.getChannelData(0).set(float32Data);
+
+        // Create buffer source
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContext.destination);
+
+        // Wait for this chunk to finish before playing next
+        await new Promise((resolve) => {
+          source.onended = resolve;
+          source.start(0);
+        });
+      }
+
+      // All chunks played
+      debugLog('Audio playback finished - ready for next "Hey Piatto"');
+      isPlayingRef.current = false;
+      setAssistantState('idle');
+
+      // Don't close WebSocket - keep it open for next question
+      // Speech recognition will auto-restart via onend handler
 
     } catch (err) {
       debugLog('Error playing audio:', err.message);
       setError('Failed to play audio response');
+      isPlayingRef.current = false;
       setAssistantState('idle');
     }
   }, [debugLog]);
@@ -251,15 +274,10 @@ const useWakeWordDetection = (cookingSessionId = null) => {
           setIsRecording(true);
           setAssistantState('listening');
           debugLog('✓ Recording started with PCM conversion (16kHz, 16-bit)');
+          debugLog('💡 Gemini Live API will automatically detect when you stop speaking (VAD)');
 
           // Store processor for cleanup
           mediaRecorderRef.current = { processor, source, stream };
-
-          // Set maximum recording timeout
-          recordingTimeoutRef.current = setTimeout(() => {
-            debugLog('Max recording time reached');
-            stopRecording();
-          }, maxRecordingTime);
 
         } catch (err) {
           debugLog('Error setting up audio processing:', err);
@@ -276,14 +294,9 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     }
   }, [setupWebSocket, debugLog]);
 
-  // Stop recording audio
+  // Stop recording audio (called when Gemini responds or user manually stops)
   const stopRecording = useCallback(() => {
     debugLog('Stopping recording...');
-
-    if (recordingTimeoutRef.current) {
-      clearTimeout(recordingTimeoutRef.current);
-      recordingTimeoutRef.current = null;
-    }
 
     // Cleanup audio processing nodes
     if (mediaRecorderRef.current) {
@@ -318,10 +331,10 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     }
 
     setIsRecording(false);
-    setAssistantState('processing');
+    // Don't change assistantState here - let the caller manage state transitions
+    // When Gemini responds with audio, state will go directly to 'playing'
 
-    // Note: No need to signal 'recording_complete' - Gemini Live API has automatic VAD
-    debugLog('✓ Recording stopped, waiting for AI response');
+    debugLog('✓ Recording stopped (audio stream cleanup)');
   }, [debugLog]);
 
   // Update ref to latest startRecording function
@@ -591,9 +604,6 @@ const useWakeWordDetection = (cookingSessionId = null) => {
           // Ignore cleanup errors
         }
         audioContextRef.current = null;
-      }
-      if (recordingTimeoutRef.current) {
-        clearTimeout(recordingTimeoutRef.current);
       }
     };
   }, []);

@@ -378,3 +378,36 @@ async def handle_oauth_callback(request: Request, db: AsyncSession, website: str
         return _build_login_failed_redirect("Unexpected error occurred during OAuth login. Please try again later.")
 
 
+
+
+
+def get_voice_token(token_data: Optional[dict]) -> auth_schema.VoiceTokenResponse:
+    """Generates a new voice token for the user."""
+    if not token_data:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated: user ID missing",
+        )
+
+    user_id: Optional[str] = token_data.get("user_id")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated: user ID missing",
+        )
+
+    token_data = {
+        "sub": token_data.get("sub"),
+        "user_id": user_id,
+        "role": "voice",
+        "email": token_data.get("email"),
+        "access_level": AccessLevel.READ_WRITE.value
+    }
+
+    voice_token = security.create_access_token(token_data)
+
+    return auth_schema.VoiceTokenResponse(
+        voice_token=voice_token,
+        user_id=user_id
+    )
