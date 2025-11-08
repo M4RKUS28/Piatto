@@ -39,6 +39,16 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     }
   }, []);
 
+  // Helper to get cookie value by name
+  const getCookie = useCallback((name) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+      return parts.pop().split(';').shift();
+    }
+    return null;
+  }, []);
+
   // Setup WebSocket connection
   const setupWebSocket = useCallback(() => {
     if (!cookingSessionId) {
@@ -47,10 +57,18 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       return null;
     }
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.hostname}:${window.location.port || (protocol === 'wss:' ? '443' : '80')}/api/ws/voice_assistant?session_id=${cookingSessionId}`;
+    // Get access token from cookies for authentication
+    const accessToken = getCookie('__session');
+    if (!accessToken) {
+      debugLog('ERROR: No access token found in cookies');
+      setError('Authentication required');
+      return null;
+    }
 
-    debugLog('Connecting to WebSocket:', wsUrl);
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.hostname}:${window.location.port || (protocol === 'wss:' ? '443' : '80')}/api/ws/voice_assistant?session_id=${cookingSessionId}&token=${encodeURIComponent(accessToken)}`;
+
+    debugLog('Connecting to WebSocket:', wsUrl.replace(accessToken, '***TOKEN***')); // Hide token in logs
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
@@ -102,7 +120,7 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     };
 
     return ws;
-  }, [cookingSessionId, assistantState, debugLog]);
+  }, [cookingSessionId, assistantState, debugLog, getCookie]);
 
   // Play audio response (PCM data from Gemini)
   const playAudioResponse = useCallback(async (pcmData) => {

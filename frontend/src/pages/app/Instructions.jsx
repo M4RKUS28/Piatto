@@ -249,6 +249,9 @@ const CookingInstructions = ({
     voiceAssistantRef.current = voiceAssistant;
   }, [voiceAssistant]);
 
+  // Ref to track if voice assistant was already auto-started for this session
+  const voiceAutoStartedRef = React.useRef(null);
+
   const resetSessionVisuals = React.useCallback(() => {
     setOpenChatStep(null);
     setChatStepPosition(null);
@@ -271,12 +274,15 @@ const CookingInstructions = ({
 
   // Auto-start voice assistant when new session starts with voice preference
   React.useEffect(() => {
-    if (isNewSessionStart && cookingSessionId && sessionActive) {
+    // Only auto-start if this is a new session and we haven't started yet for this session
+    if (isNewSessionStart && cookingSessionId && sessionActive && voiceAutoStartedRef.current !== cookingSessionId) {
       // Get voice preference from localStorage
       try {
         const savedPreference = localStorage.getItem(VOICE_PREFERENCE_STORAGE_KEY);
         if (savedPreference === 'with') {
           console.log('[Instructions] Auto-starting voice assistant for new session');
+          // Mark this session as auto-started
+          voiceAutoStartedRef.current = cookingSessionId;
           // Wait for next tick to ensure cookingSessionId is propagated to hook
           requestAnimationFrame(() => {
             startVoiceAssistant();
