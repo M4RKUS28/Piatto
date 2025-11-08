@@ -238,6 +238,11 @@ const CookingInstructions = ({
   // Show as active when wake word detection is listening (not just when session active)
   const voiceAssistantActive = voiceAssistant?.isListening ?? false;
 
+  // Debug: Log cookingSessionId changes
+  React.useEffect(() => {
+    console.log(`[Instructions] cookingSessionId changed:`, cookingSessionId, `sessionActive:`, sessionActive);
+  }, [cookingSessionId, sessionActive]);
+
   // Ref to store voiceAssistant for cleanup without triggering re-renders
   const voiceAssistantRef = React.useRef(voiceAssistant);
   React.useEffect(() => {
@@ -263,6 +268,25 @@ const CookingInstructions = ({
   const stopVoiceAssistant = React.useCallback(() => {
     voiceAssistant?.stopListening?.();
   }, [voiceAssistant]);
+
+  // Auto-start voice assistant when new session starts with voice preference
+  React.useEffect(() => {
+    if (isNewSessionStart && cookingSessionId && sessionActive) {
+      // Get voice preference from localStorage
+      try {
+        const savedPreference = localStorage.getItem(VOICE_PREFERENCE_STORAGE_KEY);
+        if (savedPreference === 'with') {
+          console.log('[Instructions] Auto-starting voice assistant for new session');
+          // Wait for next tick to ensure cookingSessionId is propagated to hook
+          requestAnimationFrame(() => {
+            startVoiceAssistant();
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to read voice preference:', err);
+      }
+    }
+  }, [isNewSessionStart, cookingSessionId, sessionActive, startVoiceAssistant]);
 
   React.useEffect(() => {
     if (!onRegisterSessionControls) {
@@ -714,18 +738,15 @@ const CookingInstructions = ({
         console.warn('Failed to save voice preference:', err);
       }
 
-      if (withVoice) {
-        startVoiceAssistant();
-      } else {
-        stopVoiceAssistant();
-      }
+      // Voice assistant will be auto-started by useEffect when cookingSessionId is set
+      // (only if preference is 'with')
     } catch (err) {
       console.error('Failed to start cooking session:', err);
       setSessionError(t('startError', 'Failed to start the cooking session. Please try again.'));
     } finally {
       setIsSessionStarting(false);
     }
-  }, [recipeId, instructions, navigateToStep, t, resetSessionVisuals, startVoiceAssistant, stopVoiceAssistant]);
+  }, [recipeId, instructions, navigateToStep, t, resetSessionVisuals]);
 
   const handlePreviousStep = React.useCallback(() => {
     if (!sessionActive || !hasActiveStep || focusedStep === 1) {

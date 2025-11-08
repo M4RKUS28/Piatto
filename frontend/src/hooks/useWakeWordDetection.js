@@ -48,7 +48,7 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     }
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.hostname}:${window.location.port || (protocol === 'wss:' ? '443' : '80')}/ws/voice_assistant?session_id=${cookingSessionId}`;
+    const wsUrl = `${protocol}//${window.location.hostname}:${window.location.port || (protocol === 'wss:' ? '443' : '80')}/api/ws/voice_assistant?session_id=${cookingSessionId}`;
 
     debugLog('Connecting to WebSocket:', wsUrl);
     const ws = new WebSocket(wsUrl);
@@ -323,6 +323,12 @@ const useWakeWordDetection = (cookingSessionId = null) => {
 
   // Start listening
   const startListening = useCallback(() => {
+    // Activate the system when starting
+    setIsActive(true);
+    isActiveRef.current = true;
+    setError(null);
+    debugLog('=== STARTING WAKE WORD DETECTION ===');
+
     if (!recognitionRef.current) {
       debugLog('Initializing Speech Recognition...');
       recognitionRef.current = initializeSpeechRecognition();
@@ -465,9 +471,7 @@ const useWakeWordDetection = (cookingSessionId = null) => {
 
   // Stop listening
   const stopListening = useCallback(() => {
-    // Add stack trace to see who's calling this
-    const stack = new Error().stack;
-    debugLog('Stopping listening... Called from:', stack);
+    debugLog('Stopping listening...');
 
     if (recognitionRef.current) {
       try {
