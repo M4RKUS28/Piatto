@@ -49,6 +49,120 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     }
   }, []);
 
+  // Play audio response (PCM data from Gemini) - Queue-based playback
+  const playAudioResponse = useCallback(async (pcmData) => {
+    try {
+      // Add to queue
+      audioQueueRef.current.push(pcmData);
+
+      // If already playing, return (queue will be processed)
+      if (isPlayingRef.current) {
+        return;
+      }
+
+      // Start processing queue
+      isPlayingRef.current = true;
+      setAssistantState('playing');
+
+      // Create single AudioContext for all chunks
+      if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
+        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({
+          sampleRate: 24000, // Gemini outputs 24kHz PCM
+        });
+        debugLog('Created AudioContext for playback (24kHz)');
+      }
+
+      const audioContext = audioContextRef.current;
+
+      // Process queue
+      while (audioQueueRef.current.length > 0) {
+        const chunk = audioQueueRef.current.shift();
+
+        // Convert ArrayBuffer to Int16Array
+        const int16Data = new Int16Array(chunk);
+
+        // Convert Int16 PCM to Float32 for Web Audio API
+        const float32Data = new Float32Array(int16Data.length);
+        for (let i = 0; i < int16Data.length; i++) {
+          float32Data[i] = int16Data[i] / (int16Data[i] < 0 ? 0x8000 : 0x7FFF);
+        }
+
+        // Create AudioBuffer
+        const audioBuffer = audioContext.createBuffer(1, float32Data.length, 24000);
+        audioBuffer.getChannelData(0).set(float32Data);
+
+        // Create buffer source
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContext.destination);
+
+        // Wait for this chunk to finish before playing next
+        await new Promise((resolve) => {
+          source.onended = resolve;
+          source.start(0);
+        });
+      }
+
+      // All chunks played
+      debugLog('Audio playback finished - ready for next "Hey Piatto"');
+      isPlayingRef.current = false;
+      setAssistantState('idle');
+
+      // Don't close WebSocket - keep it open for next question
+      // Speech recognition will auto-restart via onend handler
+
+      // Clear queue to ensure it's empty
+      audioQueueRef.current = [];
+    } catch (err) {
+      debugLog('Error playing audio:', err.message);
+      setError('Failed to play audio response');
+      isPlayingRef.current = false;
+      setAssistantState('idle');
+    }
+  }, [debugLog]);
+  // Stop recording audio (called when Gemini responds or user manually stops)
+  const stopRecording = useCallback(() => {
+    debugLog('Stopping recording...');
+
+    // Cleanup audio processing nodes
+    if (mediaRecorderRef.current) {
+      const { processor, source, stream } = mediaRecorderRef.current;
+
+      try {
+        if (processor) {
+          processor.disconnect();
+          processor.onaudioprocess = null;
+        }
+        if (source) {
+          source.disconnect();
+        }
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+      } catch (err) {
+        debugLog('Error cleaning up audio nodes:', err);
+      }
+
+      mediaRecorderRef.current = null;
+    }
+
+    // Close AudioContext
+    if (audioContextRef.current) {
+      try {
+        audioContextRef.current.close();
+      } catch (err) {
+        debugLog('Error closing AudioContext:', err);
+      }
+      audioContextRef.current = null;
+    }
+
+    setIsRecording(false);
+    // Don't change assistantState here - let the caller manage state transitions
+    // When Gemini responds with audio, state will go directly to 'playing'
+
+    debugLog('✓ Recording stopped (audio stream cleanup)');
+  }, [debugLog]);
+
   // Setup WebSocket connection
   const setupWebSocket = useCallback(() => {
     if (!cookingSessionId) {
@@ -137,76 +251,6 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     return ws;
   }, [cookingSessionId, assistantState, debugLog, playAudioResponse, stopRecording]);
 
-  // Play audio response (PCM data from Gemini) - Queue-based playback
-  const playAudioResponse = useCallback(async (pcmData) => {
-    try {
-      // Add to queue
-      audioQueueRef.current.push(pcmData);
-
-      // If already playing, return (queue will be processed)
-      if (isPlayingRef.current) {
-        return;
-      }
-
-      // Start processing queue
-      isPlayingRef.current = true;
-      setAssistantState('playing');
-
-      // Create single AudioContext for all chunks
-      if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
-        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({
-          sampleRate: 24000, // Gemini outputs 24kHz PCM
-        });
-        debugLog('Created AudioContext for playback (24kHz)');
-      }
-
-      const audioContext = audioContextRef.current;
-
-      // Process queue
-      while (audioQueueRef.current.length > 0) {
-        const chunk = audioQueueRef.current.shift();
-
-        // Convert ArrayBuffer to Int16Array
-        const int16Data = new Int16Array(chunk);
-
-        // Convert Int16 PCM to Float32 for Web Audio API
-        const float32Data = new Float32Array(int16Data.length);
-        for (let i = 0; i < int16Data.length; i++) {
-          float32Data[i] = int16Data[i] / (int16Data[i] < 0 ? 0x8000 : 0x7FFF);
-        }
-
-        // Create AudioBuffer
-        const audioBuffer = audioContext.createBuffer(1, float32Data.length, 24000);
-        audioBuffer.getChannelData(0).set(float32Data);
-
-        // Create buffer source
-        const source = audioContext.createBufferSource();
-        source.buffer = audioBuffer;
-        source.connect(audioContext.destination);
-
-        // Wait for this chunk to finish before playing next
-        await new Promise((resolve) => {
-          source.onended = resolve;
-          source.start(0);
-        });
-      }
-
-      // All chunks played
-      debugLog('Audio playback finished - ready for next "Hey Piatto"');
-      isPlayingRef.current = false;
-      setAssistantState('idle');
-
-      // Don't close WebSocket - keep it open for next question
-      // Speech recognition will auto-restart via onend handler
-
-    } catch (err) {
-      debugLog('Error playing audio:', err.message);
-      setError('Failed to play audio response');
-      isPlayingRef.current = false;
-      setAssistantState('idle');
-    }
-  }, [debugLog]);
-
   // Start recording audio
   const startRecording = useCallback(async () => {
     try {
@@ -293,49 +337,6 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       setAssistantState('idle');
     }
   }, [setupWebSocket, debugLog]);
-
-  // Stop recording audio (called when Gemini responds or user manually stops)
-  const stopRecording = useCallback(() => {
-    debugLog('Stopping recording...');
-
-    // Cleanup audio processing nodes
-    if (mediaRecorderRef.current) {
-      const { processor, source, stream } = mediaRecorderRef.current;
-
-      try {
-        if (processor) {
-          processor.disconnect();
-          processor.onaudioprocess = null;
-        }
-        if (source) {
-          source.disconnect();
-        }
-        if (stream) {
-          stream.getTracks().forEach(track => track.stop());
-        }
-      } catch (err) {
-        debugLog('Error cleaning up audio nodes:', err);
-      }
-
-      mediaRecorderRef.current = null;
-    }
-
-    // Close AudioContext
-    if (audioContextRef.current) {
-      try {
-        audioContextRef.current.close();
-      } catch (err) {
-        debugLog('Error closing AudioContext:', err);
-      }
-      audioContextRef.current = null;
-    }
-
-    setIsRecording(false);
-    // Don't change assistantState here - let the caller manage state transitions
-    // When Gemini responds with audio, state will go directly to 'playing'
-
-    debugLog('✓ Recording stopped (audio stream cleanup)');
-  }, [debugLog]);
 
   // Update ref to latest startRecording function
   useEffect(() => {
