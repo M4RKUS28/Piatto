@@ -76,9 +76,10 @@ UNSPLASH_SECRET_KEY = os.getenv("UNSPLASH_SECRET_KEY")
 AGENT_DEBUG_MODE = os.getenv("AGENT_DEBUG_MODE", "true").lower() == "true"
 
 # Gemini API settings
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# Try GEMINI_API_KEY first, fall back to GOOGLE_API_KEY for compatibility
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 if not GEMINI_API_KEY:
-    logging.warning("GEMINI_API_KEY not set - voice assistant will not work")
+    logging.warning("GEMINI_API_KEY or GOOGLE_API_KEY not set - voice assistant will not work")
 
 # -------------------------
 DB_HOST = os.getenv("DB_HOST")  # 10.73.16.3
