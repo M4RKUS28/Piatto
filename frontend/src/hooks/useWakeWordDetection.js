@@ -336,7 +336,6 @@ const useWakeWordDetection = (cookingSessionId = null) => {
         debugLog('✓ Started listening for "Hey Piatto"');
         setIsListening(true);
         setError(null);
-        retryCountRef.current = 0; // Reset retry count on successful start
       };
 
       recognitionRef.current.onresult = (event) => {

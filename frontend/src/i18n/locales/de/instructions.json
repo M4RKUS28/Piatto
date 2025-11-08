@@ -22,7 +22,9 @@
   "aiButtonAria": "Bitte die KI um Hilfe",
   "voiceAssistant": {
     "activeTitle": "Voice Assistant aktiv",
-    "inactiveTitle": "Voice Assistant inaktiv"
+    "inactiveTitle": "Voice Assistant inaktiv",
+    "askPiatto": "Piatto direkt fragen",
+    "enableFirst": "Voice Assistant zuerst aktivieren"
   },
   "sessionDialog": {
     "badge": "Piatto Companion",

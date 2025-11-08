@@ -22,7 +22,9 @@
   "aiButtonAria": "Ask the AI for help",
   "voiceAssistant": {
     "activeTitle": "Voice assistant active",
-    "inactiveTitle": "Voice assistant inactive"
+    "inactiveTitle": "Voice assistant inactive",
+    "askPiatto": "Ask Piatto directly",
+    "enableFirst": "Enable voice assistant first"
   },
   "sessionDialog": {
     "badge": "Piatto Companion",
