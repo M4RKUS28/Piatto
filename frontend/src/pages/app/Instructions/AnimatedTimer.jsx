@@ -38,26 +38,34 @@ const AnimatedTimer = ({
         context.resume().catch(() => {});
       }
 
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
+      const now = context.currentTime;
 
-      oscillator.type = 'triangle';
-      oscillator.frequency.setValueAtTime(880, context.currentTime);
+      const scheduleTone = (frequency, startOffset, duration, gainPeak) => {
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
 
-      gain.gain.setValueAtTime(0.0001, context.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.12, context.currentTime + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.5);
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(frequency, now + startOffset);
 
-      oscillator.connect(gain);
-      gain.connect(context.destination);
+        gain.gain.setValueAtTime(0.0001, now + startOffset);
+        gain.gain.exponentialRampToValueAtTime(gainPeak, now + startOffset + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + startOffset + duration);
 
-      oscillator.start(context.currentTime);
-      oscillator.stop(context.currentTime + 0.5);
+        oscillator.connect(gain);
+        gain.connect(context.destination);
 
-      oscillator.onended = () => {
-        oscillator.disconnect();
-        gain.disconnect();
+        oscillator.start(now + startOffset);
+        oscillator.stop(now + startOffset + duration + 0.05);
+
+        oscillator.onended = () => {
+          oscillator.disconnect();
+          gain.disconnect();
+        };
       };
+
+      scheduleTone(880, 0, 0.35, 0.22);
+      scheduleTone(990, 0.25, 0.35, 0.28);
+      scheduleTone(1175, 0.5, 0.4, 0.32);
     } catch (error) {
       console.warn('Timer completion sound failed:', error);
     }
