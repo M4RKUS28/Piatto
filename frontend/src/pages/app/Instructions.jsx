@@ -87,7 +87,7 @@ const AIQuestionButton = React.forwardRef(({ onClick, isFocused, isEnabled }, re
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="absolute top-4 right-4 flex items-center gap-2 border border-gray-100 hover:border-gray-300 bg-white/50 hover:bg-white/90 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer z-10 px-2 py-2"
+      className="absolute top-4 right-4 flex items-center gap-2 border border-gray-100 hover:border-gray-300 bg-white/50 hover:bg-white/90 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer z-10 px-2 py-1"
       aria-label={t('aiButtonAria', 'Ask the AI for help')}
       title={t('aiButtonAria', 'Ask the AI for help')}
     >
@@ -237,6 +237,8 @@ const CookingInstructions = ({
   const voiceAssistant = useWakeWordDetection(cookingSessionId);
   // Show as active when wake word detection is listening (not just when session active)
   const voiceAssistantActive = voiceAssistant?.isListening ?? false;
+  const wakeWordSupported = voiceAssistant?.browserSupported !== false;
+  const voiceAssistantBusy = Boolean(voiceAssistant?.assistantState && voiceAssistant.assistantState !== 'idle');
 
   // Debug: Log cookingSessionId changes
   React.useEffect(() => {
@@ -1347,6 +1349,7 @@ const CookingInstructions = ({
           setStartDialogMode('new');
         }}
         onSelect={handleVoicePreferenceSelection}
+        wakeWordSupported={wakeWordSupported}
       />
 
       {/* Fixed Navigation Controls - Bottom Right - Only show when session is active */}
@@ -1457,8 +1460,8 @@ const CookingInstructions = ({
             <button
               type="button"
               onClick={() => {
-                // If wake word detection is not active, show settings dialog
-                if (!voiceAssistantActive) {
+                // If wake word detection is supported but not active, show settings dialog
+                if (wakeWordSupported && !voiceAssistantActive) {
                   setStartDialogMode('resume');
                   setIsStartDialogOpen(true);
                   return;
@@ -1466,22 +1469,26 @@ const CookingInstructions = ({
                 // Otherwise, start recording directly
                 voiceAssistant.startRecording?.();
               }}
-              disabled={voiceAssistantActive && voiceAssistant.assistantState !== 'idle'}
+              disabled={voiceAssistantBusy}
               className={`relative transition-all duration-200 ${
-                !voiceAssistantActive || voiceAssistant.assistantState === 'idle'
-                  ? 'hover:scale-110 cursor-pointer'
-                  : 'opacity-50 cursor-not-allowed'
+                voiceAssistantBusy ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 cursor-pointer'
               }`}
-              title={voiceAssistantActive
-                ? t('voiceAssistant.askPiatto', 'Ask Piatto directly')
-                : t('voiceAssistant.enableFirst', 'Enable voice assistant first')}
+              title={
+                wakeWordSupported
+                  ? (voiceAssistantActive
+                      ? t('voiceAssistant.askPiatto', 'Ask Piatto directly')
+                      : t('voiceAssistant.enableFirst', 'Enable voice assistant first'))
+                  : t('voiceAssistant.manualOnlyTitle', 'Tap to ask Piatto (wake word unavailable)')
+              }
             >
               <div className={`w-10 h-10 rounded-full border-4 flex items-center justify-center shadow-lg ${
-                voiceAssistantActive && voiceAssistant.assistantState === 'idle'
-                  ? 'bg-[#035035] border-[#024028] shadow-[#035035]/50'
-                  : voiceAssistantActive
+                voiceAssistantBusy
                   ? 'bg-gray-400 border-gray-300 shadow-gray-400/50'
-                  : 'bg-blue-500 border-blue-300 shadow-blue-500/50'
+                  : voiceAssistantActive
+                  ? 'bg-[#035035] border-[#024028] shadow-[#035035]/50'
+                  : wakeWordSupported
+                  ? 'bg-blue-500 border-blue-300 shadow-blue-500/50'
+                  : 'bg-[#035035] border-[#024028] shadow-[#035035]/50'
               } transition-all duration-300`}>
                 <span className="text-lg">💬</span>
               </div>
@@ -1499,15 +1506,21 @@ const CookingInstructions = ({
               setIsStartDialogOpen(true);
             }}
             className="relative transition-all duration-200 hover:scale-110"
-            title={voiceAssistantActive
-              ? t('voiceAssistant.activeTitle', 'Voice assistant active')
-              : t('voiceAssistant.inactiveTitle', 'Voice assistant inactive')}
+            title={
+              wakeWordSupported
+                ? (voiceAssistantActive
+                    ? t('voiceAssistant.activeTitle', 'Voice assistant active')
+                    : t('voiceAssistant.inactiveTitle', 'Voice assistant inactive'))
+                : t('voiceAssistant.unsupportedTitle', 'Wake word detection unavailable')
+            }
           >
             <div className="relative">
               <div className={`w-10 h-10 rounded-full border-4 ${
                 voiceAssistantActive
                   ? 'bg-green-500 border-green-300 shadow-lg shadow-green-500/50'
-                  : 'bg-orange-500 border-orange-300 shadow-lg shadow-orange-500/50'
+                  : wakeWordSupported
+                  ? 'bg-orange-500 border-orange-300 shadow-lg shadow-orange-500/50'
+                  : 'bg-amber-500 border-amber-300 shadow-lg shadow-amber-500/50'
               } flex items-center justify-center transition-all duration-300`}>
                 <span className="text-lg">🎤</span>
               </div>

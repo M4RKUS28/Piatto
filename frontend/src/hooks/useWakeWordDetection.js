@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 const ASSISTANT_PAUSE_REASON = 'assistant-interaction';
+const TARGET_SAMPLE_RATE = 16000;
 
 /**
  * Custom hook for detecting wake word "Hey Piatto" using Web Speech API
@@ -406,6 +407,38 @@ const useWakeWordDetection = (cookingSessionId = null) => {
   }, [cookingSessionId, assistantState, debugLog, playAudioResponse, stopRecording, resumeWakeWordDetection]);
 
   // Start recording audio
+  const downsampleBuffer = useCallback((inputBuffer, inputRate, targetRate) => {
+    if (!inputBuffer || inputBuffer.length === 0) {
+      return inputBuffer;
+    }
+    if (targetRate >= inputRate) {
+      return inputBuffer;
+    }
+
+    const sampleRateRatio = inputRate / targetRate;
+    const newLength = Math.round(inputBuffer.length / sampleRateRatio);
+    const result = new Float32Array(newLength);
+    let offsetResult = 0;
+    let offsetBuffer = 0;
+
+    while (offsetResult < result.length) {
+      const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
+      let accum = 0;
+      let count = 0;
+
+      for (let i = offsetBuffer; i < nextOffsetBuffer && i < inputBuffer.length; i++) {
+        accum += inputBuffer[i];
+        count += 1;
+      }
+
+      result[offsetResult] = count > 0 ? accum / count : 0;
+      offsetResult += 1;
+      offsetBuffer = nextOffsetBuffer;
+    }
+
+    return result;
+  }, []);
+
   const startRecording = useCallback(async () => {
     try {
       debugLog('Starting audio recording...');
@@ -437,9 +470,10 @@ const useWakeWordDetection = (cookingSessionId = null) => {
 
         try {
           // Create AudioContext for PCM conversion
-          const audioContext = new (window.AudioContext || window.webkitAudioContext)({
-            sampleRate: 16000, // Target 16kHz for Gemini
-          });
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          const audioContext = new AudioContextClass();
+          const inputSampleRate = audioContext.sampleRate;
+          debugLog(`AudioContext ready (sample rate: ${inputSampleRate})`);
 
           audioContextRef.current = audioContext;
 
@@ -457,12 +491,17 @@ const useWakeWordDetection = (cookingSessionId = null) => {
 
             // Get audio data (Float32Array)
             const inputData = e.inputBuffer.getChannelData(0);
+            let processedData = inputData;
+
+            if (inputSampleRate > TARGET_SAMPLE_RATE) {
+              processedData = downsampleBuffer(inputData, inputSampleRate, TARGET_SAMPLE_RATE);
+            }
 
             // Convert Float32 to Int16 PCM
-            const pcmData = new Int16Array(inputData.length);
-            for (let i = 0; i < inputData.length; i++) {
+            const pcmData = new Int16Array(processedData.length);
+            for (let i = 0; i < processedData.length; i++) {
               // Clamp to [-1, 1] and convert to 16-bit integer
-              const s = Math.max(-1, Math.min(1, inputData[i]));
+              const s = Math.max(-1, Math.min(1, processedData[i]));
               pcmData[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
             }
 
@@ -502,7 +541,7 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       setAssistantState('idle');
       resumeWakeWordDetection();
     }
-  }, [setupWebSocket, debugLog, pauseWakeWordDetection, resumeWakeWordDetection, fetchVoiceToken, playStartTone]);
+  }, [setupWebSocket, debugLog, pauseWakeWordDetection, resumeWakeWordDetection, fetchVoiceToken, playStartTone, downsampleBuffer]);
 
   // Update ref to latest startRecording function
   useEffect(() => {
@@ -550,6 +589,12 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       recognitionRef.current = initializeSpeechRecognition();
 
       if (!recognitionRef.current) {
+        // Browser not supported – reset state so UI can react properly
+        setIsListening(false);
+        setIsActive(false);
+        isActiveRef.current = false;
+        wakeWordPauseReasonsRef.current.clear();
+        wakeWordHoldRef.current = false;
         return; // Browser not supported
       }
 
