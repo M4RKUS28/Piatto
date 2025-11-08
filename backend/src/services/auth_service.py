@@ -30,6 +30,7 @@ from ..core.enums import UserRole
 
 
 logger = Logger(__name__)
+VOICE_TOKEN_EXPIRE_SECONDS = 3600  # 1 hour
 
 async def login_user(form_data: OAuth2PasswordRequestForm, db: AsyncSession, response: Response) -> auth_schema.APIResponseStatus:
     """Authenticates a user and returns an access token."""
@@ -405,9 +406,13 @@ def get_voice_token(token_data: Optional[dict]) -> auth_schema.VoiceTokenRespons
         "access_level": AccessLevel.READ_WRITE.value
     }
 
-    voice_token = security.create_access_token(token_data)
+    voice_token = security.create_access_token(
+        token_data,
+        expires_minutes=VOICE_TOKEN_EXPIRE_SECONDS / 60,
+    )
 
     return auth_schema.VoiceTokenResponse(
         voice_token=voice_token,
+        expires_in=VOICE_TOKEN_EXPIRE_SECONDS,
         user_id=user_id
     )

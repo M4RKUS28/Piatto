@@ -75,7 +75,7 @@ async def get_voice_token(token_data: Optional[dict] = Depends(get_read_write_us
     """
     Endpoint to get a new voice token.
     """
-    return await auth_service.get_voice_token(token_data)
+    return auth_service.get_voice_token(token_data)
 
 
 @api_router.get("/login/google")
