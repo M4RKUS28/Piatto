@@ -410,12 +410,14 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       };
 
       recognitionRef.current.onend = () => {
-        debugLog('Recognition ended - auto-restarting...');
+        debugLog(`Recognition ended - isActiveRef.current = ${isActiveRef.current}`);
         setIsListening(false);
 
         // ALWAYS auto-restart if still active (no retry limit!)
         if (isActiveRef.current) {
+          debugLog('Auto-restart condition met, scheduling restart...');
           setTimeout(() => {
+            debugLog(`Inside setTimeout: isActiveRef.current = ${isActiveRef.current}, recognitionRef.current = ${recognitionRef.current ? 'exists' : 'null'}`);
             if (isActiveRef.current) {
               try {
                 debugLog('🔄 Restarting wake word detection...');
@@ -437,8 +439,12 @@ const useWakeWordDetection = (cookingSessionId = null) => {
                   }, 1000);
                 }
               }
+            } else {
+              debugLog('❌ isActiveRef became false, not restarting');
             }
           }, 100); // Very short delay for immediate restart
+        } else {
+          debugLog('❌ Auto-restart SKIPPED - isActiveRef.current is false');
         }
       };
     }
@@ -459,7 +465,9 @@ const useWakeWordDetection = (cookingSessionId = null) => {
 
   // Stop listening
   const stopListening = useCallback(() => {
-    debugLog('Stopping listening...');
+    // Add stack trace to see who's calling this
+    const stack = new Error().stack;
+    debugLog('Stopping listening... Called from:', stack);
 
     if (recognitionRef.current) {
       try {
@@ -479,13 +487,24 @@ const useWakeWordDetection = (cookingSessionId = null) => {
   // Auto-restart is now handled in onend callback - no need for timer
   // Recognition will automatically restart whenever it stops while isActive is true
 
-  // Cleanup on unmount
+  // Cleanup on unmount ONLY (empty deps array = only on unmount)
   useEffect(() => {
     return () => {
-      debugLog('Component unmounting - cleaning up');
-      stopListening();
+      console.log('[WakeWord] Component unmounting - cleaning up');
+      // Use isActiveRef to stop listening
+      if (isActiveRef.current) {
+        isActiveRef.current = false;
+        if (recognitionRef.current) {
+          try {
+            recognitionRef.current.stop();
+          } catch (err) {
+            console.log('[WakeWord] Error stopping on unmount:', err.message);
+          }
+          recognitionRef.current = null;
+        }
+      }
     };
-  }, [stopListening, debugLog]);
+  }, []); // Empty deps = only runs on unmount
 
   // Start/Stop control
   const toggleListening = useCallback(() => {

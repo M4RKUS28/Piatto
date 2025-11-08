@@ -238,6 +238,12 @@ const CookingInstructions = ({
   // Show as active when wake word detection is listening (not just when session active)
   const voiceAssistantActive = voiceAssistant?.isListening ?? false;
 
+  // Ref to store voiceAssistant for cleanup without triggering re-renders
+  const voiceAssistantRef = React.useRef(voiceAssistant);
+  React.useEffect(() => {
+    voiceAssistantRef.current = voiceAssistant;
+  }, [voiceAssistant]);
+
   const resetSessionVisuals = React.useCallback(() => {
     setOpenChatStep(null);
     setChatStepPosition(null);
@@ -324,9 +330,10 @@ const CookingInstructions = ({
       if (snapshot.sessionActive && snapshot.isLastStep && snapshot.cookingSessionId) {
         finishCookingSession(snapshot.cookingSessionId).catch(() => {});
       }
-      stopVoiceAssistant();
+      // Use ref to avoid re-running cleanup on every render
+      voiceAssistantRef.current?.stopListening?.();
     };
-  }, [stopVoiceAssistant]);
+  }, []); // Empty deps = only runs on unmount
 
   // Timer state management
   // Track which step timers are floating and which is expanded
