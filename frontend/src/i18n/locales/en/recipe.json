@@ -78,6 +78,7 @@
   },
   "deleteError": "Error deleting recipe",
   "minimizedLabel": "RECIPE",
+  "backToDashboard": "Back to Dashboard",
   "library": {
     "title": "Your Recipes",
     "subtitle": "Discover and save your favorite dishes",

@@ -41,6 +41,9 @@
     "next": "Weiter",
     "finish": "Fertig"
   },
+  "general": {
+    "loading": "Wird geladen..."
+  },
   "time": {
     "na": "k.A.",
     "min": "Min.",

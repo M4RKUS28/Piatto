@@ -41,6 +41,9 @@
     "next": "Next",
     "finish": "Finish"
   },
+  "general": {
+    "loading": "Loading..."
+  },
   "time": {
     "na": "N/A",
     "min": "Min.",

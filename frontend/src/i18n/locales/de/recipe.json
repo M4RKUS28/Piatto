@@ -78,6 +78,7 @@
   },
   "deleteError": "Fehler beim Löschen des Rezepts",
   "minimizedLabel": "REZEPT",
+  "backToDashboard": "Zurück zum Dashboard",
   "library": {
     "title": "Deine Rezepte",
     "subtitle": "Entdecke und speichere deine Lieblingsgerichte",

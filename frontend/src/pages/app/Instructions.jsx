@@ -395,7 +395,7 @@ const CookingInstructions = ({
   // Handle opening chat for a step
   const handleOpenChat = React.useCallback((stepIndex) => {
     if (!sessionActive) {
-  setSessionError(t('startPrompt', 'Please start the cooking session first.'));
+      setSessionError(t('startPrompt', 'Please start the cooking session first.'));
       return;
     }
     setSessionError(null);
@@ -603,12 +603,12 @@ const CookingInstructions = ({
         previousSyncedStep.current = step;
       } catch (err) {
         console.error('Failed to update cooking state:', err);
-  setNavigationError(t('syncError', 'Failed to update the cooking state. Please try again.'));
+        setNavigationError(t('syncError', 'Failed to update the cooking state. Please try again.'));
       } finally {
         setIsNavigating(false);
       }
     }
-  }, [instructions, cookingSessionId, scrollStepIntoView, t, focusedStep]);
+  }, [instructions, cookingSessionId, scrollStepIntoView, t]);
 
   // Handle wheel/scroll events for navigation
   const handleWheelNavigation = React.useCallback((event) => {
@@ -664,7 +664,7 @@ const CookingInstructions = ({
 
   const handleStepClick = React.useCallback((index) => {
     if (!sessionActive) {
-  setSessionError(t('instructions.startPrompt', 'Please start the cooking session first.'));
+      setSessionError(t('startPrompt', 'Please start the cooking session first.'));
       return;
     }
 
@@ -707,7 +707,7 @@ const CookingInstructions = ({
       }
     } catch (err) {
       console.error('Failed to start cooking session:', err);
-  setSessionError(t('startError', 'Failed to start the cooking session. Please try again.'));
+      setSessionError(t('startError', 'Failed to start the cooking session. Please try again.'));
     } finally {
       setIsSessionStarting(false);
     }
@@ -748,7 +748,7 @@ const CookingInstructions = ({
     } catch (err) {
       console.error('Failed to finish cooking session:', err);
       if (!silent) {
-  setNavigationError(t('instructions.finishError', 'Failed to finish the cooking session.'));
+        setNavigationError(t('finishError', 'Failed to finish the cooking session.'));
       }
       return false;
     } finally {
@@ -801,7 +801,7 @@ const CookingInstructions = ({
 
   const handleNextStep = React.useCallback(async () => {
     if (!sessionActive || !hasActiveStep) {
-  setSessionError(t('instructions.startPrompt', 'Please start the cooking session first.'));
+      setSessionError(t('startPrompt', 'Please start the cooking session first.'));
       return;
     }
 
@@ -950,7 +950,7 @@ const CookingInstructions = ({
         } else {
           // Other errors - stop polling and show error
           console.error('Error fetching instructions:', err);
-          setError(t('instructions.errorLoading', 'Failed to load instructions. Please try again.'));
+          setError(t('errorLoading', 'Failed to load instructions. Please try again.'));
           setLoading(false);
           if (pollIntervalRef.current) {
             clearInterval(pollIntervalRef.current);
@@ -1044,10 +1044,10 @@ const CookingInstructions = ({
             <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-[#A8C9B8] border-t-[#035035]"></div>
           </div>
           <h2 className="font-['Poppins',_sans-serif] font-bold text-[#035035] text-2xl sm:text-3xl mb-3">
-            {t('instructions.generating', 'Generating Instructions...')}
+            {t('generating', 'Generating Instructions...')}
           </h2>
           <p className="text-[#2D2D2D] opacity-75 text-sm sm:text-base">
-            {t('instructions.generatingDescription', 'Our AI chef is preparing detailed cooking instructions for your recipe. This usually takes just a few moments.')}
+            {t('generatingDescription', 'Our AI chef is preparing detailed cooking instructions for your recipe. This usually takes just a few moments.')}
           </p>
         </div>
       </div>
@@ -1061,7 +1061,7 @@ const CookingInstructions = ({
         <div className="text-center max-w-md">
           <div className="mb-6 text-6xl">⚠️</div>
           <h2 className="font-['Poppins',_sans-serif] font-bold text-[#FF9B7B] text-2xl sm:text-3xl mb-3">
-            {t('instructions.errorTitle', 'Oops! Something went wrong')}
+            {t('errorTitle', 'Oops! Something went wrong')}
           </h2>
           <p className="text-[#2D2D2D] opacity-75 text-sm sm:text-base">
             {error}
@@ -1080,10 +1080,10 @@ const CookingInstructions = ({
       {/* Header */}
       <div className="p-3 sm:p-4 md:p-8 text-center">
         <h1 className="font-['Poppins',_sans-serif] font-bold text-[#2D2D2D] text-2xl sm:text-3xl md:text-4xl lg:text-[2.5rem]">
-          {t('instructions.title', 'Cooking Instructions')}
+          {t('title', 'Cooking Instructions')}
         </h1>
         <p className="text-[#2D2D2D] mt-3 sm:mt-4 max-w-lg text-sm sm:text-base">
-          {t('instructions.subtitle', 'Follow the steps along the path to complete your recipe.')}
+          {t('subtitle', 'Follow the steps along the path to complete your recipe.')}
         </p>
       </div>
 
@@ -1106,14 +1106,14 @@ const CookingInstructions = ({
                 }`}
               >
                 <span className="relative z-10">
-                  {isSessionStarting ? t('instructions.starting', 'Starting...') : t('instructions.startSessionButton', '🚀 Start Session')}
+                  {isSessionStarting ? t('starting', 'Starting...') : t('startSessionButton', '🚀 Start Session')}
                 </span>
                 {!isSessionStarting && totalSteps > 0 && (
                   <span className="absolute inset-0 rounded-full bg-[#A8C9B8] opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
                 )}
               </button>
               <p className="mt-6 text-sm text-[#2D2D2D]/70 text-center max-w-md">
-                {t('instructions.startVoiceInfo', 'In the next step you decide whether to use the voice assistant.')}
+                {t('startVoiceInfo', 'In the next step you decide whether to use the voice assistant.')}
               </p>
             </div>
           ) : null}
@@ -1218,14 +1218,14 @@ const CookingInstructions = ({
         <div className="w-full max-w-4xl mt-12 mb-6">
           <div className="text-center py-8">
             <p className="text-2xl font-bold text-green-700 mb-6">
-              {t('instructions.finishedMessage', 'Cooking session complete – enjoy your meal!')}
+              {t('finishedMessage', 'Cooking session complete – enjoy your meal!')}
             </p>
             <button
               type="button"
               onClick={handleReturnToLibrary}
               className="px-8 py-4 rounded-full text-base font-semibold uppercase tracking-wide bg-[#FF9B7B] text-white transition hover:bg-[#ff8a61] hover:scale-105 active:scale-95 shadow-lg"
             >
-              ← {t('instructions.backToLibrary', 'Back to Library')}
+              ← {t('backToLibrary', 'Back to Library')}
             </button>
           </div>
         </div>
@@ -1379,7 +1379,7 @@ const CookingInstructions = ({
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 : 'bg-white border-2 border-[#035035] text-[#035035] hover:bg-[#f1f9f5] hover:scale-110'
             } shadow-lg`}
-            title={t('instructions.previous', 'Back')}
+            title={t('previous', 'Back')}
           >
             <span className="text-lg">◀</span>
           </button>
@@ -1394,7 +1394,7 @@ const CookingInstructions = ({
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 : 'bg-[#035035] text-white hover:bg-[#024028] hover:scale-110'
             } shadow-lg`}
-            title={isLastStep ? t('instructions.finish', 'Finish') : t('instructions.next', 'Next')}
+            title={isLastStep ? t('finish', 'Finish') : t('next', 'Next')}
           >
             <span className="text-lg">{isLastStep ? '✓' : '▶'}</span>
           </button>
@@ -1403,7 +1403,7 @@ const CookingInstructions = ({
           <div className="bg-white border-2 border-[#A8C9B8] rounded-full px-4 py-2 shadow-lg">
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold uppercase tracking-wide text-[#035035]">
-                {t('instructions.stepLabel', 'Step')}
+                {t('stepLabel', 'Step')}
               </span>
               <span className="text-sm font-bold text-[#035035]">
                 {hasActiveStep ? `${focusedStep}/${totalSteps}` : '—'}
@@ -1420,8 +1420,8 @@ const CookingInstructions = ({
             }}
             className="relative transition-all duration-200 hover:scale-110"
             title={voiceAssistantActive
-              ? t('instructions.voiceAssistant.activeTitle', 'Voice assistant active')
-              : t('instructions.voiceAssistant.inactiveTitle', 'Voice assistant inactive')}
+              ? t('voiceAssistant.activeTitle', 'Voice assistant active')
+              : t('voiceAssistant.inactiveTitle', 'Voice assistant inactive')}
           >
             <div className="relative">
               <div className={`w-10 h-10 rounded-full border-4 ${
