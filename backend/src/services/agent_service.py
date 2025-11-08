@@ -116,7 +116,7 @@ class AgentService:
                 })
 
         # get the query for the recipe agent
-        query = get_recipe_gen_query(prompt, written_ingredients, previous_recipes)
+        query = get_recipe_gen_query(prompt, written_ingredients, collections_string, previous_recipes)
         logger.info("Generated query for recipe agent: %s", query)
 
         # call recipe agent
