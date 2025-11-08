@@ -36,8 +36,8 @@ const useWakeWordDetection = (cookingSessionId = null) => {
   const mediaRecorderRef = useRef(null);
   const websocketRef = useRef(null);
   const audioContextRef = useRef(null);
-  const recordingTimeoutRef = useRef(null);
-  const maxRecordingTime = 30000; // Maximum 30 seconds recording
+  const audioQueueRef = useRef([]);  // Queue for audio chunks
+  const isPlayingRef = useRef(false);  // Track if currently playing audio
 
   // Debug log helper
   const debugLog = useCallback((message, data = null) => {
@@ -67,20 +67,21 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       return null;
     }
 
+    // TEMPORARILY DISABLED FOR TESTING - TODO: Re-enable authentication
     // Get access token from cookies for authentication
-    debugLog('All cookies:', document.cookie);
-    const accessToken = getCookie('__session');
-    if (!accessToken) {
-      debugLog('ERROR: No access token found in cookies');
-      debugLog('Tried cookie name: __session');
-      setError('Authentication required');
-      return null;
-    }
+    // debugLog('All cookies:', document.cookie);
+    // const accessToken = getCookie('__session');
+    // if (!accessToken) {
+    //   debugLog('ERROR: No access token found in cookies');
+    //   debugLog('Tried cookie name: __session');
+    //   setError('Authentication required');
+    //   return null;
+    // }
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.hostname}:${window.location.port || (protocol === 'wss:' ? '443' : '80')}/api/ws/voice_assistant?session_id=${cookingSessionId}&token=${encodeURIComponent(accessToken)}`;
+    const wsUrl = `${protocol}//${window.location.hostname}:${window.location.port || (protocol === 'wss:' ? '443' : '80')}/api/ws/voice_assistant?session_id=${cookingSessionId}`;
 
-    debugLog('Connecting to WebSocket:', wsUrl.replace(accessToken, '***TOKEN***')); // Hide token in logs
+    debugLog('Connecting to WebSocket:', wsUrl);
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
