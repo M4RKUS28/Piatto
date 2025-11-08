@@ -22,6 +22,16 @@ const useWakeWordDetection = (cookingSessionId = null) => {
   const lastDetectionTimeRef = useRef(0); // Track last detection time for debounce
   const debounceInterval = 3000; // Debounce detection for 3 seconds
 
+  // Refs to avoid stale closures in event handlers
+  const cookingSessionIdRef = useRef(cookingSessionId);
+  const assistantStateRef = useRef(assistantState);
+  const startRecordingRef = useRef(null);
+
+  useEffect(() => {
+    cookingSessionIdRef.current = cookingSessionId;
+    assistantStateRef.current = assistantState;
+  }, [cookingSessionId, assistantState]);
+
   // New refs for voice assistant
   const mediaRecorderRef = useRef(null);
   const websocketRef = useRef(null);
@@ -58,9 +68,11 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     }
 
     // Get access token from cookies for authentication
+    debugLog('All cookies:', document.cookie);
     const accessToken = getCookie('__session');
     if (!accessToken) {
       debugLog('ERROR: No access token found in cookies');
+      debugLog('Tried cookie name: __session');
       setError('Authentication required');
       return null;
     }
@@ -311,6 +323,11 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     debugLog('✓ Recording stopped, waiting for AI response');
   }, [debugLog]);
 
+  // Update ref to latest startRecording function
+  useEffect(() => {
+    startRecordingRef.current = startRecording;
+  }, [startRecording]);
+
   // Initialize Speech Recognition
   const initializeSpeechRecognition = useCallback(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -382,11 +399,18 @@ const useWakeWordDetection = (cookingSessionId = null) => {
             setLastDetectedTime(new Date());
 
             // Trigger audio recording and streaming
-            if (cookingSessionId && assistantState === 'idle') {
-              debugLog('Starting voice assistant conversation...');
-              startRecording();
+            // Use refs to get current values (avoid stale closure)
+            const currentSessionId = cookingSessionIdRef.current;
+            const currentAssistantState = assistantStateRef.current;
+
+            if (currentSessionId && currentAssistantState === 'idle') {
+              debugLog(`Starting voice assistant conversation for session ${currentSessionId}...`);
+              // Use ref to call the latest startRecording function
+              if (startRecordingRef.current) {
+                startRecordingRef.current();
+              }
               setAssistantState('detected');
-            } else if (!cookingSessionId) {
+            } else if (!currentSessionId) {
               debugLog('⚠️ WARNING: No cooking session active!');
               debugLog('💡 TIP: Start a cooking session first to use the voice assistant');
               setError('Please start a cooking session first');
@@ -396,8 +420,8 @@ const useWakeWordDetection = (cookingSessionId = null) => {
                 setAssistantState('idle');
                 setError(null);
               }, 3000);
-            } else if (assistantState !== 'idle') {
-              debugLog(`Assistant busy (state: ${assistantState}), ignoring wake word`);
+            } else if (currentAssistantState !== 'idle') {
+              debugLog(`Assistant busy (state: ${currentAssistantState}), ignoring wake word`);
             }
           } else {
             const remainingTime = Math.ceil((debounceInterval - timeSinceLastDetection) / 1000);
