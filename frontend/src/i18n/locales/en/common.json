@@ -10,9 +10,13 @@
     "signIn": "Sign In",
     "getStartedFree": "Get Started Free",
     "generateNewRecipe": "Generate New Recipe",
+    "newRecipe": "New Recipe",
     "profile": "Profile",
     "settings": "Settings",
     "logout": "Logout"
+  },
+  "aria": {
+    "openProfile": "Open profile"
   },
   "footer": {
     "tagline": "Your AI-powered cooking companion for delicious everyday meals",
@@ -22,6 +26,9 @@
     "aboutUs": "About Us",
     "contact": "Contact",
     "privacyPolicy": "Privacy Policy",
+    "social": {
+      "instagram": "Instagram"
+    },
     "copyright": "\u00a9 2025 Piatto. Cooking made Simple, one recipe at a time."
   },
   "buttons": {

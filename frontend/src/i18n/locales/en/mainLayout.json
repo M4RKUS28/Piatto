@@ -3,6 +3,8 @@
     "dashboard": "Dashboard",
     "generate": "Generate",
     "recipeLibrary": "Recipe Library",
+    "recipes": "Recipes",
+    "profile": "Profile",
     "settings": "Settings"
   },
   "profile": {
