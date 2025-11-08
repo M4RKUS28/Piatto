@@ -295,24 +295,17 @@ async def voice_assistant_websocket(
     - Server streams binary audio response back (PCM 24kHz)
     - Client plays audio response
     """
-    await websocket.accept()
-
     session = None
+    user_id = None
 
     try:
         # Authenticate user
-        # TEMPORARILY DISABLED FOR TESTING - TODO: Re-enable authentication
-        # user_id = await get_user_id_from_token_ws(websocket, db)
-        # if not user_id:
-        #     await websocket.send_json({
-        #         "type": "error",
-        #         "message": "Authentication required"
-        #     })
-        #     await websocket.close(code=1008)
-        #     return
+        user_id = await get_user_id_from_token_ws(websocket, db)
+        if not user_id:
+            await websocket.close(code=4401)
+            return
 
-        # Temporary hardcoded user for testing
-        user_id = "9e20b44c3507557413a0c3c072244210"
+        await websocket.accept()
 
         # Create voice assistant session
         session = VoiceAssistantSession(

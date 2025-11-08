@@ -31,6 +31,8 @@ const useWakeWordDetection = (cookingSessionId = null) => {
   const startListeningRef = useRef(null);
   const wakeWordPauseReasonsRef = useRef(new Set());
   const wakeWordHoldRef = useRef(false);
+  const voiceTokenRef = useRef(null);
+  const voiceTokenExpiryRef = useRef(0);
 
   useEffect(() => {
     cookingSessionIdRef.current = cookingSessionId;
@@ -113,6 +115,39 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     }
   }, [debugLog]);
 
+  const playStartTone = useCallback(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    try {
+      const ToneContext = window.AudioContext || window.webkitAudioContext;
+      if (!ToneContext) {
+        return;
+      }
+
+      const ctx = new ToneContext();
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      oscillator.type = 'sine';
+      oscillator.frequency.value = 880;
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+      oscillator.start();
+      oscillator.stop(ctx.currentTime + 0.18);
+      oscillator.onended = () => {
+        ctx.close();
+      };
+    } catch (err) {
+      debugLog('Start tone playback error:', err?.message || err);
+    }
+  }, [debugLog]);
+
+
   // Play audio response (PCM data from Gemini) - Queue-based playback
   const playAudioResponse = useCallback(async (pcmData) => {
     let startedPlayback = false;
@@ -191,6 +226,44 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       }
     }
   }, [debugLog, pauseWakeWordDetection, resumeWakeWordDetection]);
+
+  const fetchVoiceToken = useCallback(async () => {
+    const now = Date.now();
+    if (voiceTokenRef.current && voiceTokenExpiryRef.current > now + 5000) {
+      return voiceTokenRef.current;
+    }
+
+    try {
+      const response = await fetch('/api/auth/voice_token', {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      const token = data?.voice_token;
+
+      if (!token) {
+        throw new Error('Response missing voice_token');
+      }
+
+      const expiresInMs = typeof data?.expires_in === 'number'
+        ? data.expires_in * 1000
+        : 60 * 1000;
+
+      voiceTokenRef.current = token;
+      voiceTokenExpiryRef.current = now + expiresInMs;
+      return token;
+    } catch (err) {
+      debugLog('Error fetching voice token:', err?.message || err);
+      setError('Failed to authorize voice assistant');
+      return null;
+    }
+  }, [debugLog]);
   // Stop recording audio (called when Gemini responds or user manually stops)
   const stopRecording = useCallback(() => {
     debugLog('Stopping recording...');
@@ -235,10 +308,16 @@ const useWakeWordDetection = (cookingSessionId = null) => {
   }, [debugLog]);
 
   // Setup WebSocket connection
-  const setupWebSocket = useCallback(() => {
+  const setupWebSocket = useCallback((voiceToken) => {
     if (!cookingSessionId) {
       debugLog('ERROR: No cooking session ID provided for WebSocket');
       setError('No active cooking session');
+      return null;
+    }
+
+    if (!voiceToken) {
+      debugLog('ERROR: No voice token available for WebSocket');
+      setError('Voice assistant authorization missing');
       return null;
     }
 
@@ -254,7 +333,8 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     // }
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.hostname}:${window.location.port || (protocol === 'wss:' ? '443' : '80')}/api/ws/voice_assistant?session_id=${cookingSessionId}`;
+    const port = window.location.port ? `:${window.location.port}` : '';
+    const wsUrl = `${protocol}//${window.location.hostname}${port || ''}/api/ws/voice_assistant?session_id=${cookingSessionId}&token=${encodeURIComponent(voiceToken)}`;
 
     debugLog('Connecting to WebSocket:', wsUrl);
     const ws = new WebSocket(wsUrl);
@@ -332,11 +412,18 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       setAssistantState('detected');
       pauseWakeWordDetection();
 
+      const voiceToken = await fetchVoiceToken();
+      if (!voiceToken) {
+        setAssistantState('idle');
+        resumeWakeWordDetection();
+        return;
+      }
+
       // Request microphone access
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
       // Setup WebSocket
-      const ws = setupWebSocket();
+      const ws = setupWebSocket(voiceToken);
       if (!ws) {
         stream.getTracks().forEach(track => track.stop());
         resumeWakeWordDetection();
@@ -393,6 +480,7 @@ const useWakeWordDetection = (cookingSessionId = null) => {
 
           setIsRecording(true);
           setAssistantState('listening');
+          playStartTone();
           debugLog('✓ Recording started with PCM conversion (16kHz, 16-bit)');
           debugLog('💡 Gemini Live API will automatically detect when you stop speaking (VAD)');
 
@@ -414,7 +502,7 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       setAssistantState('idle');
       resumeWakeWordDetection();
     }
-  }, [setupWebSocket, debugLog, pauseWakeWordDetection, resumeWakeWordDetection]);
+  }, [setupWebSocket, debugLog, pauseWakeWordDetection, resumeWakeWordDetection, fetchVoiceToken, playStartTone]);
 
   // Update ref to latest startRecording function
   useEffect(() => {

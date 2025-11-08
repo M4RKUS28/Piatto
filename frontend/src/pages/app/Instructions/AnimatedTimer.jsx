@@ -18,6 +18,58 @@ const AnimatedTimer = ({
   onTimerUpdate // Callback to report timer state to parent
 }) => {
   const { t } = useTranslation('instructions');
+  const audioContextRef = React.useRef(null);
+
+  const playTimerCompleteSound = React.useCallback(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextConstructor) {
+      return;
+    }
+
+    try {
+      const context = audioContextRef.current ?? new AudioContextConstructor();
+      audioContextRef.current = context;
+
+      if (context.state === 'suspended') {
+        context.resume().catch(() => {});
+      }
+
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+
+      oscillator.type = 'triangle';
+      oscillator.frequency.setValueAtTime(880, context.currentTime);
+
+      gain.gain.setValueAtTime(0.0001, context.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.12, context.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.5);
+
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+
+      oscillator.start(context.currentTime);
+      oscillator.stop(context.currentTime + 0.5);
+
+      oscillator.onended = () => {
+        oscillator.disconnect();
+        gain.disconnect();
+      };
+    } catch (error) {
+      console.warn('Timer completion sound failed:', error);
+    }
+  }, []);
+
+  React.useEffect(() => () => {
+    if (audioContextRef.current && typeof audioContextRef.current.close === 'function') {
+      audioContextRef.current.close();
+    }
+    audioContextRef.current = null;
+  }, []);
+
   const time = new Date();
   time.setSeconds(time.getSeconds() + timerSeconds);
 
@@ -32,7 +84,9 @@ const AnimatedTimer = ({
   } = useTimer({
     expiryTimestamp: time,
     autoStart: isFloating && isExpanded, // Auto-start when floating and expanded
-    onExpire: () => console.warn('Timer expired'),
+    onExpire: () => {
+      playTimerCompleteSound();
+    },
   });
 
   // Report timer state to parent component
