@@ -37,9 +37,9 @@ def create_token(data: dict, expires_delta: timedelta) -> str:
     else: raise ValueError(f"Unsupported algorithm: {ALGORITHM}")
 
 
-def create_access_token(data: dict) -> str:
+def create_access_token(data: dict, expires_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES) -> str:
     """Create a JWT access token with a default expiration time."""
-    return create_token(data, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    return create_token(data, timedelta(minutes=expires_minutes))
 
 def create_refresh_token(data: dict) -> str:
     """Create a JWT refresh token with a longer expiration time."""

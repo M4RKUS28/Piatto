@@ -22,7 +22,12 @@
   "aiButtonAria": "Bitte die KI um Hilfe",
   "voiceAssistant": {
     "activeTitle": "Voice Assistant aktiv",
-    "inactiveTitle": "Voice Assistant inaktiv"
+    "inactiveTitle": "Voice Assistant inaktiv",
+    "askPiatto": "Piatto direkt fragen",
+    "enableFirst": "Voice Assistant zuerst aktivieren",
+    "manualOnlyTitle": "Tippe, um Piatto zu fragen (Wake Word nicht verfügbar)",
+    "unsupportedTitle": "Wake-Word-Erkennung nicht verfügbar",
+    "unsupportedDescription": "Dein Browser unterstützt keine Spracherkennung. Nutze einfach die Chat-Blase, um Piatto bei Bedarf anzusprechen."
   },
   "sessionDialog": {
     "badge": "Piatto Companion",
@@ -42,7 +47,11 @@
       "pill": "Jederzeit änderbar"
     },
     "info": "Du kannst den Voice Assistant jederzeit an- oder ausschalten.",
-    "maybeLater": "Vielleicht später"
+    "maybeLater": "Vielleicht später",
+    "wakeWordUnsupported": {
+      "title": "Wake-Word-Erkennung nicht verfügbar",
+      "description": "Dieser Browser kann nicht auf \"Hey Piatto\" hören, aber du kannst jederzeit die Chat-Blase tippen, um mit dem Assistant zu sprechen."
+    }
   },
   "timer": {
     "running": "Läuft",

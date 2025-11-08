@@ -10,9 +10,13 @@
     "signIn": "Anmelden",
     "getStartedFree": "Kostenlos starten",
     "generateNewRecipe": "Neues Rezept erstellen",
+    "newRecipe": "Neues Rezept",
     "profile": "Profil",
     "settings": "Einstellungen",
     "logout": "Abmelden"
+  },
+  "aria": {
+    "openProfile": "Profil öffnen"
   },
   "footer": {
     "tagline": "Dein KI-gestützter Kochbegleiter für köstliche Alltagsgerichte",
@@ -22,6 +26,9 @@
     "aboutUs": "Über uns",
     "contact": "Kontakt",
     "privacyPolicy": "Datenschutzrichtlinie",
+    "social": {
+      "instagram": "Instagram"
+    },
     "copyright": "© 2025 Piatto. Kochen wird zum Vergnügen, ein Rezept nach dem anderen."
   },
   "buttons": {
@@ -40,6 +47,9 @@
     "back": "Zurück",
     "next": "Weiter",
     "finish": "Fertig"
+  },
+  "general": {
+    "loading": "Wird geladen..."
   },
   "time": {
     "na": "k.A.",

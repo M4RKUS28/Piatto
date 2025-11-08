@@ -22,6 +22,7 @@ export default function RecipeOptionsStep({
 	onFinishSession,
 	sessionCompleting = false,
 	preparingSessionId,
+	suggestedCollection,
 }) {
 	const { t } = useTranslation('recipeGeneration');
 	const navigate = useNavigate();
@@ -35,6 +36,10 @@ export default function RecipeOptionsStep({
 	const [detailsLoadingId, setDetailsLoadingId] = useState(null);
 	const [detailsError, setDetailsError] = useState(null);
 	const pollingIntervalRef = useRef(null);
+	const effectiveSuggestedCollection = suggestedCollection
+		?? recipeOptions?.[0]?.suggested_collection
+		?? recipeOptions?.[0]?.suggestedCollection
+		?? null;
 
 	const toggleRecipeSelection = (recipeId) => {
 		setSelectedRecipes(prev => {
@@ -413,6 +418,7 @@ export default function RecipeOptionsStep({
 				isOpen={showCollectionModal}
 				onClose={() => setShowCollectionModal(false)}
 				onSave={handleSaveToCollections}
+				suggestedCollection={effectiveSuggestedCollection}
 			/>
 
 			<RecipeDetailsModal

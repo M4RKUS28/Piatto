@@ -51,6 +51,10 @@
     "saving": "Wird gespeichert...",
     "save": "Speichern"
   },
+  "collage": {
+    "singleAlt": "Sammlungsvorschau",
+    "altIndexed": "Sammlungsvorschau {{index}}"
+  },
   "editCollectionsModal": {
     "title": "Sammlung bearbeiten",
     "errorLoad": "Fehler beim Laden der Sammlungen",

@@ -98,9 +98,11 @@ class AgentService:
         preparing_session_id: Optional[int] = None,
         background_tasks = None
     ):
+        previous_recipes = None
         if preparing_session_id is not None:
             async with get_async_db_context() as db:
-                recipes = recipe_crud.get_recipes_by_preparing_session_id(db, preparing_session_id)
+                previous_recipes = await recipe_crud.get_recipes_by_preparing_session_id(db, preparing_session_id)
+
         logger.info("Starting recipe generation for user_id=%s with prompt=%s", user_id, prompt)
         logger.info("Written ingredients: %s", written_ingredients)
         # fetch the users collections
@@ -114,7 +116,7 @@ class AgentService:
                 })
 
         # get the query for the recipe agent
-        query = get_recipe_gen_query(prompt, written_ingredients, collections_string)
+        query = get_recipe_gen_query(prompt, written_ingredients, collections_string, previous_recipes)
         logger.info("Generated query for recipe agent: %s", query)
 
         # call recipe agent

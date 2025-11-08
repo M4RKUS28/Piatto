@@ -15,6 +15,7 @@ from ...config import settings
 from ..schemas import auth as auth_schema
 from ..schemas import user as user_schema
 from ...core.security import get_refresh_token_from_cookie
+from ...utils.auth import get_read_write_user_token_data
 
 api_router = APIRouter(
     prefix="/auth",
@@ -67,6 +68,14 @@ async def refresh_token(response: Response,
     Endpoint to refresh the user's access token.
     """
     return await auth_service.refresh_token(refresh_token_str, db, response)
+
+
+@api_router.get("/voice_token", response_model=auth_schema.VoiceTokenResponse)
+async def get_voice_token(token_data: Optional[dict] = Depends(get_read_write_user_token_data)):
+    """
+    Endpoint to get a new voice token.
+    """
+    return auth_service.get_voice_token(token_data)
 
 
 @api_router.get("/login/google")

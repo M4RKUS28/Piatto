@@ -43,6 +43,7 @@ class RecipePreview(BaseModel):
     total_time_minutes: Optional[int] = None
     difficulty: Optional[Literal["easy", "medium", "hard"]] = None
     food_category: Optional[Literal["vegan", "vegetarian", "beef", "pork", "chicken", "lamb", "fish", "seafood", "mixed-meat", "alcoholic", "non-alcoholic"]] = None
+    suggested_collection: Optional[str] = None
 
     class Config:
         from_attributes = True

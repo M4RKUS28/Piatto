@@ -18,6 +18,66 @@ const AnimatedTimer = ({
   onTimerUpdate // Callback to report timer state to parent
 }) => {
   const { t } = useTranslation('instructions');
+  const audioContextRef = React.useRef(null);
+
+  const playTimerCompleteSound = React.useCallback(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextConstructor) {
+      return;
+    }
+
+    try {
+      const context = audioContextRef.current ?? new AudioContextConstructor();
+      audioContextRef.current = context;
+
+      if (context.state === 'suspended') {
+        context.resume().catch(() => {});
+      }
+
+      const now = context.currentTime;
+
+      const scheduleTone = (frequency, startOffset, duration, gainPeak) => {
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(frequency, now + startOffset);
+
+        gain.gain.setValueAtTime(0.0001, now + startOffset);
+        gain.gain.exponentialRampToValueAtTime(gainPeak, now + startOffset + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + startOffset + duration);
+
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+
+        oscillator.start(now + startOffset);
+        oscillator.stop(now + startOffset + duration + 0.05);
+
+        oscillator.onended = () => {
+          oscillator.disconnect();
+          gain.disconnect();
+        };
+      };
+
+      scheduleTone(880, 0, 0.35, 0.22);
+      scheduleTone(990, 0.25, 0.35, 0.28);
+      scheduleTone(1175, 0.5, 0.4, 0.32);
+    } catch (error) {
+      console.warn('Timer completion sound failed:', error);
+    }
+  }, []);
+
+  React.useEffect(() => () => {
+    if (audioContextRef.current && typeof audioContextRef.current.close === 'function') {
+      audioContextRef.current.close();
+    }
+    audioContextRef.current = null;
+  }, []);
+
   const time = new Date();
   time.setSeconds(time.getSeconds() + timerSeconds);
 
@@ -32,7 +92,9 @@ const AnimatedTimer = ({
   } = useTimer({
     expiryTimestamp: time,
     autoStart: isFloating && isExpanded, // Auto-start when floating and expanded
-    onExpire: () => console.warn('Timer expired'),
+    onExpire: () => {
+      playTimerCompleteSound();
+    },
   });
 
   // Report timer state to parent component
