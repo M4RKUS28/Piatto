@@ -18,6 +18,7 @@
     "label": "Enter your ingredients",
     "placeholder": "Enter your ingredients, separated by commas...",
     "analyzeImage": "Analyze Image",
+  "aiAnalysisDescription": "Analyze your pantry or fridge with AI",
     "analyzing": "Analyzing image...",
     "generating": "Generating...",
     "generateRecipes": "Generate Recipes",
@@ -44,6 +45,8 @@
     "generateNewRecipes": "Generate New Recipes",
     "generating": "Generating...",
     "generate": "Generate",
+  "back": "Back",
+  "save": "Save",
     "processing": "Processing...",
     "showDetails": "Show Details",
     "details": {
@@ -61,7 +64,9 @@
     "aria": {
       "recipeList": "Generated recipe options",
       "regenerate": "Generate new recipe options with same ingredients",
-      "generate": "Generate selected recipes"
+      "generate": "Generate selected recipes",
+      "back": "Go back to ingredients step",
+      "save": "Save selected recipes"
     }
   },
   "collectionsModal": {

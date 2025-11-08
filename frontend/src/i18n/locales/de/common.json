@@ -10,9 +10,13 @@
     "signIn": "Anmelden",
     "getStartedFree": "Kostenlos starten",
     "generateNewRecipe": "Neues Rezept erstellen",
+    "newRecipe": "Neues Rezept",
     "profile": "Profil",
     "settings": "Einstellungen",
     "logout": "Abmelden"
+  },
+  "aria": {
+    "openProfile": "Profil öffnen"
   },
   "footer": {
     "tagline": "Dein KI-gestützter Kochbegleiter für köstliche Alltagsgerichte",
