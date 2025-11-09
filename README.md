@@ -128,97 +128,12 @@ Built for the **Google Cloud Run Hackathon**, Piatto demonstrates:
 
 ## 🚀 Getting Started
 
-### Prerequisites
-
-- **Node.js 20+**  
-- **Python 3.11+**  
-- **Docker** (optional for containerized dev)  
-- **Google Cloud Account** with:
-  - Cloud Run, Cloud SQL, Cloud Storage  
-  - Google ADK API Key (Gemini access)  
-
----
-
-### 🧠 Backend Setup
-
-```bash
-cd backend
-pip install -r requirements.txt
-cp .env.example .env
-uvicorn src.main:app --reload
-```
-
-➡️ Runs on [http://localhost:8000](http://localhost:8000)  
-Swagger Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
-
----
-
-### 💻 Frontend Setup
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-➡️ Runs on [http://localhost:5173](http://localhost:5173)
-
----
-
-## 🌐 Deployment (Google Cloud Run)
-
-### 1. Enable Required Services
-
-```bash
-gcloud services enable run.googleapis.com sqladmin.googleapis.com storage.googleapis.com \
-artifactregistry.googleapis.com vpcaccess.googleapis.com
-```
-
-### 2. Deploy Backend
-
-```bash
-cd backend
-gcloud builds submit --tag gcr.io/PROJECT_ID/backend
-gcloud run deploy fastapi-backend \
-  --image gcr.io/PROJECT_ID/backend \
-  --region us-central1 \
-  --platform managed \
-  --allow-unauthenticated
-```
-
-### 3. Deploy Frontend
-
-```bash
-cd frontend
-npm run build
-gsutil -m rsync -r dist gs://static-web-PROJECT_ID
-gcloud builds submit --tag gcr.io/PROJECT_ID/frontend
-gcloud run deploy piatto-frontend \
-  --image gcr.io/PROJECT_ID/frontend \
-  --region us-central1 \
-  --platform managed \
-  --allow-unauthenticated
-```
-
-### 4. Configure CDN & Load Balancer
-
-See [docs/cloud_architecture/architecture_overview.md](docs/cloud_architecture/architecture_overview.md)
-
----
+- [Run the project locally](https://github.com/M4RKUS28/Piatto/wiki/Run-the-project-locally)
 
 ## 🧾 API Reference
 
-| Endpoint | Method | Description |
-|-----------|--------|-------------|
-| `/api/auth/register` | POST | User registration |
-| `/api/auth/login` | POST | Email/password login |
-| `/api/auth/google` | GET | OAuth login initiation |
-| `/api/recipe/generate` | POST | Generate recipe via AI |
-| `/api/chat/message` | POST | Conversational cooking Q&A |
-| `/api/collection` | GET | Fetch saved recipes |
-| `/api/voice-assistant/start` | POST | Start a voice session |
+- [Interactive API docs](https://piatto-cooks.com/api/docs)
 
----
 
 ## 🏆 Hackathon Highlights
 
