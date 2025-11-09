@@ -7,4 +7,8 @@ class APIResponseStatus(BaseModel):
     msg: str
     data: Optional[Any] = None
 
-
+class VoiceTokenResponse(BaseModel):
+    """Model for voice token response."""
+    voice_token: str
+    expires_in: int  # Expiration time in seconds
+    user_id: str

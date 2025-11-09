@@ -43,7 +43,8 @@ class VoiceAssistantSession:
         self.session_id = session_id
         self.user_id = user_id
         self.db = db
-        self.live_session = None
+        self.live_session = None  # The actual session object
+        self.live_context = None  # The async context manager
         self.is_active = False
         self.audio_in_queue = asyncio.Queue()  # Buffer for audio responses
 
@@ -106,8 +107,10 @@ class VoiceAssistantSession:
         for idx, instruction in enumerate(instructions, 1):
             marker = "→ " if idx == cooking_session.state else "  "
             context += f"{marker}Step {idx}: {instruction.description}"
-            if instruction.duration_minutes:
-                context += f" (⏱ {instruction.duration_minutes} min)"
+            if instruction.timer:
+                # Convert timer from seconds to minutes for display
+                minutes = instruction.timer / 60
+                context += f" (⏱ {minutes:.1f} min)" if minutes < 60 else f" (⏱ {minutes/60:.1f} hr)"
             context += "\n"
 
         context += """
@@ -140,17 +143,19 @@ class VoiceAssistantSession:
                         )
                     )
                 ),
+                # Session resumption for automatic reconnection
+                session_resumption=types.SessionResumptionConfig(),
             )
 
             # Connect to Live API
             print(f"[Voice Assistant] Connecting to Gemini Live API for session {self.session_id}")
-            self.live_session = client.aio.live.connect(
+            self.live_context = client.aio.live.connect(
                 model="gemini-2.5-flash-native-audio-preview-09-2025",
                 config=config
             )
 
-            # Enter async context
-            await self.live_session.__aenter__()
+            # Enter async context - this returns the actual session object
+            self.live_session = await self.live_context.__aenter__()
             self.is_active = True
 
             print(f"[Voice Assistant] ✓ Live API session established for cooking session {self.session_id}")
@@ -262,12 +267,13 @@ class VoiceAssistantSession:
     async def close(self):
         """Close the Live API session"""
         self.is_active = False
-        if self.live_session:
+        if self.live_context:
             try:
-                await self.live_session.__aexit__(None, None, None)
+                await self.live_context.__aexit__(None, None, None)
                 print(f"[Voice Assistant] Session closed for cooking session {self.session_id}")
             except:
                 pass
+            self.live_context = None
             self.live_session = None
 
 
@@ -289,21 +295,17 @@ async def voice_assistant_websocket(
     - Server streams binary audio response back (PCM 24kHz)
     - Client plays audio response
     """
-    await websocket.accept()
-
     session = None
+    user_id = None
 
     try:
         # Authenticate user
         user_id = await get_user_id_from_token_ws(websocket, db)
-
         if not user_id:
-            await websocket.send_json({
-                "type": "error",
-                "message": "Authentication required"
-            })
-            await websocket.close(code=1008)
+            await websocket.close(code=4401)
             return
+
+        await websocket.accept()
 
         # Create voice assistant session
         session = VoiceAssistantSession(

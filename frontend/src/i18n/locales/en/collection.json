@@ -51,6 +51,10 @@
     "saving": "Saving...",
     "save": "Save"
   },
+  "collage": {
+    "singleAlt": "Collection preview",
+    "altIndexed": "Collection preview {{index}}"
+  },
   "editCollectionsModal": {
     "title": "Edit Collection",
     "errorLoad": "Error loading collections",

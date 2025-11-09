@@ -87,7 +87,7 @@ const AIQuestionButton = React.forwardRef(({ onClick, isFocused, isEnabled }, re
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="absolute top-4 right-4 flex items-center gap-2 border border-gray-100 hover:border-gray-300 bg-white/50 hover:bg-white/90 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer z-10 px-2 py-2"
+      className="absolute top-4 right-4 flex items-center gap-2 border border-gray-100 hover:border-gray-300 bg-white/50 hover:bg-white/90 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer z-10 px-2 py-1"
       aria-label={t('aiButtonAria', 'Ask the AI for help')}
       title={t('aiButtonAria', 'Ask the AI for help')}
     >
@@ -235,7 +235,24 @@ const CookingInstructions = ({
 
   // Initialize voice assistant with cooking session ID
   const voiceAssistant = useWakeWordDetection(cookingSessionId);
-  const voiceAssistantActive = voiceAssistant?.isActive ?? false;
+  // Show as active when wake word detection is listening (not just when session active)
+  const voiceAssistantActive = voiceAssistant?.isListening ?? false;
+  const wakeWordSupported = voiceAssistant?.browserSupported !== false;
+  const voiceAssistantBusy = Boolean(voiceAssistant?.assistantState && voiceAssistant.assistantState !== 'idle');
+
+  // Debug: Log cookingSessionId changes
+  React.useEffect(() => {
+    console.log(`[Instructions] cookingSessionId changed:`, cookingSessionId, `sessionActive:`, sessionActive);
+  }, [cookingSessionId, sessionActive]);
+
+  // Ref to store voiceAssistant for cleanup without triggering re-renders
+  const voiceAssistantRef = React.useRef(voiceAssistant);
+  React.useEffect(() => {
+    voiceAssistantRef.current = voiceAssistant;
+  }, [voiceAssistant]);
+
+  // Ref to track if voice assistant was already auto-started for this session
+  const voiceAutoStartedRef = React.useRef(null);
 
   const resetSessionVisuals = React.useCallback(() => {
     setOpenChatStep(null);
@@ -256,6 +273,28 @@ const CookingInstructions = ({
   const stopVoiceAssistant = React.useCallback(() => {
     voiceAssistant?.stopListening?.();
   }, [voiceAssistant]);
+
+  // Auto-start voice assistant when new session starts with voice preference
+  React.useEffect(() => {
+    // Only auto-start if this is a new session and we haven't started yet for this session
+    if (isNewSessionStart && cookingSessionId && sessionActive && voiceAutoStartedRef.current !== cookingSessionId) {
+      // Get voice preference from localStorage
+      try {
+        const savedPreference = localStorage.getItem(VOICE_PREFERENCE_STORAGE_KEY);
+        if (savedPreference === 'with') {
+          console.log('[Instructions] Auto-starting voice assistant for new session');
+          // Mark this session as auto-started
+          voiceAutoStartedRef.current = cookingSessionId;
+          // Wait for next tick to ensure cookingSessionId is propagated to hook
+          requestAnimationFrame(() => {
+            startVoiceAssistant();
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to read voice preference:', err);
+      }
+    }
+  }, [isNewSessionStart, cookingSessionId, sessionActive, startVoiceAssistant]);
 
   React.useEffect(() => {
     if (!onRegisterSessionControls) {
@@ -323,9 +362,10 @@ const CookingInstructions = ({
       if (snapshot.sessionActive && snapshot.isLastStep && snapshot.cookingSessionId) {
         finishCookingSession(snapshot.cookingSessionId).catch(() => {});
       }
-      stopVoiceAssistant();
+      // Use ref to avoid re-running cleanup on every render
+      voiceAssistantRef.current?.stopListening?.();
     };
-  }, [stopVoiceAssistant]);
+  }, []); // Empty deps = only runs on unmount
 
   // Timer state management
   // Track which step timers are floating and which is expanded
@@ -395,7 +435,7 @@ const CookingInstructions = ({
   // Handle opening chat for a step
   const handleOpenChat = React.useCallback((stepIndex) => {
     if (!sessionActive) {
-  setSessionError(t('startPrompt', 'Please start the cooking session first.'));
+      setSessionError(t('startPrompt', 'Please start the cooking session first.'));
       return;
     }
     setSessionError(null);
@@ -603,12 +643,12 @@ const CookingInstructions = ({
         previousSyncedStep.current = step;
       } catch (err) {
         console.error('Failed to update cooking state:', err);
-  setNavigationError(t('syncError', 'Failed to update the cooking state. Please try again.'));
+        setNavigationError(t('syncError', 'Failed to update the cooking state. Please try again.'));
       } finally {
         setIsNavigating(false);
       }
     }
-  }, [instructions, cookingSessionId, scrollStepIntoView, t, focusedStep]);
+  }, [instructions, cookingSessionId, scrollStepIntoView, t]);
 
   // Handle wheel/scroll events for navigation
   const handleWheelNavigation = React.useCallback((event) => {
@@ -616,7 +656,13 @@ const CookingInstructions = ({
       return;
     }
 
-    // Prevent default scrolling behavior
+    // Only handle scroll events from the instructions container
+    // Allow recipe view and other areas to scroll normally
+    if (containerRef.current && !containerRef.current.contains(event.target)) {
+      return; // Scroll event is outside instructions - allow normal scrolling
+    }
+
+    // Prevent default scrolling behavior (only for instructions area)
     event.preventDefault();
 
     const now = Date.now();
@@ -664,7 +710,7 @@ const CookingInstructions = ({
 
   const handleStepClick = React.useCallback((index) => {
     if (!sessionActive) {
-  setSessionError(t('instructions.startPrompt', 'Please start the cooking session first.'));
+      setSessionError(t('startPrompt', 'Please start the cooking session first.'));
       return;
     }
 
@@ -700,18 +746,15 @@ const CookingInstructions = ({
         console.warn('Failed to save voice preference:', err);
       }
 
-      if (withVoice) {
-        startVoiceAssistant();
-      } else {
-        stopVoiceAssistant();
-      }
+      // Voice assistant will be auto-started by useEffect when cookingSessionId is set
+      // (only if preference is 'with')
     } catch (err) {
       console.error('Failed to start cooking session:', err);
-  setSessionError(t('startError', 'Failed to start the cooking session. Please try again.'));
+      setSessionError(t('startError', 'Failed to start the cooking session. Please try again.'));
     } finally {
       setIsSessionStarting(false);
     }
-  }, [recipeId, instructions, navigateToStep, t, resetSessionVisuals, startVoiceAssistant, stopVoiceAssistant]);
+  }, [recipeId, instructions, navigateToStep, t, resetSessionVisuals]);
 
   const handlePreviousStep = React.useCallback(() => {
     if (!sessionActive || !hasActiveStep || focusedStep === 1) {
@@ -748,7 +791,7 @@ const CookingInstructions = ({
     } catch (err) {
       console.error('Failed to finish cooking session:', err);
       if (!silent) {
-  setNavigationError(t('instructions.finishError', 'Failed to finish the cooking session.'));
+        setNavigationError(t('finishError', 'Failed to finish the cooking session.'));
       }
       return false;
     } finally {
@@ -801,7 +844,7 @@ const CookingInstructions = ({
 
   const handleNextStep = React.useCallback(async () => {
     if (!sessionActive || !hasActiveStep) {
-  setSessionError(t('instructions.startPrompt', 'Please start the cooking session first.'));
+      setSessionError(t('startPrompt', 'Please start the cooking session first.'));
       return;
     }
 
@@ -950,7 +993,7 @@ const CookingInstructions = ({
         } else {
           // Other errors - stop polling and show error
           console.error('Error fetching instructions:', err);
-          setError(t('instructions.errorLoading', 'Failed to load instructions. Please try again.'));
+          setError(t('errorLoading', 'Failed to load instructions. Please try again.'));
           setLoading(false);
           if (pollIntervalRef.current) {
             clearInterval(pollIntervalRef.current);
@@ -1044,10 +1087,10 @@ const CookingInstructions = ({
             <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-[#A8C9B8] border-t-[#035035]"></div>
           </div>
           <h2 className="font-['Poppins',_sans-serif] font-bold text-[#035035] text-2xl sm:text-3xl mb-3">
-            {t('instructions.generating', 'Generating Instructions...')}
+            {t('generating', 'Generating Instructions...')}
           </h2>
           <p className="text-[#2D2D2D] opacity-75 text-sm sm:text-base">
-            {t('instructions.generatingDescription', 'Our AI chef is preparing detailed cooking instructions for your recipe. This usually takes just a few moments.')}
+            {t('generatingDescription', 'Our AI chef is preparing detailed cooking instructions for your recipe. This usually takes just a few moments.')}
           </p>
         </div>
       </div>
@@ -1061,7 +1104,7 @@ const CookingInstructions = ({
         <div className="text-center max-w-md">
           <div className="mb-6 text-6xl">⚠️</div>
           <h2 className="font-['Poppins',_sans-serif] font-bold text-[#FF9B7B] text-2xl sm:text-3xl mb-3">
-            {t('instructions.errorTitle', 'Oops! Something went wrong')}
+            {t('errorTitle', 'Oops! Something went wrong')}
           </h2>
           <p className="text-[#2D2D2D] opacity-75 text-sm sm:text-base">
             {error}
@@ -1080,10 +1123,10 @@ const CookingInstructions = ({
       {/* Header */}
       <div className="p-3 sm:p-4 md:p-8 text-center">
         <h1 className="font-['Poppins',_sans-serif] font-bold text-[#2D2D2D] text-2xl sm:text-3xl md:text-4xl lg:text-[2.5rem]">
-          {t('instructions.title', 'Cooking Instructions')}
+          {t('title', 'Cooking Instructions')}
         </h1>
         <p className="text-[#2D2D2D] mt-3 sm:mt-4 max-w-lg text-sm sm:text-base">
-          {t('instructions.subtitle', 'Follow the steps along the path to complete your recipe.')}
+          {t('subtitle', 'Follow the steps along the path to complete your recipe.')}
         </p>
       </div>
 
@@ -1106,14 +1149,14 @@ const CookingInstructions = ({
                 }`}
               >
                 <span className="relative z-10">
-                  {isSessionStarting ? t('instructions.starting', 'Starting...') : t('instructions.startSessionButton', '🚀 Start Session')}
+                  {isSessionStarting ? t('starting', 'Starting...') : t('startSessionButton', '🚀 Start Session')}
                 </span>
                 {!isSessionStarting && totalSteps > 0 && (
                   <span className="absolute inset-0 rounded-full bg-[#A8C9B8] opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
                 )}
               </button>
               <p className="mt-6 text-sm text-[#2D2D2D]/70 text-center max-w-md">
-                {t('instructions.startVoiceInfo', 'In the next step you decide whether to use the voice assistant.')}
+                {t('startVoiceInfo', 'In the next step you decide whether to use the voice assistant.')}
               </p>
             </div>
           ) : null}
@@ -1218,14 +1261,14 @@ const CookingInstructions = ({
         <div className="w-full max-w-4xl mt-12 mb-6">
           <div className="text-center py-8">
             <p className="text-2xl font-bold text-green-700 mb-6">
-              {t('instructions.finishedMessage', 'Cooking session complete – enjoy your meal!')}
+              {t('finishedMessage', 'Cooking session complete – enjoy your meal!')}
             </p>
             <button
               type="button"
               onClick={handleReturnToLibrary}
               className="px-8 py-4 rounded-full text-base font-semibold uppercase tracking-wide bg-[#FF9B7B] text-white transition hover:bg-[#ff8a61] hover:scale-105 active:scale-95 shadow-lg"
             >
-              ← {t('instructions.backToLibrary', 'Back to Library')}
+              ← {t('backToLibrary', 'Back to Library')}
             </button>
           </div>
         </div>
@@ -1306,6 +1349,7 @@ const CookingInstructions = ({
           setStartDialogMode('new');
         }}
         onSelect={handleVoicePreferenceSelection}
+        wakeWordSupported={wakeWordSupported}
       />
 
       {/* Fixed Navigation Controls - Bottom Right - Only show when session is active */}
@@ -1379,7 +1423,7 @@ const CookingInstructions = ({
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 : 'bg-white border-2 border-[#035035] text-[#035035] hover:bg-[#f1f9f5] hover:scale-110'
             } shadow-lg`}
-            title={t('instructions.previous', 'Back')}
+            title={t('previous', 'Back')}
           >
             <span className="text-lg">◀</span>
           </button>
@@ -1394,7 +1438,7 @@ const CookingInstructions = ({
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 : 'bg-[#035035] text-white hover:bg-[#024028] hover:scale-110'
             } shadow-lg`}
-            title={isLastStep ? t('instructions.finish', 'Finish') : t('instructions.next', 'Next')}
+            title={isLastStep ? t('finish', 'Finish') : t('next', 'Next')}
           >
             <span className="text-lg">{isLastStep ? '✓' : '▶'}</span>
           </button>
@@ -1403,13 +1447,56 @@ const CookingInstructions = ({
           <div className="bg-white border-2 border-[#A8C9B8] rounded-full px-4 py-2 shadow-lg">
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold uppercase tracking-wide text-[#035035]">
-                {t('instructions.stepLabel', 'Step')}
+                {t('stepLabel', 'Step')}
               </span>
               <span className="text-sm font-bold text-[#035035]">
                 {hasActiveStep ? `${focusedStep}/${totalSteps}` : '—'}
               </span>
             </div>
           </div>
+
+          {/* Ask Piatto Button (Direct Voice Assistant) */}
+          {cookingSessionId && voiceAssistant && (
+            <button
+              type="button"
+              onClick={() => {
+                // If wake word detection is supported but not active, show settings dialog
+                if (wakeWordSupported && !voiceAssistantActive) {
+                  setStartDialogMode('resume');
+                  setIsStartDialogOpen(true);
+                  return;
+                }
+                // Otherwise, start recording directly
+                voiceAssistant.startRecording?.();
+              }}
+              disabled={voiceAssistantBusy}
+              className={`relative transition-all duration-200 ${
+                voiceAssistantBusy ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 cursor-pointer'
+              }`}
+              title={
+                wakeWordSupported
+                  ? (voiceAssistantActive
+                      ? t('voiceAssistant.askPiatto', 'Ask Piatto directly')
+                      : t('voiceAssistant.enableFirst', 'Enable voice assistant first'))
+                  : t('voiceAssistant.manualOnlyTitle', 'Tap to ask Piatto (wake word unavailable)')
+              }
+            >
+              <div className={`w-10 h-10 rounded-full border-4 flex items-center justify-center shadow-lg ${
+                voiceAssistantBusy
+                  ? 'bg-gray-400 border-gray-300 shadow-gray-400/50'
+                  : voiceAssistantActive
+                  ? 'bg-[#035035] border-[#024028] shadow-[#035035]/50'
+                  : wakeWordSupported
+                  ? 'bg-blue-500 border-blue-300 shadow-blue-500/50'
+                  : 'bg-[#035035] border-[#024028] shadow-[#035035]/50'
+              } transition-all duration-300`}>
+                <span className="text-lg">💬</span>
+              </div>
+              {voiceAssistant.assistantState === 'listening' && (
+                <div className="absolute inset-0 rounded-full bg-red-400 animate-pulse opacity-75" />
+              )}
+            </button>
+          )}
 
           {/* Voice Assistant Status */}
           <button
@@ -1419,15 +1506,21 @@ const CookingInstructions = ({
               setIsStartDialogOpen(true);
             }}
             className="relative transition-all duration-200 hover:scale-110"
-            title={voiceAssistantActive
-              ? t('instructions.voiceAssistant.activeTitle', 'Voice assistant active')
-              : t('instructions.voiceAssistant.inactiveTitle', 'Voice assistant inactive')}
+            title={
+              wakeWordSupported
+                ? (voiceAssistantActive
+                    ? t('voiceAssistant.activeTitle', 'Voice assistant active')
+                    : t('voiceAssistant.inactiveTitle', 'Voice assistant inactive'))
+                : t('voiceAssistant.unsupportedTitle', 'Wake word detection unavailable')
+            }
           >
             <div className="relative">
               <div className={`w-10 h-10 rounded-full border-4 ${
                 voiceAssistantActive
                   ? 'bg-green-500 border-green-300 shadow-lg shadow-green-500/50'
-                  : 'bg-orange-500 border-orange-300 shadow-lg shadow-orange-500/50'
+                  : wakeWordSupported
+                  ? 'bg-orange-500 border-orange-300 shadow-lg shadow-orange-500/50'
+                  : 'bg-amber-500 border-amber-300 shadow-lg shadow-amber-500/50'
               } flex items-center justify-center transition-all duration-300`}>
                 <span className="text-lg">🎤</span>
               </div>

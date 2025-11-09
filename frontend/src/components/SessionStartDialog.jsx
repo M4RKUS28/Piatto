@@ -8,6 +8,7 @@ const SessionStartDialog = ({
   isSubmitting = false,
   onClose,
   onSelect,
+  wakeWordSupported = true,
 }) => {
   const { t } = useTranslation('instructions');
 
@@ -53,6 +54,22 @@ const SessionStartDialog = ({
               {subtitle}
             </p>
           </div>
+
+          {!wakeWordSupported && (
+            <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
+              <span className="text-xl font-bold" aria-hidden="true">
+                !
+              </span>
+              <div>
+                <p className="text-sm font-semibold">
+                  {t('sessionDialog.wakeWordUnsupported.title', 'Wake word detection unavailable')}
+                </p>
+                <p className="text-xs sm:text-sm mt-1 text-amber-900/90">
+                  {t('sessionDialog.wakeWordUnsupported.description', 'Your browser cannot listen for "Hey Piatto", but you can still tap the chat bubble to talk to the assistant.')}
+                </p>
+              </div>
+            </div>
+          )}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <button

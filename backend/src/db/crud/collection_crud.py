@@ -174,6 +174,10 @@ async def create_default_collections(db: AsyncSession, user_id: str) -> List[Col
         {"name": "Breakfast", "description": "Start your day with delicious breakfast recipes"},
         {"name": "Lunch", "description": "Quick and satisfying lunch ideas"},
         {"name": "Dinner", "description": "Hearty dinner recipes for any occasion"},
+        {"name": "Fish Dishes", "description": "Delicious recipes featuring fish"},
+        {"name": "Desserts", "description": "Sweet treats to end your meal"},
+        {"name": "Drinks", "description": "Refreshing beverages for any occasion"},
+
     ]
 
     created_collections = []

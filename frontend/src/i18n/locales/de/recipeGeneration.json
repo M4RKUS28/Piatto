@@ -17,6 +17,7 @@
     "label": "Gib deine Zutaten ein",
     "placeholder": "Gib deine Zutaten ein, getrennt durch Kommas...",
     "analyzeImage": "Bild analysieren",
+  "aiAnalysisDescription": "Analysiere deinen Vorrat oder Kühlschrank mit KI",
     "analyzing": "Bild wird analysiert...",
     "generating": "Wird generiert...",
     "generateRecipes": "Rezepte generieren",
@@ -43,6 +44,8 @@
     "generateNewRecipes": "Neue Rezepte generieren",
     "generating": "Wird generiert...",
     "generate": "Generieren",
+  "back": "Zurück",
+  "save": "Speichern",
     "processing": "Wird verarbeitet...",
     "showDetails": "Details anzeigen",
     "details": {
@@ -60,7 +63,9 @@
     "aria": {
       "recipeList": "Generierte Rezeptoptionen",
       "regenerate": "Neue Rezeptoptionen mit denselben Zutaten generieren",
-      "generate": "Ausgewählte Rezepte generieren"
+      "generate": "Ausgewählte Rezepte generieren",
+      "back": "Zurück zum Zutaten-Schritt",
+      "save": "Ausgewählte Rezepte speichern"
     }
   },
   "collectionsModal": {

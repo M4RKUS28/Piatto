@@ -156,15 +156,21 @@ async def get_user_id_from_token_ws(
     db: AsyncSession
 ) -> Optional[str]:
     """
-    Extract and verify user ID from WebSocket connection cookies.
+    Extract and verify user ID from WebSocket connection.
+    Tries query parameter first, then cookies.
     Returns user_id if valid, None otherwise.
     """
     try:
-        # Try to get access token from cookies
-        cookies = websocket.cookies
-        access_token = cookies.get("access_token")
+        # Try to get access token from query parameters first (more reliable for WebSockets)
+        access_token = websocket.query_params.get("token")
+
+        # Fall back to cookies if no token in query params
+        if not access_token:
+            cookies = websocket.cookies
+            access_token = cookies.get("__session")  # Use same cookie name as HTTP endpoints
 
         if not access_token:
+            print("WebSocket authentication error: No token provided in query params or cookies")
             return None
 
         # Verify token

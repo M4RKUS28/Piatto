@@ -22,7 +22,12 @@
   "aiButtonAria": "Ask the AI for help",
   "voiceAssistant": {
     "activeTitle": "Voice assistant active",
-    "inactiveTitle": "Voice assistant inactive"
+    "inactiveTitle": "Voice assistant inactive",
+    "askPiatto": "Ask Piatto directly",
+    "enableFirst": "Enable voice assistant first",
+    "manualOnlyTitle": "Tap to ask Piatto (wake word unavailable)",
+    "unsupportedTitle": "Wake word detection unavailable",
+    "unsupportedDescription": "Your browser doesn't support speech recognition. Use the chat bubble to start talking to Piatto whenever you need help."
   },
   "sessionDialog": {
     "badge": "Piatto Companion",
@@ -42,7 +47,11 @@
       "pill": "You can change this anytime"
     },
     "info": "You can toggle the voice assistant at any time.",
-    "maybeLater": "Maybe later"
+    "maybeLater": "Maybe later",
+    "wakeWordUnsupported": {
+      "title": "Wake word detection unavailable",
+      "description": "This browser can't listen for \"Hey Piatto\", but you can still tap the chat bubble to talk to the assistant whenever you need it."
+    }
   },
   "timer": {
     "running": "Running",

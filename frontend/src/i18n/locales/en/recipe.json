@@ -5,6 +5,10 @@
   "ingredients": "Ingredients",
   "forServings": "For {{count}} serving",
   "forServings_plural": "For {{count}} servings",
+  "preview": {
+    "ariaLabel": "Select recipe: {{title}}. {{description}}",
+    "imageAlt": "{{title}} - Recipe preview image"
+  },
   "tabs": {
     "ingredients": "Ingredients",
     "nutrition": "Nutrition"
@@ -66,7 +70,17 @@
     "share": "Share",
     "print": "Print",
     "editCollection": "Edit Collection",
-    "deleteRecipe": "Delete Recipe"
+    "deleteRecipe": "Delete Recipe",
+    "optionsAriaLabel": "Recipe options"
+  },
+  "deleteModal": {
+    "title": "Delete Recipe",
+    "message": "Do you really want to delete the recipe \"{{name}}\"?",
+    "warning": "This action cannot be undone. The recipe will be permanently removed from all collections.",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "error": "Delete failed. Please try again."
   },
   "errors": {
     "noId": "No recipe ID provided",
@@ -78,6 +92,7 @@
   },
   "deleteError": "Error deleting recipe",
   "minimizedLabel": "RECIPE",
+  "backToDashboard": "Back to Dashboard",
   "library": {
     "title": "Your Recipes",
     "subtitle": "Discover and save your favorite dishes",
