@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { getAudioContext, resumeAudioContext } from '../utils/audioContext';
 
 const ASSISTANT_PAUSE_REASON = 'assistant-interaction';
 const TARGET_SAMPLE_RATE = 16000;
@@ -118,18 +119,22 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     }
   }, [debugLog]);
 
-  const playStartTone = useCallback(() => {
+  const playStartTone = useCallback(async () => {
     if (typeof window === 'undefined') {
       return;
     }
 
     try {
-      const ToneContext = window.AudioContext || window.webkitAudioContext;
-      if (!ToneContext) {
+      // Use shared audio context for mobile browser compatibility
+      const ctx = getAudioContext();
+      if (!ctx) {
+        debugLog('AudioContext not available for start tone');
         return;
       }
 
-      const ctx = new ToneContext();
+      // Resume context if suspended (critical for mobile browsers)
+      await resumeAudioContext();
+
       const oscillator = ctx.createOscillator();
       const gain = ctx.createGain();
 
@@ -143,7 +148,8 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       oscillator.start();
       oscillator.stop(ctx.currentTime + 0.18);
       oscillator.onended = () => {
-        ctx.close();
+        oscillator.disconnect();
+        gain.disconnect();
       };
     } catch (err) {
       debugLog('Start tone playback error:', err?.message || err);
@@ -154,15 +160,26 @@ const useWakeWordDetection = (cookingSessionId = null) => {
   // Play audio response (PCM data from Gemini) - Immediate timeline scheduling
   const playAudioResponse = useCallback(async (pcmData) => {
     try {
-      // Create AudioContext if needed
-      if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
-        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({
+      // Use shared AudioContext for mobile browser compatibility
+      // Note: We still use a local ref for voice assistant playback state tracking
+      let audioContext = audioContextRef.current;
+
+      // Create or reuse AudioContext
+      if (!audioContext || audioContext.state === 'closed') {
+        // For voice assistant, we need a specific sample rate (24kHz for Gemini)
+        // Create a dedicated context for voice assistant playback
+        audioContext = new (window.AudioContext || window.webkitAudioContext)({
           sampleRate: 24000, // Gemini outputs 24kHz PCM
         });
+        audioContextRef.current = audioContext;
         debugLog('Created AudioContext for playback (24kHz)');
       }
 
-      const audioContext = audioContextRef.current;
+      // Resume context if suspended (critical for mobile browsers)
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+        debugLog('Resumed suspended AudioContext for playback');
+      }
 
       // If first chunk, initialize playback
       if (!isPlayingRef.current) {

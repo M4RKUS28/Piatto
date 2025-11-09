@@ -18,6 +18,7 @@ import TimerProgressBar from './Instructions/TimerProgressBar';
 import { useTranslation } from 'react-i18next'
 import useMediaQuery from '../../hooks/useMediaQuery';
 import useWakeWordDetection from '../../hooks/useWakeWordDetection';
+import { unlockAudio } from '../../utils/audioContext';
 
  // --- Configuration ---
 const CURVE_AMOUNT = 180;
@@ -722,6 +723,11 @@ const CookingInstructions = ({
       return;
     }
 
+    // Unlock audio on user interaction (critical for mobile browsers)
+    unlockAudio().catch((err) => {
+      console.warn('Failed to unlock audio:', err);
+    });
+
     setSessionError(null);
     setNavigationError(null);
     setSessionFinished(false);
@@ -822,6 +828,11 @@ const CookingInstructions = ({
   }, [startVoiceAssistant, stopVoiceAssistant]);
 
   const handleVoicePreferenceSelection = React.useCallback(async (withVoice) => {
+    // Unlock audio on user interaction (critical for mobile browsers)
+    unlockAudio().catch((err) => {
+      console.warn('Failed to unlock audio:', err);
+    });
+
     if (startDialogMode === 'resume') {
       applyVoicePreference(withVoice);
       return;
@@ -1138,6 +1149,9 @@ const CookingInstructions = ({
                 ref={sessionControlsRef}
                 type="button"
                 onClick={() => {
+                  // Unlock audio on user interaction (critical for mobile browsers)
+                  unlockAudio().catch(() => {});
+
                   setStartDialogMode('new');
                   setIsStartDialogOpen(true);
                 }}
@@ -1460,6 +1474,9 @@ const CookingInstructions = ({
             <button
               type="button"
               onClick={() => {
+                // Unlock audio on user interaction (critical for mobile browsers)
+                unlockAudio().catch(() => {});
+
                 // If wake word detection is supported but not active, show settings dialog
                 if (wakeWordSupported && !voiceAssistantActive) {
                   setStartDialogMode('resume');
@@ -1502,6 +1519,9 @@ const CookingInstructions = ({
           <button
             type="button"
             onClick={() => {
+              // Unlock audio on user interaction (critical for mobile browsers)
+              unlockAudio().catch(() => {});
+
               setStartDialogMode('resume');
               setIsStartDialogOpen(true);
             }}

@@ -3,6 +3,7 @@ import { useTimer } from 'react-timer-hook';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { PiX, PiPlay, PiPause, PiArrowClockwise } from 'react-icons/pi';
+import { getAudioContext, resumeAudioContext, unlockAudio } from '../../../utils/audioContext';
 
 const AnimatedTimer = ({
   stepIndex,
@@ -18,25 +19,22 @@ const AnimatedTimer = ({
   onTimerUpdate // Callback to report timer state to parent
 }) => {
   const { t } = useTranslation('instructions');
-  const audioContextRef = React.useRef(null);
 
-  const playTimerCompleteSound = React.useCallback(() => {
+  const playTimerCompleteSound = React.useCallback(async () => {
     if (typeof window === 'undefined') {
       return;
     }
 
-    const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextConstructor) {
-      return;
-    }
-
     try {
-      const context = audioContextRef.current ?? new AudioContextConstructor();
-      audioContextRef.current = context;
-
-      if (context.state === 'suspended') {
-        context.resume().catch(() => {});
+      // Get the shared audio context
+      const context = getAudioContext();
+      if (!context) {
+        console.warn('AudioContext not available');
+        return;
       }
+
+      // Resume the context if suspended (critical for mobile browsers)
+      await resumeAudioContext();
 
       const now = context.currentTime;
 
@@ -69,13 +67,6 @@ const AnimatedTimer = ({
     } catch (error) {
       console.warn('Timer completion sound failed:', error);
     }
-  }, []);
-
-  React.useEffect(() => () => {
-    if (audioContextRef.current && typeof audioContextRef.current.close === 'function') {
-      audioContextRef.current.close();
-    }
-    audioContextRef.current = null;
   }, []);
 
   const time = new Date();
@@ -119,6 +110,9 @@ const AnimatedTimer = ({
   };
 
   const handleStart = () => {
+    // Unlock audio on user interaction (critical for mobile browsers)
+    unlockAudio().catch(() => {});
+
     if (!isRunning) {
       if (!isFloating) {
         // Start floating animation - the floating timer will auto-start
