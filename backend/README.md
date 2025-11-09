@@ -12,7 +12,6 @@ Technical documentation for the Piatto backend API built with FastAPI, SQLAlchem
 - [Project Structure](#project-structure)
 - [Request Flow](#request-flow)
 - [API Routes](#api-routes)
-- [Database Models](#database-models)
 - [Agents & AI](#agents--ai)
 - [Development Setup](#development-setup)
 - [Configuration](#configuration)
@@ -197,22 +196,6 @@ backend/
 
 **File:** `src/api/routers/recipe.py`
 
-```python
-@router.post("/generate", response_model=RecipeSchema)
-async def generate_recipe(
-    request: GenerateRecipeRequest,
-    db: AsyncSession = Depends(get_db),
-    user_id: str = Depends(get_read_write_user_id)
-):
-    # Route handler delegates to service
-    result = await agent_service.generate_recipe(
-        user_id=user_id,
-        request=request,
-        db=db
-    )
-    return result
-```
-
 **Responsibilities:**
 
 - HTTP endpoint definition
@@ -223,15 +206,6 @@ async def generate_recipe(
 #### 2. Schema Layer (Validation)
 
 **File:** `src/api/schemas/recipe.py`
-
-```python
-class GenerateRecipeRequest(BaseModel):
-    prompt: str
-    ingredients: Optional[List[str]] = None
-    image_urls: Optional[List[str]] = None
-    difficulty: Optional[str] = None
-    food_category: Optional[str] = None
-```
 
 **Responsibilities:**
 
@@ -244,25 +218,6 @@ class GenerateRecipeRequest(BaseModel):
 
 **File:** `src/services/agent_service.py`
 
-```python
-async def generate_recipe(self, user_id: str, request: GenerateRecipeRequest, db: AsyncSession):
-    # Orchestrate AI agents
-    state = await state_service.create_state(user_id, request)
-
-    # Call recipe agent via ADK
-    agent_response = await recipe_agent.run(
-        user_id=user_id,
-        state=state,
-        content=build_content(request)
-    )
-
-    # Parse and persist
-    recipe_data = parse_agent_output(agent_response)
-    recipe = await recipe_crud.create_recipe(db, user_id, **recipe_data)
-
-    return recipe
-```
-
 **Responsibilities:**
 
 - Coordinate multiple agents
@@ -274,28 +229,6 @@ async def generate_recipe(self, user_id: str, request: GenerateRecipeRequest, db
 
 **File:** `src/db/crud/recipe_crud.py`
 
-```python
-async def create_recipe(
-    db: AsyncSession,
-    user_id: str,
-    title: str,
-    ingredients: List[str],
-    instructions: str,
-    **kwargs
-) -> DBRecipe:
-    recipe = DBRecipe(
-        user_id=user_id,
-        title=title,
-        ingredients=json.dumps(ingredients),
-        instructions=instructions,
-        **kwargs
-    )
-    db.add(recipe)
-    await db.commit()
-    await db.refresh(recipe)
-    return recipe
-```
-
 **Responsibilities:**
 
 - Database transactions
@@ -306,21 +239,6 @@ async def create_recipe(
 #### 5. Model Layer (ORM)
 
 **File:** `src/db/models/db_recipe.py`
-
-```python
-class DBRecipe(Base):
-    __tablename__ = "recipes"
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(String(255), ForeignKey("users.id"))
-    title = Column(String(255))
-    ingredients = Column(Text)  # JSON string
-    instructions = Column(Text)  # JSON string
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    user = relationship("DBUser", back_populates="recipes")
-    collections = relationship("DBCollection", secondary=recipe_collection_association)
-```
 
 **Responsibilities:**
 
@@ -429,111 +347,13 @@ class DBRecipe(Base):
 
 ---
 
-## Database Models
-
-### User Model (`DBUser`)
-
-**File:** `src/db/models/db_user.py`
-
-```python
-class DBUser(Base):
-    __tablename__ = "users"
-
-    id = Column(String(255), primary_key=True)
-    email = Column(String(255), unique=True, nullable=False)
-    hashed_password = Column(String(255), nullable=True)  # Null for OAuth users
-    full_name = Column(String(255))
-    is_active = Column(Boolean, default=True)
-    is_verified = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    # OAuth fields
-    oauth_provider = Column(String(50), nullable=True)  # 'google', 'facebook', etc.
-    oauth_id = Column(String(255), nullable=True)
-
-    # Relationships
-    recipes = relationship("DBRecipe", back_populates="user")
-    collections = relationship("DBCollection", back_populates="user")
-    preferences = relationship("DBUserPreferences", uselist=False, back_populates="user")
-```
-
-### Recipe Model (`DBRecipe`)
-
-**File:** `src/db/models/db_recipe.py`
-
-```python
-class DBRecipe(Base):
-    __tablename__ = "recipes"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(String(255), ForeignKey("users.id", ondelete="CASCADE"))
-    title = Column(String(255), nullable=False)
-    description = Column(Text)
-    ingredients = Column(Text)  # JSON: [{"name": "...", "amount": "...", "unit": "..."}]
-    instructions = Column(Text)  # JSON: [{"step": 1, "description": "...", "time": ...}]
-    image_url = Column(String(512))
-    total_time_minutes = Column(Integer)
-    difficulty = Column(String(50))  # "easy", "medium", "hard"
-    food_category = Column(String(100))  # "italian", "asian", etc.
-    prompt = Column(Text)  # Original user prompt
-    important_notes = Column(Text)
-    cooking_overview = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    # Relationships
-    user = relationship("DBUser", back_populates="recipes")
-    collections = relationship("DBCollection", secondary=recipe_collection_association, back_populates="recipes")
-```
-
-### Collection Model (`DBCollection`)
-
-```python
-class DBCollection(Base):
-    __tablename__ = "collections"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(String(255), ForeignKey("users.id", ondelete="CASCADE"))
-    name = Column(String(255), nullable=False)
-    description = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    # Relationships
-    user = relationship("DBUser", back_populates="collections")
-    recipes = relationship("DBRecipe", secondary=recipe_collection_association, back_populates="collections")
-```
-
----
-
 ## Agents & AI
 
 ### Agent Architecture
 
 **Base Agent** (`src/agents/agent.py`)
 
-All agents extend `StandardAgent`:
-
-```python
-class StandardAgent(ABC):
-    def __init__(self, app_name: str, session_service):
-        self.app_name = app_name
-        self.session_service = session_service
-        self.model = "gemini-2.5-flash"
-
-    async def run(self, user_id: str, state: dict, content: types.Content, debug: bool = False):
-        # Create ADK session
-        session = await self.session_service.create_session(
-            app_name=self.app_name,
-            user_id=user_id,
-            state=state
-        )
-
-        # Run agent and process events
-        async for event in self.runner.run_async(user_id, session.id, content):
-            if event.is_final_response():
-                return {"status": "success", "output": event.content.parts[0].text}
-```
+All agents extend `StandardAgent`
 
 ### Specialized Agents
 
@@ -543,37 +363,11 @@ class StandardAgent(ABC):
 
 **Purpose:** Generate complete recipes from user prompts and ingredient lists
 
-**Input:**
-
-- User prompt (text)
-- Ingredients list (optional)
-- Image URLs (optional, analyzed by Image Analyzer Agent first)
-- Preferences (difficulty, category)
-
-**Output:**
-
-- Recipe title
-- Description
-- Ingredient list with amounts
-- Cooking instructions
-- Time estimates
-- Difficulty rating
-
 #### 2. Image Analyzer Agent
 
 **Path:** `src/agents/image_analyzer_agent/agent.py`
 
 **Purpose:** Identify ingredients from uploaded photos
-
-**Input:**
-
-- Image URL(s) from Cloud Storage
-
-**Output:**
-
-- List of detected ingredients
-- Quantities (if visible)
-- Confidence scores
 
 #### 3. Instruction Agent
 
@@ -581,49 +375,17 @@ class StandardAgent(ABC):
 
 **Purpose:** Generate detailed step-by-step cooking instructions
 
-**Input:**
-
-- Recipe data
-- User skill level
-
-**Output:**
-
-- Numbered cooking steps
-- Time per step
-- Temperature settings
-- Prep tips
-
 #### 4. Chat Agent
 
 **Path:** `src/agents/chat_agent/agent.py`
 
 **Purpose:** Answer cooking questions in context
 
-**Input:**
-
-- User question
-- Conversation history
-- Current recipe context
-
-**Output:**
-
-- Conversational response
-- Cooking tips
-- Substitution suggestions
-
 #### 5. Image Agent
 
 **Path:** `src/agents/image_agent/agent.py`
 
 **Purpose:** Generate recipe imagery (future feature)
-
-**Input:**
-
-- Recipe description
-
-**Output:**
-
-- Generated image URL
 
 ---
 
@@ -800,70 +562,6 @@ gcloud run deploy fastapi-backend \
 ```
 
 See [main README](../README.md#deployment) for complete deployment instructions.
-
----
-
-## Common Patterns
-
-### Adding a New Endpoint
-
-1. **Define Schema** (`src/api/schemas/your_feature.py`):
-
-   ```python
-   class YourRequest(BaseModel):
-       field: str
-
-   class YourResponse(BaseModel):
-       result: str
-   ```
-
-2. **Create Router** (`src/api/routers/your_feature.py`):
-
-   ```python
-   @router.post("/endpoint", response_model=YourResponse)
-   async def your_endpoint(
-       request: YourRequest,
-       db: AsyncSession = Depends(get_db),
-       user_id: str = Depends(get_read_write_user_id)
-   ):
-       # Business logic
-       return YourResponse(result="success")
-   ```
-
-3. **Add CRUD** (`src/db/crud/your_feature_crud.py`):
-
-   ```python
-   async def create_entity(db: AsyncSession, user_id: str, **kwargs):
-       entity = DBYourModel(user_id=user_id, **kwargs)
-       db.add(entity)
-       await db.commit()
-       return entity
-   ```
-
-4. **Register Router** (`src/main.py`):
-
-   ```python
-   from .api.routers import your_feature
-   app.include_router(your_feature.router)
-   ```
-
----
-
-## Troubleshooting
-
-### Common Issues
-
-**Issue:** `Connection to database failed`
-
-- **Solution:** Check `DATABASE_URL` and ensure MySQL is running. For local dev, use SQLite fallback.
-
-**Issue:** `Google ADK authentication error`
-
-- **Solution:** Verify `GOOGLE_API_KEY` is set correctly and has Gemini API access.
-
-**Issue:** `CORS errors from frontend`
-
-- **Solution:** Add frontend URL to `origins` list in `main.py`.
 
 ---
 
