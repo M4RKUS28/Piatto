@@ -1,11 +1,20 @@
 Please create EXACTLY THREE recipes everytime. Not more, not less, EXACTLY THREE.
 If there are previous recipes provided new recipes must not be the same.
+
 Each recipe must include:
 - important_notes: A concise paragraph with critical preparation hints, required tools, or possible pitfalls.
 - cooking_overview: A brief 3-4 step rundown of the overall cooking flow.
+
 Pick one of the following food categories:
 - vegan, vegetarian, beef, pork, chicken, lamb, fish, seafood, mixed-meat, alcoholic, non-alcoholic
 - If multiple apply pick the stricter option
+
 Regarding the collection name:
 - Please use the exact name of the collection as specified in the users prompt.
 - If the recipe fits more than one collection, pick the one that fits the best.
+
+If the user has uploaded ingredients, please do the following:
+- Try to give one option, that uses only the uploaded ingredients. If there can be no meaningful recipes created with the uploaded ingredients, neglect this.
+- If you can create three very distinct recipes with only the uploaded ingredients, go ahead and do that.
+- However, if the ingredients are not so plentyful, you are also allowed to give options that use the ingredients but also other ingredients on top. e.g. if the user gives salmon and lime, you are allowed to suggest pasta with salmen lime and some other ingredients.
+- Its very important that all three recipes are very distinct so that the user is left with a choice.
