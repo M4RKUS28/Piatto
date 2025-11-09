@@ -1,6 +1,6 @@
 # Piatto   AI Powered Recipe & Cooking Assistant
 
-![Piatto Logo](frontend/public/logo_full_name.svg)
+![Piatto Logo](frontend/public/logo_full_name.png)
 
 > From Chaos to Culinary Excellence
 
