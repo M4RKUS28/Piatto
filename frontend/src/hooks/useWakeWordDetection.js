@@ -48,6 +48,7 @@ const useWakeWordDetection = (cookingSessionId = null) => {
   const isPlayingRef = useRef(false);  // Track if currently playing audio
   const nextScheduledTimeRef = useRef(0);  // Track scheduled time for next chunk
   const endTimeoutRef = useRef(null);  // Timeout for ending playback
+  const chunkCounterRef = useRef(0);  // Count chunks for initial buffering
 
   // Debug log helper
   const debugLog = useCallback((message, data = null) => {
@@ -151,7 +152,7 @@ const useWakeWordDetection = (cookingSessionId = null) => {
   }, [debugLog]);
 
 
-  // Play audio response (PCM data from Gemini) - Immediate scheduling without time correction
+  // Play audio response (PCM data from Gemini) - Single chunk immediate scheduling
   const playAudioResponse = useCallback(async (pcmData) => {
     try {
       // Create AudioContext if needed
@@ -164,15 +165,26 @@ const useWakeWordDetection = (cookingSessionId = null) => {
 
       const audioContext = audioContextRef.current;
 
-      // If this is the first chunk, initialize playback state
+      // Add chunk to queue
+      audioQueueRef.current.push(pcmData);
+
+      // If this is the first chunk, wait for initial buffer (like Python's queue approach)
       if (!isPlayingRef.current) {
+        chunkCounterRef.current = audioQueueRef.current.length;
+
+        // Wait for 2 chunks to build initial buffer (prevents initial gaps)
+        if (chunkCounterRef.current < 2) {
+          debugLog(`Buffering chunk ${chunkCounterRef.current}/2...`);
+          return;
+        }
+
         isPlayingRef.current = true;
         pauseWakeWordDetection();
         setAssistantState('playing');
 
-        // Start scheduling from current time
-        nextScheduledTimeRef.current = audioContext.currentTime;
-        debugLog('Starting audio playback');
+        // Start scheduling with 100ms delay for initial buffer
+        nextScheduledTimeRef.current = audioContext.currentTime + 0.1;
+        debugLog('Starting buffered audio playback');
       }
 
       // Clear any existing end timeout
@@ -181,8 +193,11 @@ const useWakeWordDetection = (cookingSessionId = null) => {
         endTimeoutRef.current = null;
       }
 
+      // Process ONLY the oldest chunk (FIFO) - like Python's blocking stream approach
+      const chunk = audioQueueRef.current.shift();
+
       // Convert ArrayBuffer to Int16Array
-      const int16Data = new Int16Array(pcmData);
+      const int16Data = new Int16Array(chunk);
 
       // Convert Int16 PCM to Float32 for Web Audio API
       const float32Data = new Float32Array(int16Data.length);
@@ -199,24 +214,29 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       source.buffer = audioBuffer;
       source.connect(audioContext.destination);
 
-      // Get the scheduled start time
+      // Calculate start time - NEVER adjust backwards, only use current time if we're behind
       const scheduledTime = nextScheduledTimeRef.current;
-
-      // Only use current time if we're scheduling in the past (first chunk or long gap)
       const now = audioContext.currentTime;
+
+      // Only use 'now' if scheduled time is in the past (we fell behind)
+      // Otherwise use exact scheduled time for seamless playback
       const startTime = scheduledTime < now ? now : scheduledTime;
 
       // Schedule this chunk
       source.start(startTime);
 
-      debugLog(`Scheduled chunk at ${startTime.toFixed(3)}s (duration: ${audioBuffer.duration.toFixed(3)}s, samples: ${int16Data.length})`);
+      chunkCounterRef.current++;
+      const wasBehind = scheduledTime < now;
+      debugLog(`Chunk ${chunkCounterRef.current} at ${startTime.toFixed(3)}s (dur: ${audioBuffer.duration.toFixed(3)}s)${wasBehind ? ' [BEHIND]' : ''}`);
 
-      // Update next scheduled time (seamless continuation)
+      // Update next scheduled time for seamless continuation
       nextScheduledTimeRef.current = startTime + audioBuffer.duration;
 
       // Set timeout to end playback if no more chunks arrive
-      // Wait for chunk duration + 300ms grace period for next chunk
-      const endDelay = (audioBuffer.duration * 1000) + 300;
+      // Use longer grace period (800ms) to account for network variability
+      const currentScheduledEnd = nextScheduledTimeRef.current;
+      const endDelay = Math.max(0, (currentScheduledEnd - audioContext.currentTime) * 1000) + 800;
+
       endTimeoutRef.current = setTimeout(() => {
         const remainingTime = Math.max(0, nextScheduledTimeRef.current - audioContext.currentTime);
 
@@ -228,6 +248,7 @@ const useWakeWordDetection = (cookingSessionId = null) => {
             setAssistantState('idle');
             audioQueueRef.current = [];
             nextScheduledTimeRef.current = 0;
+            chunkCounterRef.current = 0;
             resumeWakeWordDetection();
           }, remainingTime * 1000 + 100);
         } else {
@@ -236,6 +257,7 @@ const useWakeWordDetection = (cookingSessionId = null) => {
           setAssistantState('idle');
           audioQueueRef.current = [];
           nextScheduledTimeRef.current = 0;
+          chunkCounterRef.current = 0;
           resumeWakeWordDetection();
         }
       }, endDelay);
@@ -247,6 +269,7 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       setAssistantState('idle');
       audioQueueRef.current = [];
       nextScheduledTimeRef.current = 0;
+      chunkCounterRef.current = 0;
       resumeWakeWordDetection();
     }
   }, [debugLog, pauseWakeWordDetection, resumeWakeWordDetection]);
