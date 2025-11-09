@@ -21,7 +21,7 @@ class CollectionUpdate(BaseModel):
 
 
 class CollectionPreview(BaseModel):
-    """Schema for previewing a collection (without recipes)."""
+    """Schema for previewing a collection (without full recipe details)."""
     id: int
     name: str
     description: Optional[str] = None
@@ -29,6 +29,7 @@ class CollectionPreview(BaseModel):
     created_at: datetime
     recipe_count: int = 0
     preview_image_urls: List[str] = []
+    recipe_ids: List[int] = []  # List of recipe IDs in this collection
 
     class Config:
         from_attributes = True

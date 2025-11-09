@@ -32,13 +32,15 @@ async def get_all_collections(
     Retrieve all collections for the current user.
 
     Returns:
-        List[CollectionPreview]: A list of user's collections with recipe counts and preview images.
+        List[CollectionPreview]: A list of user's collections with recipe counts, preview images, and recipe IDs.
     """
     collections = await collection_crud.get_collections_by_user_id(db, user_id)
 
     result = []
     for collection in collections:
-        recipe_count = await collection_crud.get_collection_recipe_count(db, collection.id)
+        recipes = await collection_crud.get_recipes_in_collection(db, collection.id)
+        recipe_ids = [recipe.id for recipe in recipes]
+        recipe_count = len(recipe_ids)
         preview_image_urls = await collection_crud.get_collection_preview_images(db, collection.id, limit=4)
         result.append(CollectionPreview(
             id=collection.id,
@@ -48,6 +50,7 @@ async def get_all_collections(
             created_at=collection.created_at,
             recipe_count=recipe_count,
             preview_image_urls=preview_image_urls,
+            recipe_ids=recipe_ids,
         ))
 
     return result
