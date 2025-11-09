@@ -149,24 +149,23 @@ const useWakeWordDetection = (cookingSessionId = null) => {
   }, [debugLog]);
 
 
-  // Play audio response (PCM data from Gemini) - Queue-based playback
+  // Play audio response (PCM data from Gemini) - Queue-based playback with proper scheduling
   const playAudioResponse = useCallback(async (pcmData) => {
-    let startedPlayback = false;
+    // Add to queue
+    audioQueueRef.current.push(pcmData);
+
+    // If already playing, return (queue will be processed by the running loop)
+    if (isPlayingRef.current) {
+      debugLog('Adding chunk to queue (already playing)');
+      return;
+    }
+
+    // Start processing queue
+    pauseWakeWordDetection();
+    isPlayingRef.current = true;
+    setAssistantState('playing');
+
     try {
-      // Add to queue
-      audioQueueRef.current.push(pcmData);
-
-      // If already playing, return (queue will be processed)
-      if (isPlayingRef.current) {
-        return;
-      }
-
-      // Start processing queue
-      startedPlayback = true;
-      pauseWakeWordDetection();
-      isPlayingRef.current = true;
-      setAssistantState('playing');
-
       // Create single AudioContext for all chunks
       if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
         audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({
@@ -177,8 +176,24 @@ const useWakeWordDetection = (cookingSessionId = null) => {
 
       const audioContext = audioContextRef.current;
 
-      // Process queue
-      while (audioQueueRef.current.length > 0) {
+      // Track the scheduled time for seamless playback
+      let nextScheduledTime = audioContext.currentTime;
+      let processedChunks = 0;
+
+      // Process queue continuously until empty
+      while (isPlayingRef.current) {
+        // Wait for chunks if queue is empty
+        if (audioQueueRef.current.length === 0) {
+          // Wait a bit for new chunks to arrive
+          await new Promise(resolve => setTimeout(resolve, 100));
+
+          // Check again - if still empty after waiting, we're done
+          if (audioQueueRef.current.length === 0) {
+            debugLog(`Queue empty after waiting, finishing playback (processed ${processedChunks} chunks)`);
+            break;
+          }
+        }
+
         const chunk = audioQueueRef.current.shift();
 
         // Convert ArrayBuffer to Int16Array
@@ -199,32 +214,40 @@ const useWakeWordDetection = (cookingSessionId = null) => {
         source.buffer = audioBuffer;
         source.connect(audioContext.destination);
 
-        // Wait for this chunk to finish before playing next
-        await new Promise((resolve) => {
-          source.onended = resolve;
-          source.start(0);
-        });
+        // Ensure we don't schedule in the past
+        const now = audioContext.currentTime;
+        if (nextScheduledTime < now) {
+          debugLog(`Adjusting schedule time (was ${nextScheduledTime.toFixed(3)}s, now ${now.toFixed(3)}s)`);
+          nextScheduledTime = now;
+        }
+
+        // Schedule this chunk at the precise time
+        source.start(nextScheduledTime);
+        processedChunks++;
+
+        debugLog(`Scheduled chunk ${processedChunks} at ${nextScheduledTime.toFixed(3)}s (duration: ${audioBuffer.duration.toFixed(3)}s)`);
+
+        // Update scheduled time for next chunk (seamless continuation)
+        nextScheduledTime += audioBuffer.duration;
+      }
+
+      // Wait for final audio to finish playing
+      const remainingTime = Math.max(0, nextScheduledTime - audioContext.currentTime);
+      if (remainingTime > 0) {
+        debugLog(`Waiting ${remainingTime.toFixed(3)}s for final audio to finish`);
+        await new Promise(resolve => setTimeout(resolve, remainingTime * 1000 + 100)); // Add 100ms buffer
       }
 
       // All chunks played
       debugLog('Audio playback finished - ready for next "Hey Piatto"');
-      isPlayingRef.current = false;
-      setAssistantState('idle');
-
-      // Don't close WebSocket - keep it open for next question
-      // Speech recognition will auto-restart via onend handler
-
-      // Clear queue to ensure it's empty
-      audioQueueRef.current = [];
     } catch (err) {
       debugLog('Error playing audio:', err.message);
       setError('Failed to play audio response');
+    } finally {
       isPlayingRef.current = false;
       setAssistantState('idle');
-    } finally {
-      if (startedPlayback) {
-        resumeWakeWordDetection();
-      }
+      audioQueueRef.current = [];
+      resumeWakeWordDetection();
     }
   }, [debugLog, pauseWakeWordDetection, resumeWakeWordDetection]);
 
