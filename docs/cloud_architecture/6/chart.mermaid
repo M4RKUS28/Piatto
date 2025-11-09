@@ -1,0 +1,49 @@
+flowchart TD
+
+%% User
+USER([User]):::user
+
+%% Agents
+subgraph A1[Image Analyzer Agent]
+    IMG_ANALYZE[Analyse Bilder z.B. Zutaten, Schritte]
+end
+
+subgraph A2[Recipe Agent]
+    RECIPE[Rezept erstellen\nkombiniert: User Input + Bild-Analyse]
+end
+
+subgraph A3[Instruction Agent]
+    INSTR[Schritt-für-Schritt Anleitung\nauf Basis Rezept]
+end
+
+subgraph A4[Image Agent optional]
+    IMG_AGENT[Generiert Bilder für Rezept/Steps]
+end
+
+subgraph A5[Chat Agent]
+    CHAT[Rückfragen beantworten User ↔ Rezept/Instruktion]
+end
+
+%% User → Recipe creation
+USER -->|Rezept erstellen| RECIPE
+
+%% Optional Images
+USER -->|Bilder hochladen| IMG_ANALYZE
+IMG_ANALYZE -->|Bild-Analyse Output| RECIPE
+
+%% Recipe Agent produziert zwei Outputs
+RECIPE -->|Rezeptdaten| INSTR
+RECIPE -->|Rezeptdaten| IMG_AGENT
+
+%% Instruction Agent
+INSTR -->|Anleitung Output| CHAT
+
+%% Chat Agent
+USER -->|Rückfragen| CHAT
+CHAT -->|Antworten basierend auf\nInstruktion + Rezept| USER
+
+%% Styling
+classDef user fill:#e3f2fd,stroke:#1e88e5,color:#0d47a1;
+classDef agent fill:#ede7f6,stroke:#5e35b1,color:#311b92;
+
+class IMG_ANALYZE,RECIPE,INSTR,IMG_AGENT,CHAT agent;
