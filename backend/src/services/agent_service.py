@@ -64,21 +64,26 @@ class AgentService:
         # Generate single image and update DB immediately
         async def generate_and_save_single_image(recipe_payload, recipe_id, idx):
             try:
+                logger.info("Starting image generation for recipe_id=%s (index=%s)", recipe_id, idx)
                 image = await self.image_agent.run(
                     user_id=user_id,
                     state={},
                     content=get_image_gen_query(recipe_payload, idx),
                 )
 
+                logger.info("Image generated for recipe_id=%s, saving to bucket...", recipe_id)
                 async with get_async_bucket_session() as bs:
                     image_saved = await save_image_bytes(bs, user_id, "image", image, "recipe_image.png")
 
+                logger.info("Image saved to bucket for recipe_id=%s, key=%s", recipe_id, image_saved['key'])
                 # Update recipe with image URL
                 async with get_async_db_context() as db:
                     await recipe_crud.update_recipe(db, recipe_id, image_url=image_saved['key'])
 
+                logger.info("Successfully updated recipe_id=%s with image_url", recipe_id)
+
             except Exception as e:
-                print(f"!!!BACKGROUND TASK: Error generating image for recipe {idx+1}: {e}")
+                logger.error("Error generating image for recipe_id=%s (index=%s): %s", recipe_id, idx, e, exc_info=True)
 
         # Create all tasks concurrently using asyncio.create_task
         tasks = []
