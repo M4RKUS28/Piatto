@@ -6,7 +6,7 @@
   },
   "deleteModal": {
     "title": "Delete Collection",
-    "message": "Do you really want to delete the collection \"{name}\"?",
+  "message": "Do you really want to delete the collection \"{{name}}\"?",
     "warning": "This action cannot be undone. The collection will be deleted, but the recipes within it will remain.",
     "recipeCount": {
       "singular": "Recipe",
