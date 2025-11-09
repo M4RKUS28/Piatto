@@ -87,6 +87,5 @@ Diese README ergaenzt `docs/architecture-overview.md`, das die Hosting- und Infr
 - Infrastruktur & Hosting: `docs/architecture-overview.md`
 - API Flows: `docs/BUCKET_API.md`
 - Frontend UX Normen: `frontend/docs/styleguide.md`, `frontend/docs/ERROR_HANDLING.md`
-- Voice Assistant Details: `VOICE_ASSISTANT_SETUP.md`, `VOICE_ASSISTANT_IMPROVEMENTS.md`
 
 Dieses Dokument dient als Schnelluebersicht zur Codebasis. Fuer tiefergehende Prozesse bitte die verlinkten Dateien konsultieren.

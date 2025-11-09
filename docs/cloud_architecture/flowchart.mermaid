@@ -3,20 +3,26 @@ flowchart TD
 
   subgraph LB[Global HTTPS Load Balancer]
     URLMAP{URL Map: piatto-url-map}
-    CDN[(Cloud CDN)]
   end
 
   %% Routing decision
   A -->|HTTPS| URLMAP
 
   %% URL map rules
-  URLMAP -->|/api/*| BS_API[Backend Service: fastapi-backend-service]
-  URLMAP -->|/assets/*, /index.html, logos| CDN
-  URLMAP -->|default SPA routes| CDN
+  URLMAP -->|/api/*| BS_API[Service: backend-service]
+  %% CDN paths – klar getrennt
 
-  %% CDN paths
-  CDN --> BB[Backend Bucket: frontend-bucket]
-  CDN --> BS_FE[Backend Service: piatto-frontend-service]
+  subgraph CDN[Google Cloud CDN]
+    CDN_ASSETS
+    CDN_FE
+  end
+
+  
+  URLMAP -->|/assets/*| CDN_ASSETS[(Cloud CDN)]
+  URLMAP -->|/index.html, default SPA routes| CDN_FE[(Cloud CDN)]
+  %% Jeder CDN Pfad zeigt nur auf sein Origin
+  CDN_ASSETS --> BB[Service: frontend-bucket]
+  CDN_FE --> BS_FE[Service: frontend-service]
 
   %% Backend (API)
   subgraph CR_API[Cloud Run: Backend]

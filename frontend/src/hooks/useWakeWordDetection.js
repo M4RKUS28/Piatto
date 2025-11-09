@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { getAudioContext, resumeAudioContext } from '../utils/audioContext';
 
 const ASSISTANT_PAUSE_REASON = 'assistant-interaction';
 const TARGET_SAMPLE_RATE = 16000;
@@ -44,8 +45,10 @@ const useWakeWordDetection = (cookingSessionId = null) => {
   const mediaRecorderRef = useRef(null);
   const websocketRef = useRef(null);
   const audioContextRef = useRef(null);
-  const audioQueueRef = useRef([]);  // Queue for audio chunks
   const isPlayingRef = useRef(false);  // Track if currently playing audio
+  const nextScheduledTimeRef = useRef(0);  // Track scheduled time for next chunk
+  const endTimeoutRef = useRef(null);  // Timeout for ending playback
+  const chunkCounterRef = useRef(0);  // Count chunks for debugging
 
   // Debug log helper
   const debugLog = useCallback((message, data = null) => {
@@ -116,18 +119,22 @@ const useWakeWordDetection = (cookingSessionId = null) => {
     }
   }, [debugLog]);
 
-  const playStartTone = useCallback(() => {
+  const playStartTone = useCallback(async () => {
     if (typeof window === 'undefined') {
       return;
     }
 
     try {
-      const ToneContext = window.AudioContext || window.webkitAudioContext;
-      if (!ToneContext) {
+      // Use shared audio context for mobile browser compatibility
+      const ctx = getAudioContext();
+      if (!ctx) {
+        debugLog('AudioContext not available for start tone');
         return;
       }
 
-      const ctx = new ToneContext();
+      // Resume context if suspended (critical for mobile browsers)
+      await resumeAudioContext();
+
       const oscillator = ctx.createOscillator();
       const gain = ctx.createGain();
 
@@ -141,7 +148,8 @@ const useWakeWordDetection = (cookingSessionId = null) => {
       oscillator.start();
       oscillator.stop(ctx.currentTime + 0.18);
       oscillator.onended = () => {
-        ctx.close();
+        oscillator.disconnect();
+        gain.disconnect();
       };
     } catch (err) {
       debugLog('Start tone playback error:', err?.message || err);
@@ -149,82 +157,93 @@ const useWakeWordDetection = (cookingSessionId = null) => {
   }, [debugLog]);
 
 
-  // Play audio response (PCM data from Gemini) - Queue-based playback
+  // Play audio response (PCM data from Gemini) - Immediate timeline scheduling
   const playAudioResponse = useCallback(async (pcmData) => {
-    let startedPlayback = false;
     try {
-      // Add to queue
-      audioQueueRef.current.push(pcmData);
+      // Use shared AudioContext for mobile browser compatibility
+      // Note: We still use a local ref for voice assistant playback state tracking
+      let audioContext = audioContextRef.current;
 
-      // If already playing, return (queue will be processed)
-      if (isPlayingRef.current) {
-        return;
-      }
-
-      // Start processing queue
-      startedPlayback = true;
-      pauseWakeWordDetection();
-      isPlayingRef.current = true;
-      setAssistantState('playing');
-
-      // Create single AudioContext for all chunks
-      if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
-        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({
+      // Create or reuse AudioContext
+      if (!audioContext || audioContext.state === 'closed') {
+        // For voice assistant, we need a specific sample rate (24kHz for Gemini)
+        // Create a dedicated context for voice assistant playback
+        audioContext = new (window.AudioContext || window.webkitAudioContext)({
           sampleRate: 24000, // Gemini outputs 24kHz PCM
         });
+        audioContextRef.current = audioContext;
         debugLog('Created AudioContext for playback (24kHz)');
       }
 
-      const audioContext = audioContextRef.current;
-
-      // Process queue
-      while (audioQueueRef.current.length > 0) {
-        const chunk = audioQueueRef.current.shift();
-
-        // Convert ArrayBuffer to Int16Array
-        const int16Data = new Int16Array(chunk);
-
-        // Convert Int16 PCM to Float32 for Web Audio API
-        const float32Data = new Float32Array(int16Data.length);
-        for (let i = 0; i < int16Data.length; i++) {
-          float32Data[i] = int16Data[i] / (int16Data[i] < 0 ? 0x8000 : 0x7FFF);
-        }
-
-        // Create AudioBuffer
-        const audioBuffer = audioContext.createBuffer(1, float32Data.length, 24000);
-        audioBuffer.getChannelData(0).set(float32Data);
-
-        // Create buffer source
-        const source = audioContext.createBufferSource();
-        source.buffer = audioBuffer;
-        source.connect(audioContext.destination);
-
-        // Wait for this chunk to finish before playing next
-        await new Promise((resolve) => {
-          source.onended = resolve;
-          source.start(0);
-        });
+      // Resume context if suspended (critical for mobile browsers)
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+        debugLog('Resumed suspended AudioContext for playback');
       }
 
-      // All chunks played
-      debugLog('Audio playback finished - ready for next "Hey Piatto"');
-      isPlayingRef.current = false;
-      setAssistantState('idle');
+      // If first chunk, initialize playback
+      if (!isPlayingRef.current) {
+        isPlayingRef.current = true;
+        pauseWakeWordDetection();
+        setAssistantState('playing');
+        // Start immediately - no buffering delay
+        nextScheduledTimeRef.current = audioContext.currentTime;
+        debugLog('Starting audio playback');
+      }
 
-      // Don't close WebSocket - keep it open for next question
-      // Speech recognition will auto-restart via onend handler
+      // Clear any existing end timeout
+      if (endTimeoutRef.current) {
+        clearTimeout(endTimeoutRef.current);
+        endTimeoutRef.current = null;
+      }
 
-      // Clear queue to ensure it's empty
-      audioQueueRef.current = [];
+      // Convert ArrayBuffer to Int16Array
+      const int16Data = new Int16Array(pcmData);
+
+      // Convert Int16 PCM to Float32 for Web Audio API
+      const float32Data = new Float32Array(int16Data.length);
+      for (let i = 0; i < int16Data.length; i++) {
+        float32Data[i] = int16Data[i] / (int16Data[i] < 0 ? 0x8000 : 0x7FFF);
+      }
+
+      // Create AudioBuffer
+      const audioBuffer = audioContext.createBuffer(1, float32Data.length, 24000);
+      audioBuffer.getChannelData(0).set(float32Data);
+
+      // Create buffer source
+      const source = audioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(audioContext.destination);
+
+      // Schedule at next available time - NO corrections, trust the timeline
+      const startTime = nextScheduledTimeRef.current;
+      source.start(startTime);
+
+      chunkCounterRef.current++;
+      debugLog(`Chunk ${chunkCounterRef.current} → ${startTime.toFixed(3)}s (dur: ${audioBuffer.duration.toFixed(3)}s)`);
+
+      // Update next scheduled time for seamless continuation
+      nextScheduledTimeRef.current = startTime + audioBuffer.duration;
+
+      // Set timeout to end playback if no more chunks arrive
+      const endDelay = (audioBuffer.duration * 1000) + 500;
+      endTimeoutRef.current = setTimeout(() => {
+        debugLog('Audio playback finished - ready for next "Hey Piatto"');
+        isPlayingRef.current = false;
+        setAssistantState('idle');
+        nextScheduledTimeRef.current = 0;
+        chunkCounterRef.current = 0;
+        resumeWakeWordDetection();
+      }, endDelay);
+
     } catch (err) {
       debugLog('Error playing audio:', err.message);
       setError('Failed to play audio response');
       isPlayingRef.current = false;
       setAssistantState('idle');
-    } finally {
-      if (startedPlayback) {
-        resumeWakeWordDetection();
-      }
+      nextScheduledTimeRef.current = 0;
+      chunkCounterRef.current = 0;
+      resumeWakeWordDetection();
     }
   }, [debugLog, pauseWakeWordDetection, resumeWakeWordDetection]);
 
