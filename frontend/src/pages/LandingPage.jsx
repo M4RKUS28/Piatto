@@ -1,4 +1,4 @@
-import { ChefHat, Sparkles, BookOpen, Clock, Zap, Brain, Users, MessageSquare, Play, CheckCircle2, ArrowRight, Cpu, Lightbulb, TrendingUp, Wine, CupSoda } from 'lucide-react'
+import { ChefHat, Sparkles, BookOpen, Clock, Brain, Users, MessageSquare, Play, CheckCircle2, ArrowRight, Cpu, Lightbulb, TrendingUp, Wine, CupSoda } from 'lucide-react'
 import { PiLeaf, PiEgg, PiCow } from 'react-icons/pi'
 import { Link } from 'react-router-dom'
 import MainLayout from '../Layout/MainLayout.jsx'
@@ -314,38 +314,6 @@ export default function LandingPage() {
               </p>
             </div>
 
-              <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-12">
-                <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 hover:bg-white/15 transition-all hover:scale-105 duration-300">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#7AD8B1] via-[#4FB98B] to-[#2A8968] flex items-center justify-center mb-6 shadow-lg shadow-[#1A5D46]/40">
-                    <Brain className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-white mb-4">{t('ai.multimodal.title', 'Multimodal Understanding')}</h3>
-                  <p className="text-white/80 leading-relaxed">
-                    {t('ai.multimodal.description', 'Gemini processes text, images, and context simultaneously to understand your cooking needs and generate perfect recipes tailored to you')}
-                  </p>
-                </div>
-
-                <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 hover:bg-white/15 transition-all hover:scale-105 duration-300">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#FFE08A] via-[#FFC15A] to-[#FF9B48] flex items-center justify-center mb-6 shadow-lg shadow-[#B26A1D]/40">
-                    <Zap className="w-8 h-8 text-[#035035]" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-white mb-4">{t('ai.realtime.title', 'Real-Time Guidance')}</h3>
-                  <p className="text-white/80 leading-relaxed">
-                    {t('ai.realtime.description', 'Get instant, context-aware cooking advice and step-by-step instructions powered by Gemini\'s advanced language understanding')}
-                  </p>
-                </div>
-
-                <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 hover:bg-white/15 transition-all hover:scale-105 duration-300">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#B1D7FF] via-[#7AB8FF] to-[#4A90FF] flex items-center justify-center mb-6 shadow-lg shadow-[#1F4C8C]/45">
-                    <Lightbulb className="w-8 h-8 text-white drop-shadow-md" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-white mb-4">{t('ai.creative.title', 'Creative Innovation')}</h3>
-                  <p className="text-white/80 leading-relaxed">
-                    {t('ai.creative.description', 'Discover unique recipe combinations and cooking techniques powered by Gemini\'s vast knowledge and creative capabilities')}
-                  </p>
-              </div>
-            </div>
-
             <div className="text-center">
               <a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-white hover:text-white/80 transition-colors group">
                 <span className="text-lg font-semibold">{t('ai.learnMore', 'Learn more about Google Gemini')}</span>
@@ -431,24 +399,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Visual flow demonstration placeholder */}
-            <div className="max-w-4xl mx-auto">
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-[#FFF8F0] to-white p-12 aspect-video flex items-center justify-center group">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#035035]/5 to-[#FF9B7B]/5"></div>
-                <div className="relative z-10 text-center">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#035035] to-[#046847] flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform shadow-lg">
-                    <Play className="w-10 h-10 text-white ml-1" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-[#035035] mb-3">
-                    {t('howItWorks.visualization.title', 'See the Flow in Action')}
-                  </h3>
-                  <p className="text-[#2D2D2D] opacity-80">
-                    {t('howItWorks.visualization.description', 'Watch how seamlessly Piatto guides you from recipe discovery to the final dish')}
-                  </p>
-                </div>
-                {/* Replace with actual GIF or short video showing the app flow */}
-              </div>
-            </div>
           </div>
         </section>
 
