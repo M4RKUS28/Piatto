@@ -49,12 +49,6 @@ def get_image_gen_query(recipe: dict, idx) -> types.Content:
     Ingredients: {[ingr['name'] for ingr in recipe['ingredients']]}
 """
 
-    if idx == 0:
-        query += "SYSTEM (VERY IMPORTANT!): Please make the image look similar to the image I uploaded (the one with salmon on a plate)"
-        with open("food_image.png", "rb") as f:
-            image_bytes = f.read()
-            return create_docs_query(query, [image_bytes])
-
     return create_text_query(query)
 
 def get_chat_agent_query(prompt: str, recipe, cooking_session, prompt_history) -> types.Content:

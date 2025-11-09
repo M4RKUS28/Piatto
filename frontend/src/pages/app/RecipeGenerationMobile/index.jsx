@@ -32,7 +32,6 @@ export default function RecipeGeneration() {
 	const [recipeOptions, setRecipeOptions] = useState([]);
 	const [, setImageAnalysis] = useState(null);
 	const [finishingSession, setFinishingSession] = useState(false);
-	const [suggestedCollection, setSuggestedCollection] = useState(null);
 
 
 	const storeSessionId = useCallback((sessionId) => {
@@ -87,7 +86,6 @@ export default function RecipeGeneration() {
 			clearStoredSession();
 			setPreparingSessionId(null);
 			setRecipeOptions([]);
-			setSuggestedCollection(null);
 			setImageAnalysis(null);
 			setError(null);
 			setPrompt('');
@@ -146,7 +144,6 @@ export default function RecipeGeneration() {
 			{ id: -2, title: '', description: '' },
 			{ id: -3, title: '', description: '' },
 		]);
-			setSuggestedCollection(null);
 		goToStep(3);
 
 		try {
@@ -204,19 +201,12 @@ export default function RecipeGeneration() {
 			const options = await getRecipeOptions(sessionId);
 			console.log('!!!Received recipe options:', options);
 			setRecipeOptions(options);
-			if (options && options.length > 0 && options[0].suggested_collection) {
-				console.log('!!! DEBUG (mobile): Setting suggested collection:', options[0].suggested_collection);
-				setSuggestedCollection(options[0].suggested_collection);
-			} else {
-				console.log('!!! DEBUG (mobile): No suggested collection found in options');
-				setSuggestedCollection(null);
-			}
+			// Each recipe now has its own suggested_collection field
 			if (shouldNavigate) {
 				goToStep(3);
 			}
 		} catch (optionsError) {
 			console.error('Failed to get recipe options:', optionsError);
-			setSuggestedCollection(null);
 			let errorMessage = t('errors.loadOptionsFailed', 'Failed to load recipe options. Please try again.');
 			if (!optionsError.response) {
 				errorMessage = t('errors.networkError', 'Network error. Please check your connection.');
@@ -393,7 +383,6 @@ export default function RecipeGeneration() {
 							onFinishSession={handleFinishCurrentSession}
 							sessionCompleting={finishingSession}
 							preparingSessionId={preparingSessionId}
-							suggestedCollection={suggestedCollection}
 						/>
 					)}
 

@@ -132,7 +132,8 @@ async def create_recipe(db: AsyncSession,
                 difficulty: Optional[str] = None,
                 food_category: Optional[str] = None,
                 important_notes: Optional[str] = None,
-                cooking_overview: Optional[str] = None) -> Recipe:
+                cooking_overview: Optional[str] = None,
+                suggested_collection: Optional[str] = None) -> Recipe:
     """Create a new recipe in the database."""
     recipe = Recipe(
         user_id=user_id,
@@ -146,6 +147,7 @@ async def create_recipe(db: AsyncSession,
         total_time_minutes=total_time_minutes,
         difficulty=difficulty,
         food_category=food_category,
+        suggested_collection=suggested_collection,
     )
 
     for ingredient in ingredients or []:

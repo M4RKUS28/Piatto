@@ -75,7 +75,7 @@ export default function MainLayout({ children, mode = 'landing' }) {
         <header className="bg-[#FFF8F0] border-b border-[#F5F5F5] relative z-10">
           <div className="flex items-center justify-between px-4 py-3">
             <Link
-              to="/app"
+              to="/"
               className="flex items-center gap-2"
             >
               <div className="w-9 h-9 flex items-center justify-center">

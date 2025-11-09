@@ -15,6 +15,7 @@ import {
 	formatTime,
 } from '../../../utils/recipeMetaUtils';
 
+
 export default function RecipeOptionsStep({
 	recipeOptions,
 	onRegenerate,
@@ -24,7 +25,6 @@ export default function RecipeOptionsStep({
 	sessionCompleting = false,
 	preparingSessionId,
 	onBack,
-	suggestedCollection,
 }) {
 	const { t } = useTranslation('recipeGeneration');
 	const navigate = useNavigate();
@@ -41,10 +41,6 @@ export default function RecipeOptionsStep({
 	const [hoveredImageId, setHoveredImageId] = useState(null);
 	const [showConfirmBack, setShowConfirmBack] = useState(false);
 	const pollingIntervalRef = useRef(null);
-	const effectiveSuggestedCollection = suggestedCollection
-		?? recipeOptions?.[0]?.suggested_collection
-		?? recipeOptions?.[0]?.suggestedCollection
-		?? null;
 
 	const toggleRecipeSelection = (recipeId) => {
 		setSelectedRecipes(prev => {
@@ -63,7 +59,6 @@ export default function RecipeOptionsStep({
 			return;
 		}
 
-		console.log('!!! DEBUG RecipeOptionsStep: Opening modal with suggestedCollection:', effectiveSuggestedCollection);
 		// Show collection selection modal instead of directly saving
 		setShowCollectionModal(true);
 	};
@@ -533,7 +528,6 @@ export default function RecipeOptionsStep({
 				isOpen={showCollectionModal}
 				onClose={() => setShowCollectionModal(false)}
 				onSave={handleSaveToCollections}
-				suggestedCollection={effectiveSuggestedCollection}
 			/>
 
 			<RecipeDetailsModal
