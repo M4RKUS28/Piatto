@@ -1,7 +1,6 @@
 flowchart TD
   A[Client]
 
-  
   subgraph Backend[FastAPI]
     FASTAPI[FastAPI App]
   end
@@ -10,7 +9,5 @@ flowchart TD
     REACT[React App]
   end
 
-
-
-  A|Backend| --> FASTAPI
-  A|Frontend| --> REACT
+  A -->|Backend| FASTAPI
+  A -->|Frontend| REACT
