@@ -1,7 +1,6 @@
 # Piatto — AI-Powered Recipe & Cooking Assistant
 
-![Piatto Logo](frontend/public/logo_idea_2_no_bg.png)
-<img src="frontend/public/logo_idea_2_no_bg.png" width="300" />
+<img src="frontend/public/logo_idea_2_no_bg.png" width="260" />
 
 > **From Chaos to Culinary Excellence**  
 > Built for the **Google Cloud Run Hackathon 2025**
