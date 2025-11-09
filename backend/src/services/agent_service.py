@@ -129,13 +129,16 @@ class AgentService:
 
         # Save the recipes in db before generating images
         recipe_ids = []
-        suggested_collection = None
+        suggested_collection_names = set()
         async with get_async_db_context() as db:
             for idx, recipe in enumerate(recipes['recipes']):
-                # we just use the same suggested collection for all three recipes for now:
-                suggested_collection = recipe['suggested_collection'] if idx == 0 else suggested_collection
                 logger.info("Saving recipe %d/%d: title=%s", idx + 1, len(recipes['recipes']), recipe['title'])
                 logger.info("Recipe ingredients: %s", recipe['ingredients'])
+
+                # Track suggested collection names
+                if recipe.get('suggested_collection'):
+                    suggested_collection_names.add(recipe['suggested_collection'])
+
                 recipe_db = await recipe_crud.create_recipe(
                     db=db,
                     user_id=user_id,
@@ -148,20 +151,40 @@ class AgentService:
                     food_category=recipe['food_category'],
                     important_notes=recipe.get('important_notes'),
                     cooking_overview=recipe.get('cooking_overview'),
+                    suggested_collection=recipe['suggested_collection'],
                 )
                 recipe_ids.append(recipe_db.id)
                 logger.info("Recipe saved with id=%s", recipe_db.id)
-            
+
             logger.info("All recipes saved. Recipe IDs: %s", recipe_ids)
 
-            # Create or update preparing session with the generated recipes and metadata
+            # Auto-create suggested collections if they don't exist
+            if suggested_collection_names:
+                logger.info("Checking/creating suggested collections: %s", suggested_collection_names)
+                existing_collections = await collection_crud.get_collections_by_user_id(db, user_id)
+                existing_names = {col.name.lower() for col in existing_collections}
+
+                for collection_name in suggested_collection_names:
+                    if collection_name.lower() not in existing_names:
+                        logger.info("Creating new collection: %s", collection_name)
+                        await collection_crud.create_collection(
+                            db=db,
+                            owner_id=user_id,
+                            name=collection_name,
+                            description=f"Auto-created collection for {collection_name} recipes"
+                        )
+                        logger.info("Collection created: %s", collection_name)
+                    else:
+                        logger.info("Collection already exists: %s", collection_name)
+
+            # Create or update preparing session with the generated recipes
+            # Note: suggested_collection is now stored per-recipe, not per-session
             try:
                 session = await preparing_crud.create_or_update_preparing_session(
                     db=db,
                     user_id=user_id,
                     recipe_ids=recipe_ids,
                     preparing_session_id=preparing_session_id,
-                    suggested_collection=suggested_collection
                 )
             except PermissionError as error:
                 logger.warning("Preparing session %s cannot be updated by user %s", preparing_session_id, user_id)

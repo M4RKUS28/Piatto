@@ -5,27 +5,24 @@ import { getImageUrl } from '../utils/imageUtils';
 import LoadingSpinner from './LoadingSpinner';
 import { useTranslation } from 'react-i18next';
 
+
 /**
  * SaveRecipesCollectionModal component - Multi-step wizard for saving recipes to collections
- * Each recipe gets its own page, with selections from previous recipe as default
+ * Each recipe gets its own page with its own suggested collection pre-selected
  *
  * @param {Object} props
- * @param {Array} props.recipes - Array of recipe objects {id, title, image_url, description}
+ * @param {Array} props.recipes - Array of recipe objects {id, title, image_url, description, suggested_collection}
  * @param {boolean} props.isOpen - Whether modal is open
  * @param {Function} props.onClose - Callback when modal closes
  * @param {Function} props.onSave - Callback when recipes are saved: onSave(recipeIds, recipeCollectionMap)
- * @param {string|null} props.suggestedCollection - Optional collection name to pre-select for first recipe
  */
-export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, onSave, suggestedCollection }) {
+export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, onSave }) {
   const { t } = useTranslation('recipeGeneration');
   const [collections, setCollections] = useState([]);
   const [currentStep, setCurrentStep] = useState(0); // Current recipe index
 
   // Map of recipeId -> Set of collectionIds
   const [recipeSelections, setRecipeSelections] = useState(new Map());
-
-  // Track which recipes have been visited/configured
-  const [visitedRecipes, setVisitedRecipes] = useState(new Set());
 
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -63,54 +60,49 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
         });
         return initialSelections;
       });
-      setVisitedRecipes(new Set()); // Reset visited tracking
       setCurrentStep(0);
       setSearchQuery('');
       setError(null);
     }
   }, [fetchCollections, isOpen, recipes]);
 
-  // Pre-select suggested collection for first recipe when collections are loaded
+  // Pre-select suggested collection for each recipe based on its own suggested_collection field
   useEffect(() => {
     console.log('!!! DEBUG Modal: Pre-select effect running', {
       isOpen,
       collectionsCount: collections.length,
-      suggestedCollection,
       recipesCount: recipes.length
     });
 
-    if (isOpen && collections.length > 0 && suggestedCollection && recipes.length > 0) {
-      console.log('!!! DEBUG Modal: Looking for collection matching:', suggestedCollection);
-      console.log('!!! DEBUG Modal: Available collections:', collections.map(c => c.name));
+    if (isOpen && collections.length > 0 && recipes.length > 0) {
+      setRecipeSelections(prevSelections => {
+        const newSelections = new Map(prevSelections);
 
-      // Find matching collection (case-insensitive exact match)
-      const matchingCollection = collections.find(
-        collection => collection.name.toLowerCase() === suggestedCollection.toLowerCase()
-      );
+        recipes.forEach(recipe => {
+          const currentSelection = prevSelections.get(recipe.id);
 
-      console.log('!!! DEBUG Modal: Matching collection found:', matchingCollection);
+          // Only pre-select if recipe doesn't already have selections
+          if ((!currentSelection || currentSelection.size === 0) && recipe.suggested_collection) {
+            console.log(`!!! DEBUG Modal: Looking for collection matching for recipe ${recipe.id}:`, recipe.suggested_collection);
 
-      if (matchingCollection) {
-        const firstRecipeId = recipes[0].id;
-        console.log('!!! DEBUG Modal: First recipe ID:', firstRecipeId);
+            // Find matching collection (case-insensitive exact match)
+            const matchingCollection = collections.find(
+              collection => collection.name.toLowerCase() === recipe.suggested_collection.toLowerCase()
+            );
 
-        setRecipeSelections(prevSelections => {
-          const currentSelection = prevSelections.get(firstRecipeId);
-          console.log('!!! DEBUG Modal: Current selection for first recipe:', currentSelection);
-
-          // Only set if the first recipe doesn't already have selections
-          if (!currentSelection || currentSelection.size === 0) {
-            const newSelections = new Map(prevSelections);
-            newSelections.set(firstRecipeId, new Set([matchingCollection.id]));
-            console.log('!!! DEBUG Modal: Setting pre-selection for collection ID:', matchingCollection.id);
-            return newSelections;
+            if (matchingCollection) {
+              console.log(`!!! DEBUG Modal: Setting pre-selection for recipe ${recipe.id} to collection:`, matchingCollection.name);
+              newSelections.set(recipe.id, new Set([matchingCollection.id]));
+            } else {
+              console.log(`!!! DEBUG Modal: No matching collection found for recipe ${recipe.id}`);
+            }
           }
-          console.log('!!! DEBUG Modal: Recipe already has selections, skipping pre-select');
-          return prevSelections;
         });
-      }
+
+        return newSelections;
+      });
     }
-  }, [isOpen, collections, suggestedCollection, recipes]);
+  }, [isOpen, collections, recipes]);
 
   const handleToggleCollection = (collectionId) => {
     const currentRecipe = recipes[currentStep];
@@ -163,33 +155,11 @@ export default function SaveRecipesCollectionModal({ recipes, isOpen, onClose, o
   };
 
   const handleNext = () => {
-    const currentRecipe = recipes[currentStep];
-    const currentSelections = recipeSelections.get(currentRecipe.id) || new Set();
-
     setError(null);
 
-    // Mark current recipe as visited
-    setVisitedRecipes(prev => new Set([...prev, currentRecipe.id]));
-
     if (currentStep < recipes.length - 1) {
-      const nextRecipeId = recipes[currentStep + 1].id;
-
-      // Only inherit selections if the next recipe hasn't been visited yet
-      if (!visitedRecipes.has(nextRecipeId) && currentSelections.size > 0) {
-        setRecipeSelections(prevSelections => {
-          const nextSelections = prevSelections.get(nextRecipeId);
-
-          // If next recipe has no selections and hasn't been visited, inherit from current
-          if (!nextSelections || nextSelections.size === 0) {
-            const newRecipeSelections = new Map(prevSelections);
-            newRecipeSelections.set(nextRecipeId, new Set(currentSelections));
-            return newRecipeSelections;
-          }
-
-          return prevSelections;
-        });
-      }
-
+      // Move to next recipe - no longer inherit selections from previous recipe
+      // Each recipe uses its own suggested_collection that was pre-selected
       setCurrentStep(currentStep + 1);
       setSearchQuery('');
       setShowCreateForm(false);
