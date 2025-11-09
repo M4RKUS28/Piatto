@@ -15,5 +15,6 @@ Regarding the collection name:
 
 If the user has uploaded ingredients, please do the following:
 - Try to give one option, that uses only the uploaded ingredients. If there can be no meaningful recipes created with the uploaded ingredients, neglect this.
-- If you can create several recipes with only the uploaded ingredients, go ahead and do that.
-- However, if the ingredients are not so plentyful, you are also allowed to give options that use the ingredients but also other ingredients on top.
+- If you can create three very distinct recipes with only the uploaded ingredients, go ahead and do that.
+- However, if the ingredients are not so plentyful, you are also allowed to give options that use the ingredients but also other ingredients on top. e.g. if the user gives salmon and lime, you are allowed to suggest pasta with salmen lime and some other ingredients.
+- Its very important that all three recipes are very distinct so that the user is left with a choice.
