@@ -9,7 +9,7 @@ from typing import List, Optional
 from google.genai import types
 
 from ..db.models.db_recipe import Recipe
-from ..agents.utils import create_text_query
+from ..agents.utils import create_text_query, create_docs_query
 import logging
 import json
 
@@ -36,18 +36,25 @@ def get_recipe_gen_query(prompt: str, written_ingredients: str, collections: Lis
         
         Collections you can sort the recipe into:
         {json.dumps(collections, indent=2)}
-{previous_recipes_section}
+        {previous_recipes_section}
     """
 
     return create_text_query(query)
 
-def get_image_gen_query(recipe: dict) -> types.Content:
+def get_image_gen_query(recipe: dict, idx) -> types.Content:
     """ builds the query for the image generation agent """
     query = f"""
     Recipe Name: {recipe['title']}
     Description: {recipe['description']}
     Ingredients: {[ingr['name'] for ingr in recipe['ingredients']]}
 """
+
+    if idx == 0:
+        query += "SYSTEM (VERY IMPORTANT!): Please make the image look similar to the image I uploaded (the one with salmon on a plate)"
+        with open("food_image.png", "rb") as f:
+            image_bytes = f.read()
+            return create_docs_query(query, [image_bytes])
+
     return create_text_query(query)
 
 def get_chat_agent_query(prompt: str, recipe, cooking_session, prompt_history) -> types.Content:

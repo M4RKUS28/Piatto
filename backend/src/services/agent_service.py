@@ -67,7 +67,7 @@ class AgentService:
                 image = await self.image_agent.run(
                     user_id=user_id,
                     state={},
-                    content=get_image_gen_query(recipe_payload),
+                    content=get_image_gen_query(recipe_payload, idx),
                 )
 
                 async with get_async_bucket_session() as bs:
