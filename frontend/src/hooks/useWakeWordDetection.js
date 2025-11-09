@@ -46,6 +46,8 @@ const useWakeWordDetection = (cookingSessionId = null) => {
   const audioContextRef = useRef(null);
   const audioQueueRef = useRef([]);  // Queue for audio chunks
   const isPlayingRef = useRef(false);  // Track if currently playing audio
+  const nextScheduledTimeRef = useRef(0);  // Track scheduled time for next chunk
+  const endTimeoutRef = useRef(null);  // Timeout for ending playback
 
   // Debug log helper
   const debugLog = useCallback((message, data = null) => {
@@ -149,24 +151,10 @@ const useWakeWordDetection = (cookingSessionId = null) => {
   }, [debugLog]);
 
 
-  // Play audio response (PCM data from Gemini) - Queue-based playback with proper scheduling
+  // Play audio response (PCM data from Gemini) - Immediate scheduling without time correction
   const playAudioResponse = useCallback(async (pcmData) => {
-    // Add to queue
-    audioQueueRef.current.push(pcmData);
-
-    // If already playing, return (queue will be processed by the running loop)
-    if (isPlayingRef.current) {
-      debugLog('Adding chunk to queue (already playing)');
-      return;
-    }
-
-    // Start processing queue
-    pauseWakeWordDetection();
-    isPlayingRef.current = true;
-    setAssistantState('playing');
-
     try {
-      // Create single AudioContext for all chunks
+      // Create AudioContext if needed
       if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
         audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({
           sampleRate: 24000, // Gemini outputs 24kHz PCM
@@ -176,77 +164,89 @@ const useWakeWordDetection = (cookingSessionId = null) => {
 
       const audioContext = audioContextRef.current;
 
-      // Track the scheduled time for seamless playback
-      let nextScheduledTime = audioContext.currentTime;
-      let processedChunks = 0;
+      // If this is the first chunk, initialize playback state
+      if (!isPlayingRef.current) {
+        isPlayingRef.current = true;
+        pauseWakeWordDetection();
+        setAssistantState('playing');
 
-      // Process queue continuously until empty
-      while (isPlayingRef.current) {
-        // Wait for chunks if queue is empty
-        if (audioQueueRef.current.length === 0) {
-          // Wait a bit for new chunks to arrive
-          await new Promise(resolve => setTimeout(resolve, 100));
-
-          // Check again - if still empty after waiting, we're done
-          if (audioQueueRef.current.length === 0) {
-            debugLog(`Queue empty after waiting, finishing playback (processed ${processedChunks} chunks)`);
-            break;
-          }
-        }
-
-        const chunk = audioQueueRef.current.shift();
-
-        // Convert ArrayBuffer to Int16Array
-        const int16Data = new Int16Array(chunk);
-
-        // Convert Int16 PCM to Float32 for Web Audio API
-        const float32Data = new Float32Array(int16Data.length);
-        for (let i = 0; i < int16Data.length; i++) {
-          float32Data[i] = int16Data[i] / (int16Data[i] < 0 ? 0x8000 : 0x7FFF);
-        }
-
-        // Create AudioBuffer
-        const audioBuffer = audioContext.createBuffer(1, float32Data.length, 24000);
-        audioBuffer.getChannelData(0).set(float32Data);
-
-        // Create buffer source
-        const source = audioContext.createBufferSource();
-        source.buffer = audioBuffer;
-        source.connect(audioContext.destination);
-
-        // Ensure we don't schedule in the past
-        const now = audioContext.currentTime;
-        if (nextScheduledTime < now) {
-          debugLog(`Adjusting schedule time (was ${nextScheduledTime.toFixed(3)}s, now ${now.toFixed(3)}s)`);
-          nextScheduledTime = now;
-        }
-
-        // Schedule this chunk at the precise time
-        source.start(nextScheduledTime);
-        processedChunks++;
-
-        debugLog(`Scheduled chunk ${processedChunks} at ${nextScheduledTime.toFixed(3)}s (duration: ${audioBuffer.duration.toFixed(3)}s)`);
-
-        // Update scheduled time for next chunk (seamless continuation)
-        nextScheduledTime += audioBuffer.duration;
+        // Start scheduling from current time
+        nextScheduledTimeRef.current = audioContext.currentTime;
+        debugLog('Starting audio playback');
       }
 
-      // Wait for final audio to finish playing
-      const remainingTime = Math.max(0, nextScheduledTime - audioContext.currentTime);
-      if (remainingTime > 0) {
-        debugLog(`Waiting ${remainingTime.toFixed(3)}s for final audio to finish`);
-        await new Promise(resolve => setTimeout(resolve, remainingTime * 1000 + 100)); // Add 100ms buffer
+      // Clear any existing end timeout
+      if (endTimeoutRef.current) {
+        clearTimeout(endTimeoutRef.current);
+        endTimeoutRef.current = null;
       }
 
-      // All chunks played
-      debugLog('Audio playback finished - ready for next "Hey Piatto"');
+      // Convert ArrayBuffer to Int16Array
+      const int16Data = new Int16Array(pcmData);
+
+      // Convert Int16 PCM to Float32 for Web Audio API
+      const float32Data = new Float32Array(int16Data.length);
+      for (let i = 0; i < int16Data.length; i++) {
+        float32Data[i] = int16Data[i] / (int16Data[i] < 0 ? 0x8000 : 0x7FFF);
+      }
+
+      // Create AudioBuffer
+      const audioBuffer = audioContext.createBuffer(1, float32Data.length, 24000);
+      audioBuffer.getChannelData(0).set(float32Data);
+
+      // Create buffer source
+      const source = audioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(audioContext.destination);
+
+      // Get the scheduled start time
+      const scheduledTime = nextScheduledTimeRef.current;
+
+      // Only use current time if we're scheduling in the past (first chunk or long gap)
+      const now = audioContext.currentTime;
+      const startTime = scheduledTime < now ? now : scheduledTime;
+
+      // Schedule this chunk
+      source.start(startTime);
+
+      debugLog(`Scheduled chunk at ${startTime.toFixed(3)}s (duration: ${audioBuffer.duration.toFixed(3)}s, samples: ${int16Data.length})`);
+
+      // Update next scheduled time (seamless continuation)
+      nextScheduledTimeRef.current = startTime + audioBuffer.duration;
+
+      // Set timeout to end playback if no more chunks arrive
+      // Wait for chunk duration + 300ms grace period for next chunk
+      const endDelay = (audioBuffer.duration * 1000) + 300;
+      endTimeoutRef.current = setTimeout(() => {
+        const remainingTime = Math.max(0, nextScheduledTimeRef.current - audioContext.currentTime);
+
+        if (remainingTime > 0) {
+          debugLog(`Waiting ${remainingTime.toFixed(3)}s for final audio to finish`);
+          setTimeout(() => {
+            debugLog('Audio playback finished - ready for next "Hey Piatto"');
+            isPlayingRef.current = false;
+            setAssistantState('idle');
+            audioQueueRef.current = [];
+            nextScheduledTimeRef.current = 0;
+            resumeWakeWordDetection();
+          }, remainingTime * 1000 + 100);
+        } else {
+          debugLog('Audio playback finished - ready for next "Hey Piatto"');
+          isPlayingRef.current = false;
+          setAssistantState('idle');
+          audioQueueRef.current = [];
+          nextScheduledTimeRef.current = 0;
+          resumeWakeWordDetection();
+        }
+      }, endDelay);
+
     } catch (err) {
       debugLog('Error playing audio:', err.message);
       setError('Failed to play audio response');
-    } finally {
       isPlayingRef.current = false;
       setAssistantState('idle');
       audioQueueRef.current = [];
+      nextScheduledTimeRef.current = 0;
       resumeWakeWordDetection();
     }
   }, [debugLog, pauseWakeWordDetection, resumeWakeWordDetection]);
