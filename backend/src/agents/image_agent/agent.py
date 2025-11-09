@@ -17,10 +17,19 @@ class ImageAgent:
 
     async def run(self, user_id: str, state: dict, content: types.Content):
         user_text = content.parts[0].text if content.parts and content.parts[0].text else ""
-        response = await self.client.aio.models.generate_content(
-            model="gemini-2.5-flash-image",
-            contents=[self.full_instructions + user_text],
-        )
+        image = None
+        if len(content.parts) > 1:
+            image = content.parts[1].inline_data.data if content.parts and content.parts[1].inline_data.data else None
+        if image:
+            response = await self.client.aio.models.generate_content(
+                model="gemini-2.5-flash-image",
+                contents=[content.parts[1], self.full_instructions + user_text],
+            )
+        else:
+            response = await self.client.aio.models.generate_content(
+                model="gemini-2.5-flash-image",
+                contents=[self.full_instructions + user_text],
+            )
 
         candidates = getattr(response, "candidates", None)
         if candidates and len(candidates) > 0:

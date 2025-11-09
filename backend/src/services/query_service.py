@@ -50,10 +50,11 @@ def get_image_gen_query(recipe: dict, idx) -> types.Content:
 """
 
     if idx == 0:
-        query += "SYSTEM (VERY IMPORTANT!): Please make the image look similar to the image I uploaded (the one with salmon on a plate)"
-        with open("food_image.png", "rb") as f:
+        query = "SYSTEM: Please take inspiration (not copy) the image I uploaded. You are a professional food photographer and create an image for the website with the dish that I cooked. example: make it look like it was shot in a bright and classy environment"
+        with open("/home/lucabozzetti/Code/Hackathons/Piatto/backend/src/services/food_image.png", "rb") as f:
             image_bytes = f.read()
-            return create_docs_query(query, [image_bytes])
+            print(query)
+            return create_docs_query(query, [bytes(image_bytes)])
 
     return create_text_query(query)
 

@@ -34,6 +34,7 @@ def create_docs_query(query: str, images: List[bytes]) -> types.Content:
             data=image,
             mime_type="image/png",
         ))
+
     return types.Content(role="user", parts=parts)
 
 
