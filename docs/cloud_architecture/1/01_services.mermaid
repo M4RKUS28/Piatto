@@ -1,0 +1,16 @@
+flowchart TD
+  A[Client]
+
+  
+  subgraph Backend[FastAPI]
+    FASTAPI[FastAPI App]
+  end
+
+  subgraph Frontend[React Vite]
+    REACT[React App]
+  end
+
+
+
+  A|Backend| --> FASTAPI
+  A|Frontend| --> REACT

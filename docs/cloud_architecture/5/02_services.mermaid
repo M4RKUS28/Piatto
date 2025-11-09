@@ -1,0 +1,87 @@
+flowchart TD
+  A[Client Browser]
+
+  subgraph LB[Global HTTPS Load Balancer]
+    URLMAP{URL Map: piatto-url-map}
+  end
+
+  %% Routing decision
+  A -->|HTTPS| URLMAP
+
+  %% URL map rules
+  URLMAP -->|/api/*| BS_API[Service: backend-service]
+  %% CDN paths – klar getrennt
+
+  subgraph CDN[Google Cloud CDN]
+    CDN_ASSETS
+    CDN_FE
+  end
+
+  
+  URLMAP -->|/assets/*| CDN_ASSETS[(Cloud CDN)]
+  URLMAP -->|/index.html, default SPA routes| CDN_FE[(Cloud CDN)]
+  %% Jeder CDN Pfad zeigt nur auf sein Origin
+  CDN_ASSETS --> BB[Service: frontend-bucket]
+  CDN_FE --> BS_FE[Service: frontend-service]
+
+  %% Backend (API)
+  subgraph CR_API[Cloud Run: Backend]
+    NEG_API[Serverless NEG: fastapi-neg]
+    SRV_API[Service: fastapi-backend]
+    UVICORN[Uvicorn workers]
+    FASTAPI[FastAPI app]
+  end
+  BS_API --> NEG_API --> SRV_API --> UVICORN --> FASTAPI
+
+  %% Data stores
+  subgraph DATA[Data Stores]
+    SQL[(Cloud SQL: MySQL)]
+    GCS[(Cloud Storage)]
+  end
+  FASTAPI --> SQL
+  FASTAPI --> GCS
+
+  %% Frontend (Nginx)
+  subgraph CR_FE[Cloud Run: Frontend]
+    NEG_FE[Serverless NEG: piatto-frontend-neg]
+    SRV_FE[Service: piatto-frontend]
+    NGINX[Nginx]
+    TRYFILES[try_files to /index.html]
+  end
+  BS_FE --> NEG_FE --> SRV_FE --> NGINX --> TRYFILES
+
+  %% Notes as nodes
+  BB_NOTE[Bucket assets cached via origin Cache-Control]:::note
+  INDEX_NOTE[index.html uses Cache-Control: no-cache revalidate]:::note
+
+  BB -.-> BB_NOTE
+  TRYFILES -.-> INDEX_NOTE
+
+  classDef note fill:#fff4e5,stroke:#f0ad4e,stroke-width:1px,color:#333;
+
+  %% Color theme
+  classDef entry fill:#e0f7fa,stroke:#26c6da,stroke-width:1px,color:#004d40;
+  classDef lb fill:#e3f2fd,stroke:#64b5f6,stroke-width:1px,color:#0d47a1;
+  classDef cdn fill:#f3e5f5,stroke:#ba68c8,stroke-width:1px,color:#4a148c;
+  classDef bucket fill:#e8f5e9,stroke:#66bb6a,stroke-width:1px,color:#1b5e20;
+  classDef bsapi fill:#fff3e0,stroke:#ffb74d,stroke-width:1px,color:#e65100;
+  classDef bsfe fill:#f1f8e9,stroke:#aed581,stroke-width:1px,color:#33691e;
+  classDef neg fill:#ede7f6,stroke:#9575cd,stroke-width:1px,color:#311b92;
+  classDef run fill:#e0f2f1,stroke:#80cbc4,stroke-width:1px,color:#004d40;
+  classDef app fill:#e8eaf6,stroke:#7986cb,stroke-width:1px,color:#1a237e;
+  classDef nginx fill:#fffde7,stroke:#fff176,stroke-width:1px,color:#f57f17;
+  classDef data fill:#eeeeee,stroke:#9e9e9e,stroke-width:1px,color:#424242;
+
+  %% Apply classes
+  class A entry;
+  class URLMAP lb;
+  class CDN cdn;
+  class BB bucket;
+  class BS_FE bsfe;
+  class BS_API bsapi;
+  class NEG_API,NEG_FE neg;
+  class SRV_API,SRV_FE run;
+  class UVICORN,FASTAPI app;
+  class NGINX,TRYFILES nginx;
+  class SQL,GCS data;
+  class BB_NOTE,INDEX_NOTE note;

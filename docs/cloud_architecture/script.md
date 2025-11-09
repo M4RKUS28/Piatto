@@ -20,7 +20,7 @@ Our philosophy was simple: build a production-grade application using a modern, 
 
 **(Animate to `01_services.md`)**
 
-At its core, our architecture is composed of two containerized services on Cloud Run: a dedicated **frontend service** that serves the user interface, and a **backend API service** that handles all the business logic. This separation of concerns gives us incredible agility.
+At its core, our architecture is composed of two containerized services on Cloud Run: a dedicated **frontend service** that serves the user interface, and a **backend API service** that handles all the business logic.
 
 **(Animate to `02_load_balancer.md`)**
 
@@ -28,7 +28,7 @@ To deliver a flawless user experience worldwide, we front our application with a
 
 **(Animate to `03_database_storage.md`)**
 
-Our backend service is stateful, relying on a managed **Cloud SQL** instance for our primary PostgreSQL database, which handles everything from user data to saved recipes. For user-generated content, like ingredient photos, we leverage the elastic, virtually infinite scalability of **Cloud Storage Buckets**.
+Our backend service is stateful, relying on a managed **Cloud SQL** instance for our primary MySQL database, which handles everything from user data to saved recipes. For user-generated content, like ingredient photos, we leverage the elastic, virtually infinite scalability of **Cloud Storage Buckets**.
 
 **(Animate to `04_full_architecture.md`)**
 
