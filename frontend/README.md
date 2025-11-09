@@ -41,16 +41,16 @@ The Piatto frontend is a modern Single Page Application (SPA) that provides:
 
 ```text
 User Interaction
-    �
+    *
 React Component (src/pages/*)
-    �
+    *
 API Client (src/api/*.js)
-    �
+    *
 Axios HTTP Request
-    �
+    *
 Backend FastAPI (via /api/*)
-    �
-Response � State Update � UI Re-render
+    *
+Response * State Update * UI Re-render
 ```
 
 ### Component Flow Example
@@ -631,7 +631,7 @@ i18n
   "landing": {
     "hero": {
       "title": "Intelligenter Kochen mit KI",
-      "subtitle": "Dein pers�nlicher Kochassistent"
+      "subtitle": "Dein pers*nlicher Kochassistent"
     }
   },
   "recipe": {
@@ -794,7 +794,7 @@ server {
     try_files $uri =404;
   }
 
-  # SPA fallback: all other routes � index.html
+  # SPA fallback: all other routes * index.html
   location / {
     try_files $uri $uri/ /index.html;
   }
