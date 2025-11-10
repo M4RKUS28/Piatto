@@ -265,7 +265,7 @@ export default function LandingPage() {
             <div className="max-w-5xl mx-auto">
               <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-[#035035] to-[#046847] p-8 sm:p-12 aspect-video flex items-center justify-center group hover:scale-[1.02] transition-transform duration-300">
                 <iframe
-                  src="https://www.youtube.com/embed/j5TfPSnD4Zk?si=493Z5983VIUENefW&amp;controls=0"
+                  src="https://www.youtube.com/embed/j5TfPSnD4Zk?si=VTwedNPHTg4KJuIj"
                   title="YouTube video player"
                   className="absolute inset-0 w-full h-full border-0"
                   frameborder="0"
