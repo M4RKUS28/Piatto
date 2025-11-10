@@ -11,13 +11,23 @@ pathMatchers:
   pathRules:
   - paths:
     - /assets/*
+    - /lottie-animations/*
+    - /team/*
     - /index.html
+
+    - /cooking_background.jpg
+    - /logo_full_name.png
     - /logo_full_name.svg
+    - /logo_idea_2_no_bg.png
+    - /logo_no_P.png
     - /logo_no_P.svg
     - /logo_P.svg
     - /logo_P_test.png
+    - /Logo_with_Background.png
+    - /paper-texture.jpg
     - /rage-ragebait.gif
-    - /logo_no_P.png
+    - /wired-outline-61-camera-hover-flash.gif
+    - /wired-outline-61-camera-in-reveal.gif
     service: https://www.googleapis.com/compute/v1/projects/cloud-run-hackathon-475303/global/backendBuckets/frontend-bucket
   - paths:
     - /api/*

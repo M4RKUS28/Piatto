@@ -72,6 +72,10 @@ jobs:
         run: |
           gsutil -m setmeta -r -h "Cache-Control:public,max-age=3600" gs://${{ secrets.GCS_STATIC_BUCKET }}
 
+      - name: Invalidate CDN cache for SPA entry
+        run: |
+          gcloud compute url-maps invalidate-cdn-cache piatto-url-map --path "/index.html"
+
   deploy-cloud-run:
     needs: build
     runs-on: ubuntu-latest
