@@ -63,7 +63,7 @@ export default function RecipeGenerationModal({ isOpen, onClose }) {
     }
   };
 
-  const handleFinishCurrentSession = useCallback(async () => {
+  const handleFinishCurrentSession = useCallback(async (redirectUrl = null) => {
     if (!preparingSessionId) return;
 
     setFinishingSession(true);
@@ -85,7 +85,16 @@ export default function RecipeGenerationModal({ isOpen, onClose }) {
       setInputMethod('text');
       setCurrentStep(1);
 
-      // Close modal and refresh page
+      // If a redirect URL is provided, navigate there immediately
+      // The navigation will close everything automatically
+      if (redirectUrl) {
+        console.log('[RecipeGenerationModal] Redirecting to:', redirectUrl);
+        window.location.href = redirectUrl;
+        return; // Don't call onClose() - navigation will handle it
+      }
+
+      // Otherwise, close modal and reload
+      console.log('[RecipeGenerationModal] No redirect URL, closing and reloading');
       onClose();
       window.location.reload();
     }

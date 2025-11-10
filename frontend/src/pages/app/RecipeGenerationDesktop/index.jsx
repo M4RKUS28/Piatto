@@ -70,7 +70,7 @@ export default function RecipeGeneration() {
 		}
 	};
 
-	const handleFinishCurrentSession = useCallback(async () => {
+	const handleFinishCurrentSession = useCallback(async (redirectUrl = null) => {
 		if (!preparingSessionId) {
 			return;
 		}
@@ -94,7 +94,9 @@ export default function RecipeGeneration() {
 			setInputMethod('text');
 			setCurrentStep(1);
 
-			if (collectionContext?.collectionId) {
+			// If redirect URL is provided, navigation will be handled by caller
+			// Otherwise, navigate to collection if in collection context
+			if (!redirectUrl && collectionContext?.collectionId) {
 				navigate(`/app/collection/${collectionContext.collectionId}`);
 			}
 		}

@@ -74,7 +74,7 @@ export default function RecipeOptionsStep({
 
 			// Navigate to library with the saved recipe IDs in query params
 			const recipeIdsParam = recipeIds.join(',');
-			navigate(`/app/library?last_recipe=${recipeIdsParam}`);
+			navigate(`/app?last_recipe=${recipeIdsParam}`);
 		} catch (error) {
 			console.error('Error processing recipes:', error);
 			setProcessingSelection(false);

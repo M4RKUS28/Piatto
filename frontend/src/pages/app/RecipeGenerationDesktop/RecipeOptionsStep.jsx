@@ -74,12 +74,18 @@ export default function RecipeOptionsStep({
 				recipeIds.map(recipeId => onSaveRecipe(recipeId))
 			);
 
-			// Finish the session (deletes all non-permanent recipes and the session)
-			await onFinishSession();
-
-			// Navigate to library with the saved recipe IDs in query params
+			// Navigate to app with the saved recipe IDs in query params
 			const recipeIdsParam = recipeIds.join(',');
-			navigate(`/app/library?last_recipe=${recipeIdsParam}`);
+			const redirectUrl = `/app?last_recipe=${recipeIdsParam}`;
+			console.log('[RecipeOptionsStep] Navigating to:', redirectUrl);
+
+			// Finish the session (deletes all non-permanent recipes and the session)
+			// Pass redirect URL for modal context (ignored in non-modal context)
+			await onFinishSession(redirectUrl);
+			console.log('[RecipeOptionsStep] Session finished, now navigating...');
+
+			// Also navigate directly (for non-modal context)
+			navigate(redirectUrl);
 		} catch (error) {
 			console.error('Error processing recipes:', error);
 			setProcessingSelection(false);
