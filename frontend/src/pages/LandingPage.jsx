@@ -264,28 +264,15 @@ export default function LandingPage() {
 
             <div className="max-w-5xl mx-auto">
               <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-[#035035] to-[#046847] p-8 sm:p-12 aspect-video flex items-center justify-center group hover:scale-[1.02] transition-transform duration-300">
-                {/* Video placeholder - replace with your actual video */}
-                <div className="absolute inset-0 bg-black/20"></div>
-                <div className="relative z-10 text-center">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform cursor-pointer">
-                    <Play className="w-10 h-10 sm:w-12 sm:h-12 text-white ml-1" />
-                  </div>
-                  <p className="text-white text-lg sm:text-xl font-semibold">
-                    {t('demo.clickToWatch', 'Click to watch demo')}
-                  </p>
-                  <p className="text-white/80 text-sm mt-2">
-                    {t('demo.duration', '2 min overview')}
-                  </p>
-                </div>
-                {/* Replace the above placeholder with your video element:
-                <video
-                  className="w-full h-full object-cover"
-                  controls
-                  poster="/path-to-thumbnail.jpg"
-                >
-                  <source src="/path-to-your-demo-video.mp4" type="video/mp4" />
-                </video>
-                */}
+                <iframe width="560"
+                  height="315"
+                  src="https://www.youtube.com/embed/j5TfPSnD4Zk?si=493Z5983VIUENefW&amp;controls=0"
+                  title="YouTube video player"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allowfullscreen>
+                </iframe>
               </div>
             </div>
           </div>
