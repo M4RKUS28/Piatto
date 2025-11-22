@@ -81,6 +81,7 @@ async_session_factory = sessionmaker(
 
 # ✅ FastAPI dependency
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    """Async generator yielding a database session."""
     db_engine = await get_engine()
     async_session_factory.configure(bind=db_engine)
     session = async_session_factory()
@@ -94,6 +95,7 @@ Base = declarative_base()
 # ✅ Optional: Async context manager
 @asynccontextmanager
 async def get_async_db_context():
+    """Async context manager for database session."""
     db_engine = await get_engine()
     async_session_factory.configure(bind=db_engine)
     session = async_session_factory()
