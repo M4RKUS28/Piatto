@@ -27,7 +27,8 @@
     "enableFirst": "Enable voice assistant first",
     "manualOnlyTitle": "Tap to ask Piatto (wake word unavailable)",
     "unsupportedTitle": "Wake word detection unavailable",
-    "unsupportedDescription": "Your browser doesn't support speech recognition. Use the chat bubble to start talking to Piatto whenever you need help."
+    "unsupportedDescription": "Your browser doesn't support speech recognition. Use the chat bubble to start talking to Piatto whenever you need help.",
+    "openChat": "Open AI chat for current step"
   },
   "sessionDialog": {
     "badge": "Piatto Companion",
@@ -48,6 +49,7 @@
     },
     "info": "You can toggle the voice assistant at any time.",
     "maybeLater": "Maybe later",
+    "understood": "OK, Understood",
     "wakeWordUnsupported": {
       "title": "Wake word detection unavailable",
       "description": "This browser can't listen for \"Hey Piatto\", but you can still tap the chat bubble to talk to the assistant whenever you need it."
@@ -65,5 +67,16 @@
       "pause": "Pause",
       "reset": "Reset"
     }
+  },
+  "chat": {
+    "header": "AI Assistant - Step {{step}}",
+    "errorLoadingHistory": "Error loading chat history",
+    "errorSendingMessage": "Error sending message",
+    "loading": "Loading chat...",
+    "emptyPrompt": "Ask a question about this step!",
+    "emptyDescription": "The AI assistant is happy to help.",
+    "inputPlaceholder": "Ask a question...",
+    "send": "Send",
+    "startRecording": "Start voice recording"
   }
 }

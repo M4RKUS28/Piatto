@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import Chat from './Chat';
 
 const MOBILE_MIN_HEIGHT = 60;
@@ -21,8 +22,11 @@ const ChatContainer = ({
   cookingSessionId,
   onSaveConfig,
   isMobile = false,
-  onMobileHeightChange
+  onMobileHeightChange,
+  voiceAssistant,
+  voiceAssistantBusy
 }) => {
+  const { t } = useTranslation('instructions');
   const containerRef = useRef(null);
   const draggingPointerId = useRef(null);
   const resizingPointerId = useRef(null);
@@ -519,7 +523,9 @@ const ChatContainer = ({
       <div className={headerClassName}>
         <div className="flex items-center gap-2">
           <span className="text-lg">🤖</span>
-          <span className="font-semibold text-sm">AI Assistent - Step {stepIndex + 1}</span>
+          <span className="font-semibold text-sm">
+            {t('chat.header', 'AI Assistant - Step {{step}}', { step: stepIndex + 1 })}
+          </span>
         </div>
         <button
           onClick={onClose}
@@ -531,7 +537,13 @@ const ChatContainer = ({
 
       {/* Chat Content */}
       <div ref={chatContentRef} className="p-4 h-[calc(100%-52px)] overflow-hidden">
-        <Chat stepIndex={stepIndex} stepHeading={stepHeading} cookingSessionId={cookingSessionId} />
+        <Chat
+          stepIndex={stepIndex}
+          stepHeading={stepHeading}
+          cookingSessionId={cookingSessionId}
+          voiceAssistant={voiceAssistant}
+          voiceAssistantBusy={voiceAssistantBusy}
+        />
       </div>
     </div>
   );

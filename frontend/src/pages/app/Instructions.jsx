@@ -88,15 +88,15 @@ const AIQuestionButton = React.forwardRef(({ onClick, isFocused, isEnabled }, re
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="absolute top-4 right-4 flex items-center gap-2 border border-gray-100 hover:border-gray-300 bg-white/50 hover:bg-white/90 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer z-10 px-2 py-1"
+      className="absolute top-4 right-4 flex items-center gap-1.5 border border-gray-100 hover:border-gray-300 bg-white/50 hover:bg-white/90 rounded-full shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer z-10 px-1.5 py-1"
       aria-label={t('aiButtonAria', 'Ask the AI for help')}
       title={t('aiButtonAria', 'Ask the AI for help')}
     >
-      <span className="text-xl flex-shrink-0">✨</span>
+      <span className="text-lg flex-shrink-0">💬</span>
       <span
-        className="overflow-hidden transition-all duration-300 text-sm font-medium whitespace-nowrap text-[#2D2D2D]"
+        className="overflow-hidden transition-all duration-300 text-xs font-medium whitespace-nowrap text-[#2D2D2D]"
         style={{
-          maxWidth: isHovered ? '80px' : '0',
+          maxWidth: isHovered ? '60px' : '0',
           opacity: isHovered ? 1 : 0
         }}
       >
@@ -944,6 +944,14 @@ const CookingInstructions = ({
 
   React.useEffect(() => {
     if (sessionRestored && sessionActive && !resumeVoicePrompted && !isNewSessionStart) {
+      // If wake word is not supported, don't show dialog - just continue without it
+      if (!wakeWordSupported) {
+        setVoicePreference('without');
+        stopVoiceAssistant();
+        setResumeVoicePrompted(true);
+        return;
+      }
+
       // Check if user has a saved voice preference
       try {
         const savedPreference = localStorage.getItem(VOICE_PREFERENCE_STORAGE_KEY);
@@ -968,7 +976,7 @@ const CookingInstructions = ({
       setIsStartDialogOpen(true);
       setResumeVoicePrompted(true);
     }
-  }, [sessionRestored, sessionActive, resumeVoicePrompted, isNewSessionStart, startVoiceAssistant, stopVoiceAssistant]);
+  }, [sessionRestored, sessionActive, resumeVoicePrompted, isNewSessionStart, wakeWordSupported, startVoiceAssistant, stopVoiceAssistant]);
 
   // Fetch instructions with polling logic
   React.useEffect(() => {
@@ -1152,6 +1160,12 @@ const CookingInstructions = ({
                   // Unlock audio on user interaction (critical for mobile browsers)
                   unlockAudio().catch(() => {});
 
+                  // If wake word is not supported, start directly without dialog
+                  if (!wakeWordSupported) {
+                    handleStartCooking(false);
+                    return;
+                  }
+
                   setStartDialogMode('new');
                   setIsStartDialogOpen(true);
                 }}
@@ -1333,6 +1347,8 @@ const CookingInstructions = ({
           onSaveConfig={handleSaveChatConfig}
           isMobile={isMobile}
           onMobileHeightChange={handleMobileLayoutMetrics}
+          voiceAssistant={voiceAssistant}
+          voiceAssistantBusy={voiceAssistantBusy}
           initialPosition={(() => {
             // Use saved position if available, otherwise calculate default
             if (savedChatConfig.position) {
@@ -1469,49 +1485,29 @@ const CookingInstructions = ({
             </div>
           </div>
 
-          {/* Ask Piatto Button (Direct Voice Assistant) */}
-          {cookingSessionId && voiceAssistant && (
+          {/* Open Chat Button */}
+          {cookingSessionId && (
             <button
               type="button"
               onClick={() => {
-                // Unlock audio on user interaction (critical for mobile browsers)
-                unlockAudio().catch(() => {});
-
-                // If wake word detection is supported but not active, show settings dialog
-                if (wakeWordSupported && !voiceAssistantActive) {
-                  setStartDialogMode('resume');
-                  setIsStartDialogOpen(true);
+                if (!hasActiveStep) {
                   return;
                 }
-                // Otherwise, start recording directly
-                voiceAssistant.startRecording?.();
+                handleOpenChat(focusedStep - 1);
               }}
-              disabled={voiceAssistantBusy}
+              disabled={!hasActiveStep}
               className={`relative transition-all duration-200 ${
-                voiceAssistantBusy ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 cursor-pointer'
+                !hasActiveStep ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 cursor-pointer'
               }`}
-              title={
-                wakeWordSupported
-                  ? (voiceAssistantActive
-                      ? t('voiceAssistant.askPiatto', 'Ask Piatto directly')
-                      : t('voiceAssistant.enableFirst', 'Enable voice assistant first'))
-                  : t('voiceAssistant.manualOnlyTitle', 'Tap to ask Piatto (wake word unavailable)')
-              }
+              title={t('voiceAssistant.openChat', 'Open AI chat for current step')}
             >
               <div className={`w-10 h-10 rounded-full border-4 flex items-center justify-center shadow-lg ${
-                voiceAssistantBusy
+                !hasActiveStep
                   ? 'bg-gray-400 border-gray-300 shadow-gray-400/50'
-                  : voiceAssistantActive
-                  ? 'bg-[#035035] border-[#024028] shadow-[#035035]/50'
-                  : wakeWordSupported
-                  ? 'bg-blue-500 border-blue-300 shadow-blue-500/50'
                   : 'bg-[#035035] border-[#024028] shadow-[#035035]/50'
               } transition-all duration-300`}>
                 <span className="text-lg">💬</span>
               </div>
-              {voiceAssistant.assistantState === 'listening' && (
-                <div className="absolute inset-0 rounded-full bg-red-400 animate-pulse opacity-75" />
-              )}
             </button>
           )}
 

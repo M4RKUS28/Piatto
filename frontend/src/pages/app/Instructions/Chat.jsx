@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { PiMicrophone } from 'react-icons/pi';
+import { useTranslation } from 'react-i18next';
 import { getPromptHistory, askCookingQuestion } from '../../../api/cookingApi';
+import { unlockAudio } from '../../../utils/audioContext';
 
 /**
  * Chat component - AI chat functionality for cooking steps
  */
-const Chat = ({ cookingSessionId }) => {
+const Chat = ({ cookingSessionId, voiceAssistant, voiceAssistantBusy }) => {
+  const { t } = useTranslation('instructions');
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -75,7 +79,7 @@ const Chat = ({ cookingSessionId }) => {
         setMessages(chatMessages);
       } catch (err) {
         console.error('Failed to load chat history:', err);
-        setError('Fehler beim Laden der Chat-Historie');
+        setError(t('chat.errorLoadingHistory', 'Error loading chat history'));
       } finally {
         setIsLoading(false);
       }
@@ -116,7 +120,7 @@ const Chat = ({ cookingSessionId }) => {
       }
     } catch (err) {
       console.error('Failed to send message:', err);
-      setError('Fehler beim Senden der Nachricht');
+      setError(t('chat.errorSendingMessage', 'Error sending message'));
       // Remove the user message that failed
       setMessages(prev => prev.slice(0, -1));
       // Restore input value
@@ -138,7 +142,7 @@ const Chat = ({ cookingSessionId }) => {
     return (
       <div className="flex flex-col h-full items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#035035] border-t-transparent mb-2"></div>
-        <p className="text-sm text-[#2D2D2D] opacity-50">Lade Chat...</p>
+        <p className="text-sm text-[#2D2D2D] opacity-50">{t('chat.loading', 'Loading chat...')}</p>
       </div>
     );
   }
@@ -157,8 +161,8 @@ const Chat = ({ cookingSessionId }) => {
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-[#2D2D2D] opacity-50">
             <p className="text-sm text-center">
-              Stelle eine Frage zu diesem Schritt!<br />
-              Der AI Assistent hilft dir gerne weiter.
+              {t('chat.emptyPrompt', 'Ask a question about this step!')}<br />
+              {t('chat.emptyDescription', 'The AI assistant is happy to help.')}
             </p>
           </div>
         ) : (
@@ -233,7 +237,7 @@ const Chat = ({ cookingSessionId }) => {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyPress={handleKeyPress}
-          placeholder="Frage stellen..."
+          placeholder={t('chat.inputPlaceholder', 'Ask a question...')}
           disabled={isSending}
           className="flex-1 px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#035035] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
         />
@@ -242,8 +246,21 @@ const Chat = ({ cookingSessionId }) => {
           disabled={!inputValue.trim() || isSending}
           className="px-4 py-2 bg-[#035035] hover:bg-[#046847] text-white rounded-full text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#035035]"
         >
-          {isSending ? '...' : 'Senden'}
+          {isSending ? '...' : t('chat.send', 'Send')}
         </button>
+        {voiceAssistant && (
+          <button
+            onClick={() => {
+              unlockAudio().catch(() => {});
+              voiceAssistant.startRecording?.();
+            }}
+            disabled={voiceAssistantBusy}
+            className="w-10 h-10 flex items-center justify-center bg-[#035035] hover:bg-[#046847] text-white rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#035035]"
+            title={t('chat.startRecording', 'Start voice recording')}
+          >
+            <PiMicrophone className="w-5 h-5" />
+          </button>
+        )}
       </div>
     </div>
   );

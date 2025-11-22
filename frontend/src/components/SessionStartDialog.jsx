@@ -55,77 +55,92 @@ const SessionStartDialog = ({
             </p>
           </div>
 
-          {!wakeWordSupported && (
-            <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
-              <span className="text-xl font-bold" aria-hidden="true">
-                !
-              </span>
-              <div>
-                <p className="text-sm font-semibold">
-                  {t('sessionDialog.wakeWordUnsupported.title', 'Wake word detection unavailable')}
-                </p>
-                <p className="text-xs sm:text-sm mt-1 text-amber-900/90">
-                  {t('sessionDialog.wakeWordUnsupported.description', 'Your browser cannot listen for "Hey Piatto", but you can still tap the chat bubble to talk to the assistant.')}
-                </p>
+          {!wakeWordSupported ? (
+            // Show only info message when wake word is not supported
+            <>
+              <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
+                <span className="text-xl font-bold" aria-hidden="true">
+                  !
+                </span>
+                <div>
+                  <p className="text-sm font-semibold">
+                    {t('sessionDialog.wakeWordUnsupported.title', 'Wake word detection unavailable')}
+                  </p>
+                  <p className="text-xs sm:text-sm mt-1 text-amber-900/90">
+                    {t('sessionDialog.wakeWordUnsupported.description', 'Your browser cannot listen for "Hey Piatto", but you can still tap the chat bubble to talk to the assistant.')}
+                  </p>
+                </div>
               </div>
-            </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="rounded-full bg-[#035035] px-6 py-2 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-[#046847] hover:shadow-lg"
+                >
+                  {t('sessionDialog.understood', 'OK, Understood')}
+                </button>
+              </div>
+            </>
+          ) : (
+            // Show button selection when wake word is supported
+            <>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => handleSelect(true)}
+                  className="group flex h-full flex-col items-start gap-3 rounded-2xl border-2 border-[#A8C9B8] bg-[#FFF8F0] p-5 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9B7B] hover:-translate-y-1 hover:border-[#FF9B7B] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-70"
+                  disabled={isSubmitting}
+                >
+                  <span className="flex items-center gap-3 text-[#035035]">
+                    <PiMicrophoneBold className="text-2xl" />
+                    <span className="text-lg font-semibold">
+                      {t('sessionDialog.withVoice.label', 'With voice assistant')}
+                    </span>
+                  </span>
+                  <p className="text-sm text-[#2D2D2D]/80">
+                    {t('sessionDialog.withVoice.description', 'Enable voice control so you can keep cooking hands-free.')}
+                  </p>
+                  <span className="mt-auto rounded-full bg-[#035035] px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+                    {t('sessionDialog.withVoice.pill', 'Recommended for hands-free cooking')}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleSelect(false)}
+                  className="group flex h-full flex-col items-start gap-3 rounded-2xl border-2 border-[#F5F5F5] bg-white p-5 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8C9B8] hover:-translate-y-1 hover:border-[#035035]/60 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-70"
+                  disabled={isSubmitting}
+                >
+                  <span className="flex items-center gap-3 text-[#2D2D2D]">
+                    <PiSpeakerHighBold className="text-2xl" />
+                    <span className="text-lg font-semibold">
+                      {t('sessionDialog.withoutVoice.label', 'Without voice assistant')}
+                    </span>
+                  </span>
+                  <p className="text-sm text-[#2D2D2D]/80">
+                    {t('sessionDialog.withoutVoice.description', 'Control the steps manually—perfect when you prefer it quiet.')}
+                  </p>
+                  <span className="mt-auto rounded-full bg-[#FF9B7B]/20 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-[#FF9B7B]">
+                    {t('sessionDialog.withoutVoice.pill', 'You can change this anytime')}
+                  </span>
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-[#2D2D2D]/60">
+                  {t('sessionDialog.info', 'You can toggle the voice assistant at any time.')}
+                </p>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="rounded-full border-2 border-transparent px-4 py-2 text-xs font-semibold uppercase tracking-wide text-[#2D2D2D]/70 transition hover:border-[#FF9B7B] hover:text-[#FF9B7B]"
+                  disabled={isSubmitting}
+                >
+                  {t('sessionDialog.maybeLater', 'Maybe later')}
+                </button>
+              </div>
+            </>
           )}
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <button
-              type="button"
-              onClick={() => handleSelect(true)}
-              className="group flex h-full flex-col items-start gap-3 rounded-2xl border-2 border-[#A8C9B8] bg-[#FFF8F0] p-5 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9B7B] hover:-translate-y-1 hover:border-[#FF9B7B] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-70"
-              disabled={isSubmitting}
-            >
-              <span className="flex items-center gap-3 text-[#035035]">
-                <PiMicrophoneBold className="text-2xl" />
-                <span className="text-lg font-semibold">
-                  {t('sessionDialog.withVoice.label', 'With voice assistant')}
-                </span>
-              </span>
-              <p className="text-sm text-[#2D2D2D]/80">
-                {t('sessionDialog.withVoice.description', 'Enable voice control so you can keep cooking hands-free.')}
-              </p>
-              <span className="mt-auto rounded-full bg-[#035035] px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white">
-                {t('sessionDialog.withVoice.pill', 'Recommended for hands-free cooking')}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleSelect(false)}
-              className="group flex h-full flex-col items-start gap-3 rounded-2xl border-2 border-[#F5F5F5] bg-white p-5 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8C9B8] hover:-translate-y-1 hover:border-[#035035]/60 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-70"
-              disabled={isSubmitting}
-            >
-              <span className="flex items-center gap-3 text-[#2D2D2D]">
-                <PiSpeakerHighBold className="text-2xl" />
-                <span className="text-lg font-semibold">
-                  {t('sessionDialog.withoutVoice.label', 'Without voice assistant')}
-                </span>
-              </span>
-              <p className="text-sm text-[#2D2D2D]/80">
-                {t('sessionDialog.withoutVoice.description', 'Control the steps manually—perfect when you prefer it quiet.')}
-              </p>
-              <span className="mt-auto rounded-full bg-[#FF9B7B]/20 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-[#FF9B7B]">
-                {t('sessionDialog.withoutVoice.pill', 'You can change this anytime')}
-              </span>
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-[#2D2D2D]/60">
-              {t('sessionDialog.info', 'You can toggle the voice assistant at any time.')}
-            </p>
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-full border-2 border-transparent px-4 py-2 text-xs font-semibold uppercase tracking-wide text-[#2D2D2D]/70 transition hover:border-[#FF9B7B] hover:text-[#FF9B7B]"
-              disabled={isSubmitting}
-            >
-              {t('sessionDialog.maybeLater', 'Maybe later')}
-            </button>
-          </div>
         </div>
       </div>
     </div>

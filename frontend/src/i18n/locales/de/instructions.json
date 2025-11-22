@@ -27,7 +27,8 @@
     "enableFirst": "Voice Assistant zuerst aktivieren",
     "manualOnlyTitle": "Tippe, um Piatto zu fragen (Wake Word nicht verfügbar)",
     "unsupportedTitle": "Wake-Word-Erkennung nicht verfügbar",
-    "unsupportedDescription": "Dein Browser unterstützt keine Spracherkennung. Nutze einfach die Chat-Blase, um Piatto bei Bedarf anzusprechen."
+    "unsupportedDescription": "Dein Browser unterstützt keine Spracherkennung. Nutze einfach die Chat-Blase, um Piatto bei Bedarf anzusprechen.",
+    "openChat": "AI-Chat für aktuellen Schritt öffnen"
   },
   "sessionDialog": {
     "badge": "Piatto Companion",
@@ -48,6 +49,7 @@
     },
     "info": "Du kannst den Voice Assistant jederzeit an- oder ausschalten.",
     "maybeLater": "Vielleicht später",
+    "understood": "OK, Verstanden",
     "wakeWordUnsupported": {
       "title": "Wake-Word-Erkennung nicht verfügbar",
       "description": "Dieser Browser kann nicht auf \"Hey Piatto\" hören, aber du kannst jederzeit die Chat-Blase tippen, um mit dem Assistant zu sprechen."
@@ -65,5 +67,16 @@
       "pause": "Pause",
       "reset": "Zurücksetzen"
     }
+  },
+  "chat": {
+    "header": "AI-Assistent - Schritt {{step}}",
+    "errorLoadingHistory": "Fehler beim Laden der Chat-Historie",
+    "errorSendingMessage": "Fehler beim Senden der Nachricht",
+    "loading": "Lade Chat...",
+    "emptyPrompt": "Stelle eine Frage zu diesem Schritt!",
+    "emptyDescription": "Der AI-Assistent hilft dir gerne weiter.",
+    "inputPlaceholder": "Frage stellen...",
+    "send": "Senden",
+    "startRecording": "Sprachaufnahme starten"
   }
 }
