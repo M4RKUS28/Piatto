@@ -84,6 +84,21 @@ const SessionStartDialog = ({
           ) : (
             // Show button selection when wake word is supported
             <>
+              {/* Wake Word Info */}
+              <div className="flex items-start gap-3 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-blue-900">
+                <span className="text-xl" aria-hidden="true">
+                  💡
+                </span>
+                <div>
+                  <p className="text-sm font-semibold">
+                    {t('sessionDialog.wakeWordInfo.title', 'Hands-free cooking with "Hey Piatto"')}
+                  </p>
+                  <p className="text-xs sm:text-sm mt-1 text-blue-900/90">
+                    {t('sessionDialog.wakeWordInfo.description', 'With the voice assistant enabled, simply say "Hey Piatto" followed by your question to get help without touching your device.')}
+                  </p>
+                </div>
+              </div>
+
               <div className="grid gap-4 sm:grid-cols-2">
                 <button
                   type="button"

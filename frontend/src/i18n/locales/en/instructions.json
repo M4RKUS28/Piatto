@@ -50,6 +50,10 @@
     "info": "You can toggle the voice assistant at any time.",
     "maybeLater": "Maybe later",
     "understood": "OK, Understood",
+    "wakeWordInfo": {
+      "title": "Hands-free cooking with \"Hey Piatto\"",
+      "description": "With the voice assistant enabled, simply say \"Hey Piatto\" followed by your question to get help without touching your device."
+    },
     "wakeWordUnsupported": {
       "title": "Wake word detection unavailable",
       "description": "This browser can't listen for \"Hey Piatto\", but you can still tap the chat bubble to talk to the assistant whenever you need it."

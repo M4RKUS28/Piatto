@@ -50,6 +50,10 @@
     "info": "Du kannst den Voice Assistant jederzeit an- oder ausschalten.",
     "maybeLater": "Vielleicht später",
     "understood": "OK, Verstanden",
+    "wakeWordInfo": {
+      "title": "Freihändiges Kochen mit \"Hey Piatto\"",
+      "description": "Mit aktiviertem Voice Assistant sagst du einfach \"Hey Piatto\" gefolgt von deiner Frage, um Hilfe zu bekommen, ohne dein Gerät zu berühren."
+    },
     "wakeWordUnsupported": {
       "title": "Wake-Word-Erkennung nicht verfügbar",
       "description": "Dieser Browser kann nicht auf \"Hey Piatto\" hören, aber du kannst jederzeit die Chat-Blase tippen, um mit dem Assistant zu sprechen."
